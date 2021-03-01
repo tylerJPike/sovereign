@@ -1,0 +1,38 @@
+Package: sovereign
+Title: State-Dependant Empirical Analysis 
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Tyler",
+           family = "Pike",
+           role = c("aut", "cre"),
+           email = "tjpike7@gmail.com")  
+Description: A set of tools for state-dependant empirical analysis
+  through both VAR- and local projection-based state-dependant forecasts,
+  impulse response functions, and forecast error variance decomposition.   
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+Imports: 
+    broom,    
+    dplyr,  
+    ggplot2, 
+    gridExtra,    
+    lmtest,
+    lubridate,     
+    magrittr,  
+    purrr,  
+    randomForest,
+    sandwich,  
+    stats,  
+    tidyr, 
+    xts,   
+    zoo  
+Suggests: 
+    testthat,
+    knitr,
+    rmarkdown,
+    quantmod,
+    covr
+VignetteBuilder: knitr
