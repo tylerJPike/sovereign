@@ -7,9 +7,9 @@
 [![R-CMD-check](https://github.com/r-lib/usethis/workflows/R-CMD-check/badge.svg)](https://github.com/r-lib/usethis/actions)
 <!-- badges: end -->
 
-The `sovereign` package introduces a set of tools for state-dependant empirical analysis through both VAR- and local projection-based state-dependant forecasts, impulse response functions, and forecast error variance decomposition. 
+The sovereign package introduces a set of tools for state-dependent empirical analysis through both VAR- and local projection-based state-dependent forecasts, impulse response functions, and forecast error variance decomposition. 
 
-The `sovereign` package remains under active development. As a result, **the API is not to be considered stable**, and future updates will most likely deprecate and break current functions. 
+The sovereign package remains under active development. As a result, **the API is not to be considered stable**, and future updates will most likely deprecate and break current functions. 
 
 ## Available Tools  
 
