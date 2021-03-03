@@ -5,6 +5,7 @@
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
 [![codecov](https://codecov.io/gh/tylerJPike/sovereign/branch/main/graph/badge.svg?token=WXLWR6H93B)](https://codecov.io/gh/tylerJPike/sovereign)
 [![R-CMD-check](https://github.com/r-lib/usethis/workflows/R-CMD-check/badge.svg)](https://github.com/r-lib/usethis/actions)
+[![Build Status](https://travis-ci.org/tylerJPike/sovereign.svg?branch=main)](https://travis-ci.org/tylerJPike/sovereign)  
 <!-- badges: end -->
 
 The sovereign package introduces a set of tools for state-dependent empirical analysis through both VAR- and local projection-based state-dependent forecasts, impulse response functions, and forecast error variance decomposition. 
@@ -151,13 +152,4 @@ Code
 1. local projection forecasting  
 2. tvar forecasting is restricted to one period ahead 
 3. add confidence intervals to forecast error variance decomposition  
-4. clean local projection functions 
-5. plot tests
-
-Package   
-1. ~~documentation~~  
-2. ~~tests~~  
-3. ~~simple vignette~~
-4. ~~badges~~  
-4. ~~github~~     
-5. add plotting to example  
+4. clean local projection functions  
