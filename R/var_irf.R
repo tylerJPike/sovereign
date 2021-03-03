@@ -46,7 +46,6 @@ var_irf = function(
   # set variables
   p = var$model$p
   freq = var$model$freq
-  horizon = length(residuals)
   regressors = colnames(dplyr::select(data, -date))
   p.lower = CI[1]
   p.upper = CI[2]
@@ -263,29 +262,29 @@ individual_var_irf_plot = function(
   irf.upper = irfs$ci.upper
 
   # filter for one shock
-  irf = irf %>% filter(shock == shock.var)
-  irf.lower = irf.lower %>% filter(shock == shock.var)
-  irf.upper = irf.upper %>% filter(shock == shock.var)
+  irf = irf %>% dplyr::filter(shock == shock.var)
+  irf.lower = irf.lower %>% dplyr::filter(shock == shock.var)
+  irf.upper = irf.upper %>% dplyr::filter(shock == shock.var)
 
   # filter for one response
-  irf = irf %>% select(point = response.var, horizon)
-  irf.lower = irf.lower %>% ungroup() %>% select(lower = response.var)
-  irf.upper = irf.upper %>% ungroup() %>% select(upper = response.var)
+  irf = irf %>% dplyr::select(point = response.var, horizon)
+  irf.lower = irf.lower %>% dplyr::ungroup() %>% dplyr::select(lower = response.var)
+  irf.upper = irf.upper %>% dplyr::ungroup() %>% dplyr::select(upper = response.var)
 
   plotdata = cbind(irf.lower, irf, irf.upper)
 
   # plot GDP
   response.gdp <- plotdata  %>%
-    ggplot(aes(x=horizon, y=point, ymin=lower, ymax=upper)) +
-    geom_hline(yintercept = 0, color="red") +
-    geom_ribbon(fill="grey", alpha=0.2) +
-    geom_line() +
-    theme_light() +
-    ggtitle(title)+
-    ylab(ylab)+
-    xlab("") +
-    theme(plot.title = element_text(size = 11, hjust=0.5),
-          axis.title.y = element_text(size=11))
+    ggplot2::ggplot(ggplot2::aes(x=horizon, y=point, ymin=lower, ymax=upper)) +
+    ggplot2::geom_hline(yintercept = 0, color="red") +
+    ggplot2::geom_ribbon(fill="grey", alpha=0.2) +
+    ggplot2::geom_line() +
+    ggplot2::theme_light() +
+    ggplot2::ggtitle(title)+
+    ggplot2::ylab(ylab)+
+    ggplot2::xlab("") +
+    ggplot2::theme(plot.title = ggplot2::element_text(size = 11, hjust=0.5),
+                   axis.title.y = ggplot2::element_text(size=11))
 
   response.gdp
 
@@ -304,16 +303,17 @@ individual_var_irf_plot = function(
 
 var_irf_plot = function(
   irfs,                  # var_irf object
-  shocks,                # string vector: shocks to plot
-  responses              # string vector: responses to plot
+  shocks = NULL,         # string vector: shocks to plot (default to all variables)
+  responses = NULL       # string vector: responses to plot (default to all variables)
 ){
 
-  # function variables
-  shock = repsonse = NA
-
   # set shocks and responses
-  shocks = unique(irfs$irfs$shock)
-  responses = unique(irfs$irfs$shock)
+  if(is.null(shocks)){
+    shocks = unique(irfs$irfs$shock)
+  }
+  if(is.null(responses)){
+    responses = unique(irfs$irfs$shock)
+  }
 
   # generate plots
   plot.names = tidyr::expand_grid(shock = shocks, response = responses)
@@ -321,7 +321,7 @@ var_irf_plot = function(
     purrr::map(.f = function(x){
 
       chart =
-        individual_irf_plot(
+        individual_var_irf_plot(
           irfs,
           shock.var = x$shock,
           response.var = x$response,

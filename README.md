@@ -75,13 +75,13 @@ Vector Auto-Regression (VAR)
 
     # estimate IRF
     irf =
-        var_irf_plot(
+        var_irf(
             var,
             bootstraps.num = 10,
             CI = c(0.05,0.95))
 
     # plot IRF
-    irf_plot(irf)
+    var_irf_plot(irf)
 
     # estimate forecast error variance decomposition
     fevd =
@@ -111,9 +111,9 @@ Vector Auto-Regression (VAR)
 
     # plot IRF
     # regime 1: low interest rates
-    irf_plot(tvar.irf[[1]])
+    var_irf_plot(tvar.irf[[1]])
     # regime 2: high interest rates
-    irf_plot(tvar.irf[[2]])
+    var_irf_plot(tvar.irf[[2]])
 
     # estimate forecast error variance decomposition
     tvar.fevd =

@@ -4,7 +4,7 @@
 \alias{var_irf_plot}
 \title{Plot all IRFs}
 \usage{
-var_irf_plot(irfs, shocks, responses)
+var_irf_plot(irfs, shocks = NULL, responses = NULL)
 }
 \arguments{
 \item{irfs}{var_irf object}

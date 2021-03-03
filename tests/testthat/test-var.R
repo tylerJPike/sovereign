@@ -31,6 +31,13 @@ test_that("VAR workflow", {
   expect_true(is.data.frame(irf$ci.lower))
   expect_true(is.data.frame(irf$ci.upper))
 
+  # plot IRF
+  plot.all = var_irf_plot(irf)
+  plot.indivdual = individual_var_irf_plot(irfs = irf, shock.var = 'AA', response.var = 'BB', title = '', ylab = '')
+
+  expect_true(is.list(plot.all))
+  expect_true(ggplot2::is.ggplot(plot.indivdual))
+
   # estimate forecast error variance decomposition
   fevd =
     var_fevd(
