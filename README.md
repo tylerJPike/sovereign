@@ -122,8 +122,17 @@ Vector Auto-Regression (VAR)
             horizon = 10)
 
     #-------------------------------------------
-    # local projection IRFs
+    # local projections [WIP]
     #-------------------------------------------
+    # estimate single-regime forecasts 
+    #  (one or multiple horizons may be estimated)
+    lp = 
+        LP(
+            data = Data,
+            p = 1,
+            horizon = 1,
+            freq = 'month')
+
     # estimate single-regime IRF
     lp.irf =
         lp_irf(
@@ -148,7 +157,7 @@ Vector Auto-Regression (VAR)
 ---
 ## Known problems / wishlist
 Code  
-1. local projection forecasting  
+1. ~~local projection forecasting~~  
 2. tvar forecasting is restricted to one period ahead 
 3. add confidence intervals to forecast error variance decomposition  
 4. clean local projection functions  

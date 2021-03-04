@@ -8,7 +8,32 @@ test_that("Local projection workflow", {
   Data = data.frame(date = date, AA, BB, CC)
   Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
 
-  # local proejctions
+  # local projection forecasts
+  irfs =
+    LP(
+      data = Data,
+      p = 1,
+      horizon = 1,
+      freq = 'month')
+
+  expect_true(is.list(irfs))
+  expect_true(is.list(irfs$model))
+  expect_true(is.data.frame(irfs$forecasts))
+  expect_true(is.data.frame(irfs$residuals))
+
+  irfs =
+    LP(
+      data = Data,
+      p = 1,
+      horizon = c(1,4),
+      freq = 'month')
+
+  expect_true(is.list(irfs))
+  expect_true(is.list(irfs$model))
+  expect_true(is.list(irfs$forecasts))
+  expect_true(is.list(irfs$residuals))
+
+  # local proejctions (current workflow)
   irfs =
     lp_irf(
       data = Data,
@@ -28,6 +53,5 @@ test_that("Local projection workflow", {
 
   expect_true(is.data.frame(irfs))
   expect_true(is.list(t.irfs))
-
 
 })
