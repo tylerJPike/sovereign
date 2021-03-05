@@ -17,7 +17,7 @@ Unsupervised Regime Assignment
 1. random forest  
 2. k-means clustering  
 
-Local Projections
+Local Projections (LP)
 1. direct projection forecasting  
 1. impulse responses  
 
@@ -31,7 +31,7 @@ Vector Auto-Regression (VAR)
 ## Basic Workflow 
     # load packages
     library(sovereign)         # analysis
-    library(tidyverse)         # general cleaning
+    library(dplyr)             # general cleaning
     library(lubridate)         # date functions
 
     #-------------------------------------------
@@ -45,7 +45,7 @@ Vector Auto-Regression (VAR)
     Data = cbind(UNRATE, INDPRO, GS10)
 
     Data = data.frame(Data, date = zoo::index(Data)) %>%
-        dplyr::filter(lubridate::year(date) >= 1990) %>% 
+        filter(lubridate::year(date) >= 1990) %>% 
         na.omit()
 
     # create a regime explicitly   
@@ -123,7 +123,7 @@ Vector Auto-Regression (VAR)
             horizon = 10)
 
     #-------------------------------------------
-    # local projections [WIP]
+    # local projections
     #-------------------------------------------
     # estimate single-regime forecasts 
     #  (one or multiple horizons may be estimated)
@@ -135,30 +135,27 @@ Vector Auto-Regression (VAR)
             freq = 'month')
 
     # estimate single-regime IRF
-    lp.irf =
-        lp_irf(
-            data = Data,
-            shock = 'INDPRO',
-            target = 'GS10',
-            horizons = 20,
-            lags = 2)
+    lp.irf = lp_irf(lp)
+
+    # plot IRF
+    lp_irf_plot(irf)
 
     # estimate multi-regime IRF
-    tlp.irf =
-        threshold_lp_irf(
-            data = dplyr::select(Data.threshold, -reg),
-            thresholdVar = dplyr::select(Data, reg, date),
-            shock = 'AA',
-            target = 'BB',
-            horizons = 20,
-            lags = 2)
+    tlp = 
+        threshold_LP(
+            data = Data,
+            regime = 'mp',
+            p = 1,
+            horizon = 1,
+            freq = 'month')
+    
+    # estimate multi-regime IRF
+    tlp.irf = lp_irf(tlp)
 
 
 
 ---
 ## Known problems / wishlist
 Code  
-1. ~~local projection forecasting~~  
-2. tvar forecasting is restricted to one period ahead 
-3. add confidence intervals to forecast error variance decomposition  
-4. clean local projection functions  
+1. tvar forecasting is restricted to one period ahead   
+2. add confidence intervals to forecast error variance decomposition

@@ -94,14 +94,17 @@ fevd =
 #------------------------------------------
 # single-regime local projection
 #------------------------------------------
-# estimate IRF
- lp.irfs =
-    lp_irf(
+# estimate single-regime forecasts 
+#  (one or multiple horizons may be estimated)
+lp = 
+    LP(
       data = Data,
-      shock = 'INDPRO',
-      target = 'GS10',
-      horizons = 20,
-      lags = 2)
+      p = 1,
+      horizon = c(1:10),
+      freq = 'month')
+
+# estimate single-regime IRF
+lp.irf = lp_irf(lp)
 
 ```
 
@@ -138,15 +141,16 @@ tvar.fevd =
 #-------------------------------------------
 # multi-regime local projection
 #------------------------------------------
-# estimate IRF
-tlp.irfs =
-  threshold_lp_irf(
-    data = dplyr::select(Data.threshold, -mp),
-    thresholdVar = dplyr::select(Data.threshold, mp, date),
-    shock = 'INDPRO',
-    target = 'GS10',
-    horizons = 20,
-    lags = 2)
+# estimate multi-regime IRF
+tlp = 
+    threshold_LP(
+        data = Data.threshold,
+        regime = 'mp',
+        p = 1,
+        horizon = c(1:10),
+        freq = 'month')
 
+# estimate multi-regime IRF
+tlp.irf = threshold_lp_irf(tlp)
 
 ```

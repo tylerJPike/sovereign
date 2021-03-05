@@ -8,50 +8,54 @@ test_that("Local projection workflow", {
   Data = data.frame(date = date, AA, BB, CC)
   Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
 
-  # local projection forecasts
-  irfs =
+  # local projection forecasts (new workflow)
+  lp =
     LP(
       data = Data,
       p = 1,
       horizon = 1,
       freq = 'month')
 
-  expect_true(is.list(irfs))
-  expect_true(is.list(irfs$model))
-  expect_true(is.data.frame(irfs$forecasts))
-  expect_true(is.data.frame(irfs$residuals))
+  expect_true(is.list(lp))
+  expect_true(is.list(lp$model))
+  expect_true(is.data.frame(lp$forecasts))
+  expect_true(is.data.frame(lp$residuals))
 
-  irfs =
+  lp =
     LP(
       data = Data,
       p = 1,
-      horizon = c(1,4),
+      horizon = c(1:10),
+      NW = TRUE,
       freq = 'month')
 
-  expect_true(is.list(irfs))
-  expect_true(is.list(irfs$model))
-  expect_true(is.list(irfs$forecasts))
-  expect_true(is.list(irfs$residuals))
+  expect_true(is.list(lp))
+  expect_true(is.list(lp$model))
+  expect_true(is.list(lp$forecasts))
+  expect_true(is.list(lp$residuals))
 
-  # local proejctions (current workflow)
-  irfs =
-    lp_irf(
+  # estimate IRF
+  irf = lp_irf(lp)
+  expect_true(is.data.frame(irf))
+
+  # plot IRF
+  plot.all = lp_irf_plot(irf)
+  expect_true(is.list(plot.all))
+
+  # multi-regime local projection
+  tlp =
+    threshold_LP(
       data = Data,
-      shock = 'AA',
-      target = 'BB',
-      horizons = 20,
-      lags = 2)
+      regime = 'reg',
+      p = 1,
+      horizon = c(1:10),
+      NW = TRUE,
+      freq = 'month')
 
-  t.irfs =
-    threshold_lp_irf(
-      data = dplyr::select(Data, -reg),
-      thresholdVar = dplyr::select(Data, reg, date),
-      shock = 'AA',
-      target = 'BB',
-      horizons = 20,
-      lags = 2)
+  expect_true(is.list(tlp))
 
-  expect_true(is.data.frame(irfs))
-  expect_true(is.list(t.irfs))
+  tirf = threshold_lp_irf(tlp)
+
+  expect_true(is.list(irf))
 
 })
