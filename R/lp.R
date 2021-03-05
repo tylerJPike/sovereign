@@ -36,9 +36,6 @@ LP = function(
   if(!is.numeric(p) | p %% 1 != 0){
     errorCondition('p must be an integer')
   }
-  if(!is.numeric(horizon) | horizon %% 1 != 0 | horizon <= 0){
-    errorCondition('horizon must be a positive integer')
-  }
   if(!freq %in% c('day','week','month','quarter','year')){
     errorCondition("freq must be one of the following strings: 'day','week','month','quarter','year'")
   }
