@@ -18,12 +18,13 @@ Unsupervised Regime Assignment
 2. k-means clustering  
 
 Local Projections
-1. impulse responses & charting
+1. direct projection forecasting  
+1. impulse responses  
 
 Vector Auto-Regression (VAR)
 1. recursive forecasting 
 2. forecast error variance decomposition
-3. impulse responses with bootstrapped confidence intervals and charting
+3. impulse responses with bootstrapped confidence intervals  
 
 ----
 
