@@ -39,7 +39,7 @@ test_that("Local projection workflow", {
   expect_true(is.data.frame(irf))
 
   # plot IRF
-  plot.all = lp_irf_plot(irf)
+  plot.all = irf_plot(irf)
   expect_true(is.list(plot.all))
 
   # multi-regime local projection

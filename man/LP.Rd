@@ -22,6 +22,12 @@ LP(
 \item{horizons}{int: forecast horizons}
 
 \item{freq}{string: frequency of data (day, week, month, quarter, year)}
+
+\item{NW}{boolean: Newey-West correction on variance-covariance matrix}
+
+\item{NW_lags}{int: number of lags to use in Newey-West correction}
+
+\item{NW_prewhite}{boolean: TRUE prewhite option for Newey-West correction (see sandwich::NeweyWest function)}
 }
 \value{
 list object with elements \code{data}, \code{model}, \code{forecasts}, \code{residuals}; if there is more than one forecast horizon estimated, then \code{model}, \code{forecasts}, \code{residuals} will each be a list where each element corresponds to a single horizon

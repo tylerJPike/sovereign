@@ -1,12 +1,15 @@
 #------------------------------------------
-# Function to estimate VAR
+# Function to estimate LP
 #------------------------------------------
 #' Estimate local projections
 #'
-#' @param data     data.frame, matrix, ts, xts, zoo: Endogenous regressors
-#' @param p        int: lags
-#' @param horizons int: forecast horizons
-#' @param freq     string: frequency of data (day, week, month, quarter, year)
+#' @param data         data.frame, matrix, ts, xts, zoo: Endogenous regressors
+#' @param p            int: lags
+#' @param horizons     int: forecast horizons
+#' @param freq         string: frequency of data (day, week, month, quarter, year)
+#' @param NW           boolean: Newey-West correction on variance-covariance matrix
+#' @param NW_lags      int: number of lags to use in Newey-West correction
+#' @param NW_prewhite  boolean: TRUE prewhite option for Newey-West correction (see sandwich::NeweyWest function)
 #'
 #' @return list object with elements `data`, `model`, `forecasts`, `residuals`; if there is more than one forecast horizon estimated, then `model`, `forecasts`, `residuals` will each be a list where each element corresponds to a single horizon
 #'
@@ -169,7 +172,7 @@ LP = function(
 
 
 #------------------------------------------
-# Function to estimate VAR
+# Function to estimate threshold LP
 #------------------------------------------
 #' Estimate threshold local projections
 #'
@@ -178,6 +181,9 @@ LP = function(
 #' @param p        int: lags
 #' @param horizons int: forecast horizons
 #' @param freq     string: frequency of data (day, week, month, quarter, year)
+#' @param NW           boolean: Newey-West correction on variance-covariance matrix
+#' @param NW_lags      int: number of lags to use in Newey-West correction
+#' @param NW_prewhite  boolean: TRUE prewhite option for Newey-West correction (see sandwich::NeweyWest function)
 #'
 #' @return list object with elements `data`, `model`, `forecasts`, `residuals`; if there is more than one forecast horizon estimated, then `model`, `forecasts`, `residuals` will each be a list where each element corresponds to a single horizon
 #'

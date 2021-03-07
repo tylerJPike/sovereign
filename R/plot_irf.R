@@ -5,7 +5,7 @@
 
 #' Plot an individual IRF
 #'
-#' @param irfs                  irf object
+#' @param irf                   irf object
 #' @param shock.var             string: name of variable to treat as the shock
 #' @param response.var          string: name of variable to treat as the response
 #' @param title                 string: title of the chart
@@ -46,9 +46,10 @@ individual_irf_plot = function(
 ### function to plot all irfs
 #' Plot all IRFs
 #'
-#' @param irfs       irf object
+#' @param irf        irf object
 #' @param shocks     string vector: shocks to plot
 #' @param responses  string vector: responses to plot
+#' @param verticle   boolean: If true then stack all plots into one column
 #'
 #' @return grid of ggplot2 graphs
 #'

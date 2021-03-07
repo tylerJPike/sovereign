@@ -29,9 +29,7 @@ test_that("threshold VAR workflow", {
       bootstraps.num = 10,
       CI = c(0.05,0.95))
 
-  expect_true(is.list(irf))
-  expect_true(is.data.frame(irf[[1]]$ci.lower))
-  expect_true(is.data.frame(irf[[1]]$ci.upper))
+  expect_true(is.data.frame(irf[[1]]))
 
   # estimate forecast error variance decomposition
   fevd =
