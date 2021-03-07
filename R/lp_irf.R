@@ -69,8 +69,10 @@ lp_irf = function(
       irf = dplyr::full_join(coef, se, by = c('target', 'shock', 'horizon')) %>%
         dplyr::select(target, shock, horizon, coef, se) %>%
         # estimate confidence intervals
-        dplyr::mutate(ci.lower = coef + se*qnorm(CI[1]),
-                      ci.upper = coef + se*qnorm(CI[2]))
+        dplyr::mutate(response.lower = coef + se*qnorm(CI[1]),
+                      response.upper = coef + se*qnorm(CI[2])) %>%
+        # return uniform output
+        dplyr::select(target, shock, horizon, response.lower, response = coef, response.upper)
 
     })
 
