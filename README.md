@@ -82,7 +82,7 @@ Vector Auto-Regression (VAR)
             CI = c(0.05,0.95))
 
     # plot IRF
-    var_irf_plot(irf)
+    irf_plot(irf)
 
     # estimate forecast error variance decomposition
     fevd =
@@ -112,9 +112,9 @@ Vector Auto-Regression (VAR)
 
     # plot IRF
     # regime 1: low interest rates
-    var_irf_plot(tvar.irf[[1]])
+    irf_plot(tvar.irf[[1]])
     # regime 2: high interest rates
-    var_irf_plot(tvar.irf[[2]])
+    irf_plot(tvar.irf[[2]])
 
     # estimate forecast error variance decomposition
     tvar.fevd =
@@ -138,7 +138,7 @@ Vector Auto-Regression (VAR)
     lp.irf = lp_irf(lp)
 
     # plot IRF
-    lp_irf_plot(irf)
+    irf_plot(irf)
 
     # estimate multi-regime IRF
     tlp = 
@@ -152,10 +152,6 @@ Vector Auto-Regression (VAR)
     # estimate multi-regime IRF
     tlp.irf = lp_irf(tlp)
 
-
-
 ---
-## Known problems / wishlist
-Code  
-1. tvar forecasting is restricted to one period ahead   
-2. add confidence intervals to forecast error variance decomposition
+## Contact
+If you should have questions, concerns, or wish to collaborate, please contact [Tyler J. Pike](https://tylerjpike.github.io/)

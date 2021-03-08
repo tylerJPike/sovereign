@@ -1,7 +1,7 @@
 #------------------------------------------
 # Function to estimate LP
 #------------------------------------------
-#' Estimate local projections
+#' Estimate single-regime local projections
 #'
 #' @param data         data.frame, matrix, ts, xts, zoo: Endogenous regressors
 #' @param p            int: lags
@@ -174,7 +174,7 @@ LP = function(
 #------------------------------------------
 # Function to estimate threshold LP
 #------------------------------------------
-#' Estimate threshold local projections
+#' Estimate multi-regime local projections
 #'
 #' @param data     data.frame, matrix, ts, xts, zoo: Endogenous regressors
 #' @param regime   string: name or regime assignment vector in the design matrix (data)
