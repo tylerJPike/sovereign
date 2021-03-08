@@ -1,0 +1,63 @@
+template:
+  params:
+    bootswatch: flatly
+
+development:
+  mode: auto
+
+url: https://tylerjpike.github.io/soveriegn/
+
+reference:
+  - title: Model Estimation
+    desc: Functions used to estimate models
+    contents:
+      - '`VAR`'
+      - '`threshold_VAR`'
+      - '`LP`'
+      - '`threshold_LP`'
+  - title: Model Analysis
+    desc: Functions to anlayze forecasting dynamics
+    contents:
+      - '`var_irf`'
+      - '`threshold_var_irf`'
+      - '`var_fevd`'
+      - '`threshold_var_fevd`'
+      - '`lp_irf`'
+      - '`threshold_lp_irf`'
+  - title: Plots
+    desc: Functions to plot forecast anlysis
+    contents:
+      - '`individual_irf_plot`'
+      - '`irf_plot`'
+  - title: Regime Aassignment
+    desc: Functions to classify state
+    contents:
+      - '`learn_regimes`'
+
+navbar:
+  title: "OOS"
+  type: inverse
+  left:
+    - icon: fa-home
+      href: ./index.html
+    - icon: fa-cog
+      text: Tools
+      menu:
+      - text: Regime Assignment
+      - text: Model Estimation 
+      - text: Mdoel Analysis 
+      - text: ----------
+      - text: Function Documentation
+        href: ./reference/index.html
+    - icon: fa-cogs
+      text: Workflow
+      menu:
+      - text: Getting Started
+      - text: 0. Introduction 
+        href: ./articles/getting_started.html
+      - text: 1. Data
+      - text: 2. Model Estimation 
+      - text: 3. Model Analysis  
+  right:
+    - icon: fa-github fa-lg
+      href: https://github.com/tylerJPike/sovereign
