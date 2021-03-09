@@ -1,3 +1,11 @@
+---
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
 # sovereign: State-Dependent Empirical Analysis  
 
 <!-- badges: start -->
@@ -7,29 +15,37 @@
 [![Build Status](https://travis-ci.org/tylerJPike/sovereign.svg?branch=main)](https://travis-ci.org/tylerJPike/sovereign)  
 <!-- badges: end -->
 
-The sovereign package introduces a set of tools for state-dependent empirical analysis through both VAR- and local projection-based state-dependent forecasts, impulse response functions, and forecast error variance decomposition. 
 
-The sovereign package remains under active development. As a result, **the API is not to be considered stable**, and future updates will most likely deprecate and break current functions. 
+Take the general forecasting equation to be:
 
-## Available Tools  
+$$ \hat{Y_t} = E[Y_t | X_{t-1}] $$
 
-Unsupervised Regime Assignment
-1. random forest  
-2. k-means clustering  
-3. EM 
+where $ \hat{Y_t} $ is the predicted outcome of interest, $E$ is the expectation operator, $X$ is the information set, and $t$ is the time index. Note that the expectation $E$ may be estimated by an loss-minimizing function - parametric or non-parametric. Then, let the process be state-dependent:
 
-Local Projections (LP)
-1. direct projection forecasting  
-1. impulse responses  
+$$ \hat{Y_t} = E[Y_t | X_{t-1}, s_{t-1}] $$
 
-Vector Auto-Regression (VAR)
-1. recursive forecasting 
-2. forecast error variance decomposition
-3. impulse responses with bootstrapped confidence intervals  
+where $s$ is a discrete, that is, mutually exclusive, state of the world. For example, in an economic context, one may consider expansions and recessions as two different states of the world, and in the US, these labels are formally declared by the NBER.  
+
+The sovereign package provides the tools and methods to solves this state-dependent forecasting problem. Using vector auto-regressions or direct projections, a user may create both single- and multi-state time series forecasts, and in turn, analyze the resulting models through impulse response functions and forecast error variance decomposition.  
+
+Available tools and techniques may be reviewed under the **Tools** tab. While vignettes and other extended documentation of the sovereign package’s capabilities may be found under the **Workflow** tab.
 
 ----
 
-## Basic Workflow 
+## Installation 
+
+One may install OOS through the package’s [GitHub](https://github.com/tylerJPike/sovereign) page directly, or via either
+
+    devtools::install_github('tylerJPike/sovereign')
+
+or
+
+    remotes::install_github('tylerJPike/sovereign')
+
+---- 
+
+## Basic Workflow
+
     # load packages
     library(sovereign)         # analysis
     library(dplyr)             # general cleaning

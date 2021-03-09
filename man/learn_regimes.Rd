@@ -4,20 +4,20 @@
 \alias{learn_regimes}
 \title{Assign regimes via unsupervised machine learning methods}
 \usage{
-learn_regimes(data, regime.n = 2, engine = "rf")
+learn_regimes(data, regime.n = NULL, engine = "rf")
 }
 \arguments{
 \item{data}{data.frame, matrix, ts, xts, zoo: Endogenous regressors}
 
-\item{regime.n}{int: number of regimes to estimate (only applies to kmeans)}
+\item{regime.n}{int: number of regimes to estimate (applies to kmeans and EM)}
 
-\item{engine}{string: regime assignment technique ('rf' or 'kmeans')}
+\item{engine}{string: regime assignment technique ('rf', 'kmeans', and EM)}
 }
 \value{
-\code{data} as a data.frame with a regime column assigning rows to mutually exclusive regimes. If engine = 'rf' is used then regime probabilities will be returned as well.
+\code{data} as a data.frame with a regime column assigning rows to mutually exclusive regimes.
 }
 \description{
-Assign regimes via unsupervised machine learning methods
+Regime assignment (clustering) methods available include the \href{https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest}{unsupervised random forest}, \href{https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/kmeans}{k-mean clustering}, and EM via \href{https://www.rdocumentation.org/packages/mclust/versions/5.4.7/topics/Mclust}{Fraley and Raftery Model-based clustering}.
 }
 \examples{
 \dontrun{

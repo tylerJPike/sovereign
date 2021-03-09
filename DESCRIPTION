@@ -25,6 +25,7 @@ Imports:
     lmtest,
     lubridate,     
     magrittr,  
+    mclust,
     purrr,  
     randomForest,
     sandwich,  

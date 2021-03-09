@@ -2,7 +2,7 @@
 % Please edit documentation in R/lp.R
 \name{threshold_LP}
 \alias{threshold_LP}
-\title{Estimate threshold local projections}
+\title{Estimate multi-regime local projections}
 \usage{
 threshold_LP(
   data,
@@ -36,7 +36,7 @@ threshold_LP(
 list object with elements \code{data}, \code{model}, \code{forecasts}, \code{residuals}; if there is more than one forecast horizon estimated, then \code{model}, \code{forecasts}, \code{residuals} will each be a list where each element corresponds to a single horizon
 }
 \description{
-Estimate threshold local projections
+Estimate multi-regime local projections
 }
 \examples{
 \dontrun{

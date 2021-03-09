@@ -4,11 +4,13 @@
 #------------------------------------------
 #' Assign regimes via unsupervised machine learning methods
 #'
-#' @param data                  data.frame, matrix, ts, xts, zoo: Endogenous regressors
-#' @param regime.n              int: number of regimes to estimate (only applies to kmeans)
-#' @param engine                string: regime assignment technique ('rf' or 'kmeans')
+#' Regime assignment (clustering) methods available include the [unsupervised random forest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest), [k-mean clustering](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/kmeans), and EM via [Fraley and Raftery Model-based clustering](https://www.rdocumentation.org/packages/mclust/versions/5.4.7/topics/Mclust).
 #'
-#' @return `data` as a data.frame with a regime column assigning rows to mutually exclusive regimes. If engine = 'rf' is used then regime probabilities will be returned as well.
+#' @param data                  data.frame, matrix, ts, xts, zoo: Endogenous regressors
+#' @param regime.n              int: number of regimes to estimate (applies to kmeans and EM)
+#' @param engine                string: regime assignment technique ('rf', 'kmeans', and EM)
+#'
+#' @return `data` as a data.frame with a regime column assigning rows to mutually exclusive regimes.
 #'
 #' @examples
 #' \dontrun{
@@ -23,16 +25,16 @@
 
 learn_regimes = function(
   data,                        # data.frame, matrix, ts, xts, zoo: Endogenous regressors
-  regime.n = 2,                # int: number of regimes to estimate (only applies to kmeans)
-  engine = 'rf'                # string: regime assignment technique ('rf' or 'kmeans')
+  regime.n = NULL,             # int: number of regimes to estimate (applies to kmeans and EM)
+  engine = 'rf'                # string: regime assignment technique ('rf', 'kmeans', 'EM)
 ){
 
   # function warnings
   if(!is.matrix(data) & !is.data.frame(data)){
     errorCondition('data must be a matrix or data.frame')
   }
-  if(!is.numeric(regime.n) | regime.n %% 1 != 0 | regime.n <= 0){
-    errorCondition('regime.n must be a positive integer')
+  if(!is.null(regime.n) & !is.numeric(regime.n)){
+    errorCondition('regime.n must be a positive integer or NULL')
   }
 
   # cast as data frame if ts, xts, or zoo object
@@ -50,13 +52,20 @@ learn_regimes = function(
     model = randomForest::randomForest(X)
     regime = data.frame(model$votes)
     colnames(regime) = paste0('Prob_regime_',c(1:ncol(regime)))
-    regime$regime = apply(X = regime, MARGIN = 1, which.max)
+    regime = apply(X = regime, MARGIN = 1, which.max)
     regime = data.frame(date = X.date, X, regime)
 
   }else if(engine == 'kmeans'){
 
+    if(is.null(regime.n)){regime.n = 2}
     model = stats::kmeans(X, centers = regime.n)
-    regime = data.frame(date = X.date, X, model$cluster)
+    regime = data.frame(date = X.date, X, regime = model$cluster)
+
+  }else if(engine == 'EM'){
+
+    mclustBIC = mclust::mclustBIC
+    model = mclust::Mclust(X, G = regime.n)
+    regime = data.frame(date = X.date, X, regime = model$classification)
 
   }
 

@@ -3,3 +3,7 @@
 ^codecov\.yml$
 ^\.travis\.yml$
 ^LICENSE\.md$
+^_pkgdown\.yml$
+^docs$
+^index\.md$
+^to-do.md$

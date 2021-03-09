@@ -45,7 +45,7 @@ navbar:
       menu:
       - text: Regime Assignment
       - text: Model Estimation 
-      - text: Mdoel Analysis 
+      - text: Model Analysis 
       - text: ----------
       - text: Function Documentation
         href: ./reference/index.html

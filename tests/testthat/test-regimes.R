@@ -18,11 +18,17 @@ test_that("Regime learning functions", {
  regime.kmeans =
    learn_regimes(
      data = Data,
-     engine = 'kmeans',
-     regime.n = 2
+     engine = 'kmeans'
+   )
+
+ regime.em =
+   learn_regimes(
+     data = Data,
+     engine = 'EM'
    )
 
  expect_true(is.data.frame(regimes.rf))
  expect_true(is.data.frame(regime.kmeans))
+ expect_true(is.data.frame(regime.em))
 
 })

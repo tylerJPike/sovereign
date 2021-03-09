@@ -2,7 +2,7 @@
 % Please edit documentation in R/lp.R
 \name{LP}
 \alias{LP}
-\title{Estimate local projections}
+\title{Estimate single-regime local projections}
 \usage{
 LP(
   data,
@@ -33,7 +33,7 @@ LP(
 list object with elements \code{data}, \code{model}, \code{forecasts}, \code{residuals}; if there is more than one forecast horizon estimated, then \code{model}, \code{forecasts}, \code{residuals} will each be a list where each element corresponds to a single horizon
 }
 \description{
-Estimate local projections
+Estimate single-regime local projections
 }
 \examples{
 \dontrun{
