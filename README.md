@@ -20,12 +20,14 @@ Unsupervised Regime Assignment
 
 Local Projections (LP)
 1. direct projection forecasting  
-1. impulse responses  
+1. impulse responses*  
 
 Vector Auto-Regression (VAR)
 1. recursive forecasting 
-2. forecast error variance decomposition
-3. impulse responses with bootstrapped confidence intervals  
+2. forecast error variance decomposition*
+3. impulse responses*
+
+*charting functions available   
 
 ----
 

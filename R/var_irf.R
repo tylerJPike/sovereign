@@ -298,19 +298,19 @@ threshold_var_irf = function(
   # set data
   residuals = threshold_var$residuals[[1]]
   data = threshold_var$data
-  regime = threshold_var$model[[1]]$regime
-
   p = threshold_var$model[[1]]$p
   freq = threshold_var$model[[1]]$freq
-
+  regime = threshold_var$regime
   regressors = colnames(dplyr::select(data, -date, -regime))
-  regimes = unlist(unique(dplyr::select(data, regime)))
 
   p.lower = CI[1]
   p.upper = CI[2]
 
+  regimes = dplyr::select(data, regime = regime)
+  regimes = unique(regimes$regime)
+
   # estimate impulse responses by regime
-  results = split(regimes, seq_along(regimes)) %>%
+  results = as.list(regimes) %>%
     purrr::map(.f = function(regime.val){
 
       # set regime specific data

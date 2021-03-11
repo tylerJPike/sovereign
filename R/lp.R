@@ -244,15 +244,16 @@ threshold_LP = function(
 
   regimes = unique(Y$regime)
 
+
+  ### estimate coefficients ----------------------
   # iterate by regime
-  regime.output = as.list(regimes) %>%
+  models = as.list(regimes) %>%
     purrr::map(.f = function(regime.val){
 
     # operate by horizon
     outputs = as.list(horizons) %>%
       purrr::map(.f = function(horizon){
 
-        ### estimate coefficients ----------------------
         models = as.list(regressors) %>%
           purrr::map(.f = function(target){
 
@@ -309,74 +310,95 @@ threshold_LP = function(
         # package for return
         model = list(coef = coef, se = se, p = p, freq = freq, horizon = horizon)
 
-        ### estimate forecasts -----------------------
-
-        # set design matrix
-        X = Y %>% dplyr::select(dplyr::contains('.l'))
-
-        # estimate i-step ahead forecast
-        forecast = as.matrix(data.frame(1, X)) %*% as.matrix(t(coef[,-1]))
-        colnames(forecast) = regressors
-
-        # add in dates
-        forecasts =
-          data.frame(
-            date = forecast_date(
-              forecast.date = data$date,
-              horizon = horizon,
-              freq = freq),
-            forecast) %>%
-          dplyr::left_join(dplyr::select(Y, date, regime), by = 'date')
-
-        ### calculate residuals -----------------------
-
-        residuals = data.frame(forecasts)
-        residuals[,c(regressors)] = forecast[,c(regressors)] - data.frame(data)[, c(regressors)]
-
-        forecasts = data.frame(forecasts) %>%
-          dplyr::filter(regime == regime.val)
-
-        residuals = data.frame(residuals) %>%
-          dplyr::filter(regime == regime.val)
-
-        ### return output --------------
-        return(
-          list(
-            model = model,
-            forecasts = forecasts,
-            residuals = residuals
-          )
-        )
+        return(model)
 
       })
 
-    # reorganize output
-    if(length(horizons) > 1){
-      model = purrr::map(outputs, .f = function(X){return(X$model)}); names(model) = paste0('H_',horizons)
-      forecasts = purrr::map(outputs, .f = function(X){return(X$forecasts)}); names(forecasts) = paste0('H_',horizons)
-      residuals = purrr::map(outputs, .f = function(X){return(X$residuals)}); names(residuals) = paste0('H_',horizons)
-    }else{
-      model = purrr::map(outputs, .f = function(X){return(X$model)})[[1]]
-      forecasts = outputs[[1]]$forecasts
-      residuals = outputs[[1]]$residuals
-    }
+      names(outputs) = paste0('H_',horizons)
+      return(outputs)
 
-    regime.info = list(regime.val = regime.val, regime = regime)
+    })
 
-    return(
-      list(
-        model = model,
-        data = data,
-        forecasts = forecasts,
-        residuals = residuals,
-        regime = regime.info
-      )
+    names(models) = paste0('regime_',regimes)
+
+
+  ### estimate forecasts and residuals --------
+  # iterate by regime
+  fr = as.list(horizons) %>%
+    purrr::map(.f = function(horizon){
+
+      # operate by horizon
+      outputs = as.list(regimes) %>%
+        purrr::map(.f = function(regime.val){
+
+          # calculate forecasts
+
+          coef = models[[paste0('regime_', regime.val)]][[paste0('H_',horizon)]]$coef
+
+          X = Y %>% dplyr::select(dplyr::contains('.l'))
+
+
+          forecast = as.matrix(data.frame(1, X)) %*% as.matrix(t(coef[,-1]))
+          colnames(forecast) = regressors
+
+          forecasts =
+            data.frame(
+              forecast.date = forecast_date(
+                forecast.date = Y$date,
+                horizon = horizon-1,
+                freq = freq),
+              forecast,
+              date = Y$date) %>%
+            dplyr::left_join(dplyr::select(Y, date, regime), by = 'date')
+
+          # calculate residuals
+
+          residuals = data.frame(forecasts)
+          residuals[,c(regressors)] = forecast[,c(regressors)] - data.frame(data)[, c(regressors)]
+
+          # return output
+          residuals = residuals %>% dplyr::filter(regime.val == regime)
+          forecasts = forecasts %>% dplyr::filter(regime.val == regime)
+
+          return(
+            list(
+              forecasts = forecasts,
+              residuals = residuals
+            )
+          )
+
+        })
+
+        names(outputs) = paste0('regime_',regimes)
+
+        forecasts = purrr::map(outputs, .f = function(X){return(X$forecasts)}) %>%
+          purrr::reduce( dplyr::bind_rows) %>%
+          dplyr::arrange(date)
+
+        residuals = purrr::map(outputs, .f = function(X){return(X$residuals)})%>%
+          purrr::reduce( dplyr::bind_rows) %>%
+          dplyr::arrange(date)
+
+        return(list(forecasts = forecasts, residuals = residuals))
+
+      })
+
+
+  ### Organize and return output -------
+  forecasts = purrr::map(fr, .f = function(X){return(X$forecasts)})
+  names(forecasts) = paste0('H_',horizons)
+
+  residuals = purrr::map(fr, .f = function(X){return(X$residuals)})
+  names(residuals) = paste0('H_',horizons)
+
+  return(
+    list(
+      models = models,
+      data = data,
+      forecasts = forecasts,
+      residuals = residuals,
+      regime = regime
     )
-
-  })
-
-  names(regime.output) = paste0('regime_',regimes)
-
-  return(regime.output)
+  )
 
 }

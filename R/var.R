@@ -226,6 +226,8 @@ threshold_VAR = function(
     dplyr::group_split(regime) %>%
     purrr::map(.f = function(Y){
 
+      regime.val = unique(Y$regime)
+
       # calculate equation by equation
       models = as.list(regressors) %>%
         purrr::map(.f = function(target){
@@ -260,7 +262,7 @@ threshold_VAR = function(
         tidyr::pivot_wider(values_from = std.error, names_from = term)
 
       # package for return
-      model = list(coef = coef, se = se, p = p, freq = freq, horizon = horizon, regime = regime)
+      model = list(coef = coef, se = se, p = p, freq = freq, horizon = horizon, regime = regime.val)
 
     })
 
@@ -354,8 +356,8 @@ threshold_VAR = function(
       model = models,
       data = data,
       forecasts = forecasts,
-      residuals = residuals
+      residuals = residuals,
+      regime = regime
     )
   )
 }
-

@@ -170,12 +170,16 @@ threshold_var_fevd = function(
 
   # set data
   data = threshold_var$data
-  regime = threshold_var$model[[1]]$regime
+
+  regime = threshold_var$regime
   regimes = unlist(unique(dplyr::select(data, regime)))
+  regimes = dplyr::select(data, regime = regime)
+  regimes = unique(regimes$regime)
+
   regressors = colnames(dplyr::select(data, -date, -regime))
 
   # estimate impulse responses by regime
-  results = split(regimes, seq_along(regimes)) %>%
+  results = as.list(regimes) %>%
     purrr::map(.f = function(regime.val){
 
       # set regime specific data
