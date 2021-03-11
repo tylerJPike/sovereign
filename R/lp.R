@@ -391,6 +391,12 @@ threshold_LP = function(
   residuals = purrr::map(fr, .f = function(X){return(X$residuals)})
   names(residuals) = paste0('H_',horizons)
 
+  if(length(horizons) == 1){
+    models = purrr::map(models, .f = function(X){return(X$H_1)})
+    forecasts = forecasts[[1]]
+    residuals = residuals[[1]]
+  }
+
   return(
     list(
       models = models,

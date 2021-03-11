@@ -54,7 +54,9 @@ test_that("Local projection workflow", {
 
   expect_true(is.list(tlp))
 
-  #tirf = threshold_lp_irf(tlp)
-  #expect_true(is.list(irf))
+  # multi-regime horizon irf
+  tirf = threshold_lp_irf(tlp)
+
+  expect_true(is.list(irf))
 
 })

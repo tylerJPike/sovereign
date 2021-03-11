@@ -5,6 +5,7 @@
 #'
 #' @param lp               LP output
 #' @param CI               numeric vector: c(lower ci bound, upper ci bound)
+#' @param regime           string: indicates regime index column of data
 #'
 #' @return long-form data.frame with one row per target-shock-horizon identifier
 #'
@@ -27,7 +28,8 @@
 
 lp_irf = function(
   lp,                   # LP output
-  CI = c(0.1, 0.9)      # numeric vector: c(lower ci bound, upper ci bound)
+  CI = c(0.1, 0.9),     # numeric vector: c(lower ci bound, upper ci bound)
+  regime = NULL         # string: indicates regime index column of data
 ){
 
   # function warnings
@@ -40,7 +42,7 @@ lp_irf = function(
 
   # set regressors
   regressors = colnames(dplyr::select(data, -date))
-  if(!is.null(lp$regime)){regressors = regressors[regressors != lp$regime$regime]}
+  if(!is.null(regime)){regressors = regressors[regressors != regime]}
   regressors.cols = paste0(regressors, '.l1')
 
   # extract irf by horizon
@@ -49,7 +51,7 @@ lp_irf = function(
 
       # extract coefficients
       coef = horizon$coef %>%
-        dplyr::rename(target= y) %>%
+        dplyr::rename(target = y) %>%
         dplyr::select(-dplyr::contains('Intercept')) %>%
         tidyr::pivot_longer(cols = dplyr::all_of(regressors.cols), names_to = 'shock', values_to = 'coef') %>%
         dplyr::mutate(horizon = horizon$horizon,
@@ -124,15 +126,34 @@ threshold_lp_irf = function(
     errorCondition('CI must be a two element numeric vector bound [0,1]')
   }
 
-  # iterate by regime
-  regime.output = threshold_lp %>%
-    purrr::map(.f = function(lp){
+  # set regime values
+  regime = threshold_lp$regime
+  regimes = threshold_lp$data %>%
+    dplyr::select(regime = regime)
+  regimes = unique(regimes$regime)
 
-      irf  = lp_irf(lp, CI = CI)
+  # iterate by regime
+  regime.output = as.list(regimes) %>%
+    purrr::map(.f = function(regime.val){
+
+      # set information for IRF
+      lp =
+        list(
+          data = threshold_lp$data,
+          model = threshold_lp$models[[paste0('regime_',regime.val)]],
+          regime = threshold_lp$regime
+        )
+
+      # calculate IRFs
+      irf =
+        lp_irf(
+          lp,
+          CI = CI,
+          regime = threshold_lp$regime)
 
     })
 
-  names(regime.output) = names(threshold_lp)
+  names(regime.output) = paste0('regime_',regimes)
 
   return(regime.output)
 

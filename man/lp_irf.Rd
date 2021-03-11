@@ -4,12 +4,14 @@
 \alias{lp_irf}
 \title{Estimate single-regime impulse response functions}
 \usage{
-lp_irf(lp, CI = c(0.1, 0.9))
+lp_irf(lp, CI = c(0.1, 0.9), regime = NULL)
 }
 \arguments{
 \item{lp}{LP output}
 
 \item{CI}{numeric vector: c(lower ci bound, upper ci bound)}
+
+\item{regime}{string: indicates regime index column of data}
 }
 \value{
 long-form data.frame with one row per target-shock-horizon identifier
