@@ -96,6 +96,7 @@ fevd = function(Phi,  Sig, lag = 4)
 #'
 #' @param var              VAR output
 #' @param horizon          int: number of periods
+#' @param scale            boolean: scale variable contribution as percent of total error
 #'
 #' @return long-form data.frame
 #'
@@ -110,7 +111,8 @@ fevd = function(Phi,  Sig, lag = 4)
 
 var_fevd = function(
   var,                   # VAR output
-  horizon = 10           # int: number of periods
+  horizon = 10,          # int: number of periods
+  scale = TRUE           # boolean: scale variable contribution as percent of total error
 ){
 
   # function warnings
@@ -136,6 +138,17 @@ var_fevd = function(
   response$horizon = sort(rep(c(0:horizon), length(regressors)))
   response = response %>% dplyr::arrange(shock, horizon)
   rownames(response) = NULL
+
+  # cast to long-form
+  response = response %>%
+    tidyr::pivot_longer(cols = regressors, names_to = 'response', values_to =  'error')
+
+  # scale responses
+  if(scale == TRUE){
+    response = response %>%
+      dplyr::group_by(response, horizon) %>%
+      dplyr::mutate(error = error/sum(error, na.rm = TRUE))
+  }
 
  return(response)
 

@@ -38,8 +38,14 @@ test_that("VAR workflow", {
   fevd =
     var_fevd(
       var,
-      horizon = 10)
+      horizon = 10,
+      scale = TRUE)
 
   expect_true(is.data.frame(fevd))
+
+  # plot fevd
+  plot.fevd = fevd_plot(fevd)
+
+  expect_true(is.list(plot.all))
 
 })

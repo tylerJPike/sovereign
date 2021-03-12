@@ -4,12 +4,14 @@
 \alias{var_fevd}
 \title{Estimate single-regime forecast error variance decomposition}
 \usage{
-var_fevd(var, horizon = 10)
+var_fevd(var, horizon = 10, scale = TRUE)
 }
 \arguments{
 \item{var}{VAR output}
 
 \item{horizon}{int: number of periods}
+
+\item{scale}{boolean: scale variable contribution as percent of total error}
 }
 \value{
 long-form data.frame

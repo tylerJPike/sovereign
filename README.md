@@ -93,6 +93,9 @@ Vector Auto-Regression (VAR)
             var,
             horizon = 10)
 
+    # plot FEVD
+    fevd_plot(fevd)
+
     #-------------------------------------------
     # multi-regime var
     #-------------------------------------------
@@ -125,8 +128,14 @@ Vector Auto-Regression (VAR)
             tvar,
             horizon = 10)
 
+    # plot IRF
+    # regime 1: low interest rates
+    fevd_plot(tvar.fevd[[1]])
+    # regime 2: high interest rates
+    fevd_plot(tvar.fevd[[2]])
+
     #-------------------------------------------
-    # local projections
+    # single-regime local projections
     #-------------------------------------------
     # estimate single-regime forecasts 
     #  (one or multiple horizons may be estimated)
@@ -141,8 +150,11 @@ Vector Auto-Regression (VAR)
     lp.irf = lp_irf(lp)
 
     # plot IRF
-    irf_plot(irf)
+    irf_plot(lp.irf)
 
+    #-------------------------------------------
+    # multi-regime local projections
+    #-------------------------------------------
     # estimate multi-regime IRF
     tlp = 
         threshold_LP(
@@ -151,9 +163,16 @@ Vector Auto-Regression (VAR)
             p = 1,
             horizon = 1,
             freq = 'month')
-    
+
     # estimate multi-regime IRF
     tlp.irf = lp_irf(tlp)
+
+    # plot IRF
+    # regime 1: low interest rates
+    irf_plot(tlp.irf[[1]])
+    # regime 2: high interest rates
+    irf_plot(tlp.irf[[2]])
+    
 
 ---
 ## Contact

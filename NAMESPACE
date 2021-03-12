@@ -3,6 +3,8 @@
 export("%>%")
 export(LP)
 export(VAR)
+export(fevd_plot)
+export(individual_fevd_plot)
 export(individual_irf_plot)
 export(irf_plot)
 export(learn_regimes)
