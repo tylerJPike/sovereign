@@ -1,9 +1,9 @@
 #------------------------------------------
-# Function to plot IRfs
+# Function to plot FEVDs
 #------------------------------------------
 ### Function to plot individual FEVD plot
 
-#' Plot an individual IRF
+#' Plot an individual FEVD
 #'
 #' @param fevd                  fevd object
 #' @param response.var          string: name of variable to treat as the response
@@ -38,7 +38,7 @@ individual_fevd_plot = function(
   fevd.plot
 }
 
-### function to plot all irfs
+### function to plot all fevd
 #' Plot all FEVDs
 #'
 #' @param fevd       fevd object

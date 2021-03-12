@@ -25,11 +25,17 @@ reference:
       - '`lp_irf`'
       - '`threshold_lp_irf`'
   - title: Plots
-    desc: Functions to plot forecast anlysis
+    desc: Functions to plot forecast analysis
     contents:
+      - '`individual_forecast_plot`'
+      - '`forecast_plot`'
+      - '`individual_error_plot`'
+      - '`error_plot`'  
+      - '`individual_fevd_plot`'
+      - '`fevd_plot`'
       - '`individual_irf_plot`'
       - '`irf_plot`'
-  - title: Regime Aassignment
+  - title: Regime Assignment
     desc: Functions to classify state
     contents:
       - '`learn_regimes`'

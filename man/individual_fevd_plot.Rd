@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_fevd.R
 \name{individual_fevd_plot}
 \alias{individual_fevd_plot}
-\title{Plot an individual IRF}
+\title{Plot an individual FEVD}
 \usage{
 individual_fevd_plot(fevd, response.var, title, ylab)
 }
@@ -19,5 +19,5 @@ individual_fevd_plot(fevd, response.var, title, ylab)
 ggplot2 graph
 }
 \description{
-Plot an individual IRF
+Plot an individual FEVD
 }

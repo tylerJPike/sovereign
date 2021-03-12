@@ -20,6 +20,17 @@ test_that("VAR workflow", {
   expect_true(is.list(var$forecasts))
   expect_true(is.list(var$residuals))
 
+  # plot forecasts
+  plot.forecast =
+    forecast_plot(var$forecasts[[1]])
+
+  expect_true(is.list(plot.forecast))
+
+  plot.errors =
+    error_plot(var$residuals[[1]])
+
+  expect_true(is.list(plot.errors))
+
   # estimate IRF
   irf =
     var_irf(
@@ -30,9 +41,9 @@ test_that("VAR workflow", {
   expect_true(is.data.frame(irf))
 
   # plot IRF
-  plot.all = irf_plot(irf)
+  plot.irf = irf_plot(irf)
 
-  expect_true(is.list(plot.all))
+  expect_true(is.list(plot.irf))
 
   # estimate forecast error variance decomposition
   fevd =
@@ -46,6 +57,6 @@ test_that("VAR workflow", {
   # plot fevd
   plot.fevd = fevd_plot(fevd)
 
-  expect_true(is.list(plot.all))
+  expect_true(is.list(plot.fevd))
 
 })
