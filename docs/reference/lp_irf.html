@@ -95,7 +95,7 @@
   <ul class="dropdown-menu" role="menu">
     <li class="dropdown-header">Regime Assignment</li>
     <li class="dropdown-header">Model Estimation</li>
-    <li class="dropdown-header">Mdoel Analysis</li>
+    <li class="dropdown-header">Model Analysis</li>
     <li class="divider"></li>
     <li>
       <a href=".././reference/index.html">Function Documentation</a>
@@ -150,7 +150,7 @@
     <p>Estimate single-regime impulse response functions</p>
     </div>
 
-    <pre class="usage"><span class='fu'>lp_irf</span><span class='op'>(</span><span class='va'>lp</span>, CI <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.1</span>, <span class='fl'>0.9</span><span class='op'>)</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>lp_irf</span><span class='op'>(</span><span class='va'>lp</span>, CI <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.1</span>, <span class='fl'>0.9</span><span class='op'>)</span>, regime <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -162,6 +162,10 @@
     <tr>
       <th>CI</th>
       <td><p>numeric vector: c(lower ci bound, upper ci bound)</p></td>
+    </tr>
+    <tr>
+      <th>regime</th>
+      <td><p>string: indicates regime index column of data</p></td>
     </tr>
     </table>
 

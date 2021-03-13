@@ -83,23 +83,12 @@
      
   </a>
 </li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+<li>
+  <a href="./reference/index.html">
     <span class="fa fa-cog"></span>
      
     Tools
-     
-    <span class="caret"></span>
   </a>
-  <ul class="dropdown-menu" role="menu">
-    <li class="dropdown-header">Regime Assignment</li>
-    <li class="dropdown-header">Model Estimation</li>
-    <li class="dropdown-header">Mdoel Analysis</li>
-    <li class="divider"></li>
-    <li>
-      <a href="./reference/index.html">Function Documentation</a>
-    </li>
-  </ul>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -151,39 +140,119 @@
 <ol>
 <li>code
 <ol>
-<li>lp fevd<br>
-</li>
-<li>fevd confidence intervals<br>
-</li>
-<li>tvar forecasting is restricted to one period ahead</li>
-<li>parametric regime labeling<br>
+<li>fix forecasting &amp; unify with OOS output</li>
+<li><del>parametric regime labeling</del></li>
+<li><del>Reogranize VAR output</del></li>
+<li>add warning when threshold method is used with only one regime</li>
+<li>add strucchange::breakpoint to regime learning</li>
+<li>add forecast chart</li>
+<li>add threshold chart<br>
 </li>
 </ol>
 </li>
 <li>documentation
 <ol>
-<li>outline models<br>
+<li>document output structure by function (see below)</li>
+<li>include runnable examples by function</li>
+<li>add academic references</li>
+<li>vignette<br>
 </li>
-<li>vignettes/articles
+<li>website articles
 <ol>
-<li>workflow<br>
+<li>regime assignments<br>
 </li>
-<li>models<br>
-</li>
-<li>learning regimes<br>
+<li>model estimation</li>
+<li>model analysis</li>
+</ol>
 </li>
 </ol>
 </li>
-<li>website</li>
+</ol>
+</div>
+<div id="medium-priority" class="section level2">
+<h2 class="hasAnchor">
+<a href="#medium-priority" class="anchor"></a>Medium Priority</h2>
+<ol>
+<li>Code
+<ol>
+<li>Forecasting with expected outcome weighted by prob of state</li>
+<li>Univariate - AR - model<br>
+</li>
+<li>VAR and LP bells and whistles</li>
 </ol>
 </li>
+<li>Documentation</li>
+</ol>
+</div>
+<div id="low-priority" class="section level2">
+<h2 class="hasAnchor">
+<a href="#low-priority" class="anchor"></a>Low Priority</h2>
+<ol>
+<li>Code
+<ol>
+<li>State-dependent ML<br>
+</li>
+</ol>
+</li>
+<li>Documentation</li>
+</ol>
+<p>Notes for documentation: when one horizon is used, then LP output is different</p>
+<hr>
+<p>VAR model</p>
+<ol>
+<li>model</li>
+<li>data</li>
+<li>forecast</li>
+<li>residuals</li>
+</ol>
+<p>VAR irf</p>
+<p>VAR fevd</p>
+<hr>
+<p>tvar model</p>
+<ol>
+<li>model</li>
+<li>data</li>
+<li>regime</li>
+<li>forecast</li>
+<li>residuals</li>
+</ol>
+<p>tvar irf</p>
+<ol>
+<li>regime_1 …<br>
+regime_n</li>
+</ol>
+<p>tvar fevd</p>
+<ol>
+<li>regime_1 …<br>
+regime_n</li>
 </ol>
 <hr>
-</div>
-<div id="known-problems--wishlist" class="section level2">
-<h2 class="hasAnchor">
-<a href="#known-problems--wishlist" class="anchor"></a>Known problems / wishlist</h2>
-<p>Code</p>
+<p>LP model</p>
+<ol>
+<li>model</li>
+<li>data</li>
+<li>forecast</li>
+<li>residuals</li>
+</ol>
+<p>LP irf</p>
+<hr>
+<p>Threshold LP model</p>
+<ol>
+<li>regime_1
+<ol>
+<li>model</li>
+<li>data</li>
+<li>forecast</li>
+<li>residuals</li>
+</ol>
+</li>
+<li>regime_2 …</li>
+</ol>
+<p>tlp irf</p>
+<ol>
+<li>regime_1 …<br>
+regime_n</li>
+</ol>
 </div>
 </div>
 

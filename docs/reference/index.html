@@ -83,23 +83,12 @@
      
   </a>
 </li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+<li>
+  <a href=".././reference/index.html">
     <span class="fa fa-cog"></span>
      
     Tools
-     
-    <span class="caret"></span>
   </a>
-  <ul class="dropdown-menu" role="menu">
-    <li class="dropdown-header">Regime Assignment</li>
-    <li class="dropdown-header">Model Estimation</li>
-    <li class="dropdown-header">Mdoel Analysis</li>
-    <li class="divider"></li>
-    <li>
-      <a href=".././reference/index.html">Function Documentation</a>
-    </li>
-  </ul>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -154,6 +143,25 @@
     <tbody>
       <tr>
         <th colspan="2">
+          <h2 id="section-regime-assignment" class="hasAnchor"><a href="#section-regime-assignment" class="anchor"></a>Regime Assignment</h2>
+          <p class="section-desc"><p>Functions to classify state</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="learn_regimes.html">learn_regimes()</a></code> </p>
+        </td>
+        <td><p>Assign regimes via unsupervised machine learning methods</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
           <h2 id="section-model-estimation" class="hasAnchor"><a href="#section-model-estimation" class="anchor"></a>Model Estimation</h2>
           <p class="section-desc"><p>Functions used to estimate models</p></p>
         </th>
@@ -180,13 +188,13 @@
         <td>
           <p><code><a href="LP.html">LP()</a></code> </p>
         </td>
-        <td><p>Estimate local projections</p></td>
+        <td><p>Estimate single-regime local projections</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="threshold_LP.html">threshold_LP()</a></code> </p>
         </td>
-        <td><p>Estimate threshold local projections</p></td>
+        <td><p>Estimate multi-regime local projections</p></td>
       </tr>
     </tbody><tbody>
       <tr>
@@ -241,7 +249,7 @@
       <tr>
         <th colspan="2">
           <h2 id="section-plots" class="hasAnchor"><a href="#section-plots" class="anchor"></a>Plots</h2>
-          <p class="section-desc"><p>Functions to plot forecast anlysis</p></p>
+          <p class="section-desc"><p>Functions to plot forecast analysis</p></p>
         </th>
       </tr>
       
@@ -252,34 +260,27 @@
       <tr>
         
         <td>
-          <p><code><a href="individual_irf_plot.html">individual_irf_plot()</a></code> </p>
+          <p><code><a href="forecast_plot.html">forecast_plot()</a></code> </p>
         </td>
-        <td><p>Plot an individual IRF</p></td>
+        <td><p>Chart  forecast</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="error_plot.html">error_plot()</a></code> </p>
+        </td>
+        <td><p>Chart residuals</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="fevd_plot.html">fevd_plot()</a></code> </p>
+        </td>
+        <td><p>Plot all FEVDs</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="irf_plot.html">irf_plot()</a></code> </p>
         </td>
         <td><p>Plot all IRFs</p></td>
-      </tr>
-    </tbody><tbody>
-      <tr>
-        <th colspan="2">
-          <h2 id="section-regime-aassignment" class="hasAnchor"><a href="#section-regime-aassignment" class="anchor"></a>Regime Aassignment</h2>
-          <p class="section-desc"><p>Functions to classify state</p></p>
-        </th>
-      </tr>
-      
-      
-    </tbody><tbody>
-      
-      
-      <tr>
-        
-        <td>
-          <p><code><a href="learn_regimes.html">learn_regimes()</a></code> </p>
-        </td>
-        <td><p>Assign regimes via unsupervised machine learning methods</p></td>
       </tr>
     </tbody>
     </table>

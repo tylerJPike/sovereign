@@ -77,6 +77,12 @@ Vector Auto-Regression (VAR)
             horizon = 10,
             freq = 'month')
 
+    # plot forecasts
+    plot_forecast(var$forecasts[[1]])
+
+    # plot residuals
+    plot_errors(var$residuals[[1]])
+
     # estimate IRF
     irf =
         var_irf(

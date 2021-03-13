@@ -14,9 +14,9 @@
 #'
 #' @export
 
-chart_individual_errors = function(
+individual_error_plot = function(
   data,              # data.frame: sovereign residuals object
-  target,            # string: series to plot
+  target,              # string: series to plot
   title = NULL,      # string: chart title
   ylab = NULL,       # string: y-axis label
   freq = NULL,       # string: frequency (acts as sub-title)
@@ -92,7 +92,7 @@ error_plot = function(
     purrr::map(.f = function(x){
 
       chart =
-        chart_individual_errors(
+        individual_error_plot(
           residuals,
           target = x,
           title = x,

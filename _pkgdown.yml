@@ -8,6 +8,10 @@ development:
 url: https://tylerjpike.github.io/soveriegn/
 
 reference:
+  - title: Regime Assignment
+    desc: Functions to classify state
+    contents:
+      - '`learn_regimes`'
   - title: Model Estimation
     desc: Functions used to estimate models
     contents:
@@ -27,18 +31,10 @@ reference:
   - title: Plots
     desc: Functions to plot forecast analysis
     contents:
-      - '`individual_forecast_plot`'
       - '`forecast_plot`'
-      - '`individual_error_plot`'
-      - '`error_plot`'  
-      - '`individual_fevd_plot`'
+      - '`error_plot`'
       - '`fevd_plot`'
-      - '`individual_irf_plot`'
       - '`irf_plot`'
-  - title: Regime Assignment
-    desc: Functions to classify state
-    contents:
-      - '`learn_regimes`'
 
 navbar:
   title: "OOS"
@@ -48,22 +44,16 @@ navbar:
       href: ./index.html
     - icon: fa-cog
       text: Tools
-      menu:
-      - text: Regime Assignment
-      - text: Model Estimation 
-      - text: Model Analysis 
-      - text: ----------
-      - text: Function Documentation
-        href: ./reference/index.html
+      href: ./reference/index.html
     - icon: fa-cogs
       text: Workflow
       menu:
       - text: Getting Started
-      - text: 0. Introduction 
+      - text: 0. Introduction
         href: ./articles/getting_started.html
       - text: 1. Data
-      - text: 2. Model Estimation 
-      - text: 3. Model Analysis  
+      - text: 2. Model Estimation
+      - text: 3. Model Analysis
   right:
     - icon: fa-github fa-lg
       href: https://github.com/tylerJPike/sovereign
