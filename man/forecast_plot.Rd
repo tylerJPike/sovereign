@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_forecasts.R
 \name{forecast_plot}
 \alias{forecast_plot}
-\title{Chart  forecast}
+\title{Chart  forecasts}
 \usage{
 forecast_plot(forecasts, series = NULL, verticle = FALSE)
 }
@@ -17,5 +17,5 @@ forecast_plot(forecasts, series = NULL, verticle = FALSE)
 grid of ggplot2 graphs
 }
 \description{
-Chart  forecast
+Chart  forecasts
 }

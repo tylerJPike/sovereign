@@ -4,12 +4,14 @@
 \alias{threshold_var_fevd}
 \title{Estimate multi-regime forecast error variance decomposition}
 \usage{
-threshold_var_fevd(threshold_var, horizon = 10)
+threshold_var_fevd(threshold_var, horizon = 10, scale = TRUE)
 }
 \arguments{
 \item{threshold_var}{threshold_var output}
 
 \item{horizon}{int: number of periods}
+
+\item{scale}{boolean: scale variable contribution as percent of total error}
 }
 \value{
 list, each regime returns its own long-form data.frame

@@ -134,7 +134,7 @@ LP = function(
 
     ### calculate residuals -----------------------
 
-    residuals = data.frame(forecast)
+    residuals = data.frame(forecasts)
     residuals[,c(regressors)] = forecast[,c(regressors)] - data.frame(data)[, c(regressors)]
 
     ### return output --------------
@@ -349,7 +349,7 @@ threshold_LP = function(
                 freq = freq),
               forecast,
               date = Y$date) %>%
-            dplyr::left_join(dplyr::select(Y, date, regime), by = 'date')
+            dplyr::left_join(dplyr::select(Y, date, model.regime = regime), by = 'date')
 
           # calculate residuals
 
@@ -357,8 +357,12 @@ threshold_LP = function(
           residuals[,c(regressors)] = forecast[,c(regressors)] - data.frame(data)[, c(regressors)]
 
           # return output
-          residuals = residuals %>% dplyr::filter(regime.val == regime)
-          forecasts = forecasts %>% dplyr::filter(regime.val == regime)
+          residuals = residuals %>%
+            dplyr::filter(regime.val == model.regime) %>%
+            dplyr::select(-forecast.date)
+          forecasts = forecasts %>%
+            dplyr::filter(regime.val == model.regime) %>%
+            dplyr::select(-forecast.date)
 
           return(
             list(

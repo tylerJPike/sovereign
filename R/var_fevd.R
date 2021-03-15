@@ -158,6 +158,7 @@ var_fevd = function(
 #'
 #' @param threshold_var    threshold_var output
 #' @param horizon          int: number of periods
+#' @param scale            boolean: scale variable contribution as percent of total error
 #'
 #' @return list, each regime returns its own long-form data.frame
 #'
@@ -173,7 +174,8 @@ var_fevd = function(
 # uses the fevd function found in var_fevd.R
 threshold_var_fevd = function(
   threshold_var,         # threshold_VAR output
-  horizon = 10           # int: number of periods
+  horizon = 10,          # int: number of periods
+  scale = TRUE           # boolean: scale variable contribution as percent of total error
 ){
 
   # function warnings
@@ -197,10 +199,15 @@ threshold_var_fevd = function(
 
       # set regime specific data
       coef = threshold_var$model[[paste0('regime_',regime.val)]]$coef
-      residuals = threshold_var$residuals[[1]] %>% dplyr::filter(regime == regime.val)
+      residuals = threshold_var$residuals[[1]] %>%
+      # %>%
+      #   dplyr::left_join(
+      #     dplyr::select(data, regime = regime, date),
+      #     by = 'date') %>%
+        dplyr::filter(model.regime == regime.val)
 
       # error covariance matrix
-      cov.matrix = var(na.omit(dplyr::select(residuals, -date, -regime)))
+      cov.matrix = var(na.omit(dplyr::select(residuals, -date, -model.regime)))
 
       # forecast error variance decomposition
       errors = fevd(Phi = coef[,-c(1,2)],  Sig = cov.matrix, lag = horizon)
@@ -211,6 +218,17 @@ threshold_var_fevd = function(
       response$horizon = sort(rep(c(0:horizon), length(regressors)))
       response = response %>% dplyr::arrange(shock, horizon)
       rownames(response) = NULL
+
+      # cast to long-form
+      response = response %>%
+        tidyr::pivot_longer(cols = regressors, names_to = 'response', values_to =  'error')
+
+      # scale responses
+      if(scale == TRUE){
+        response = response %>%
+          dplyr::group_by(response, horizon) %>%
+          dplyr::mutate(error = error/sum(error, na.rm = TRUE))
+      }
 
       return(response)
 

@@ -10,19 +10,19 @@ test_that("Regime learning functions", {
 
  # run ml
  regimes.rf =
-  learn_regimes(
+  regimes(
     data = Data,
     engine = 'rf'
   )
 
  regime.kmeans =
-   learn_regimes(
+   regimes(
      data = Data,
      engine = 'kmeans'
    )
 
  regime.em =
-   learn_regimes(
+   regimes(
      data = Data,
      engine = 'EM'
    )

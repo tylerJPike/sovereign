@@ -66,7 +66,7 @@ fevd_plot = function(
         individual_fevd_plot(
           fevd,
           response.var = x,
-          title = x,
+          title = paste0(x,' forecast error'),
           ylab = '')
 
       return(chart)

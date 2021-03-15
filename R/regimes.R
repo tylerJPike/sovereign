@@ -15,7 +15,7 @@
 #' @examples
 #' \dontrun{
 #'
-#'   learn_regimes(
+#'   regimes(
 #'      data = Data,
 #'      regime.n = 3,
 #'      engine = 'kmeans')
@@ -23,7 +23,7 @@
 #'
 #' @export
 
-learn_regimes = function(
+regimes = function(
   data,                        # data.frame, matrix, ts, xts, zoo: Endogenous regressors
   regime.n = NULL,             # int: number of regimes to estimate (applies to kmeans and EM)
   engine = 'rf'                # string: regime assignment technique ('rf', 'kmeans', 'EM)

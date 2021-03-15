@@ -125,6 +125,7 @@ VAR = function(
     # store forecasts
     forecasts[[paste0('H_',i)]] = forecast
     forecast_prev = forecast
+
   }
 
   ### calculate residuals -----------------------
@@ -138,6 +139,7 @@ VAR = function(
       return(error)
 
     })
+
 
 
   ### return output --------------
@@ -276,7 +278,8 @@ threshold_VAR = function(
     purrr::map(.f = function(Y){
 
       # set appropriate model for the regime
-      model = models[[paste0('regime_',unique(Y$regime))]]
+      regime.val = unique(Y$regime)
+      model = models[[paste0('regime_', regime.val)]]
       coef = model$coef
 
       forecasts = list()
@@ -306,7 +309,8 @@ threshold_VAR = function(
           )
 
         # store forecasts
-        forecasts[[paste0('H_',i)]] = forecast
+        forecasts[[paste0('H_',i)]] =
+          data.frame(forecast, model.regime = regime.val)
         forecast_prev = forecast
       }
 
@@ -326,10 +330,11 @@ threshold_VAR = function(
         })
 
       r = purrr::reduce(r, dplyr::bind_rows) %>%
-        dplyr::arrange(date) %>%
-        dplyr::left_join(
-          dplyr::select(Y, regime, date),
-          by = 'date')
+        dplyr::arrange(date)
+      # %>%
+      #   dplyr::left_join(
+      #     dplyr::select(Y, regime, date),
+      #     by = 'date')
 
     })
 

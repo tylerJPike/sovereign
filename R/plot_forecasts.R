@@ -84,6 +84,10 @@ forecast_plot = function(
   verticle = FALSE       # boolean: If true then stack all plots into one column
 ){
 
+  # remove regime information if present
+  forecasts = forecasts %>%
+    dplyr::select(-dplyr::contains('model.regime'))
+
   # set series
   if(is.null(series)){series = colnames(dplyr::select(forecasts, -date))}
 

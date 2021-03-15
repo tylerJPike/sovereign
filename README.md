@@ -61,7 +61,7 @@ Vector Auto-Regression (VAR)
     # assign regimes based on unsurpervised kmeans
     #  (will not be used further)
     regimes = 
-        learn_regimes(
+        regimes(
             data = Data, 
             regime.n = 3, 
             engine = 'kmeans')
@@ -81,7 +81,7 @@ Vector Auto-Regression (VAR)
     plot_forecast(var$forecasts[[1]])
 
     # plot residuals
-    plot_errors(var$residuals[[1]])
+    error_plot(var$residuals[[1]])
 
     # estimate IRF
     irf =
@@ -134,7 +134,7 @@ Vector Auto-Regression (VAR)
             tvar,
             horizon = 10)
 
-    # plot IRF
+    # plot FEVD
     # regime 1: low interest rates
     fevd_plot(tvar.fevd[[1]])
     # regime 2: high interest rates

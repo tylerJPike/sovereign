@@ -296,12 +296,17 @@ threshold_var_irf = function(
   }
 
   # set data
-  residuals = threshold_var$residuals[[1]]
   data = threshold_var$data
   p = threshold_var$model[[1]]$p
   freq = threshold_var$model[[1]]$freq
   regime = threshold_var$regime
   regressors = colnames(dplyr::select(data, -date, -regime))
+
+  residuals = threshold_var$residuals[[1]]
+  # %>%
+  #   dplyr::left_join(
+  #     dplyr::select(data, model.regime = regime, date),
+  #     by = 'date')
 
   p.lower = CI[1]
   p.upper = CI[2]
@@ -316,11 +321,12 @@ threshold_var_irf = function(
       # set regime specific data
       coef = threshold_var$model[[paste0('regime_',regime.val)]]$coef
       residuals = residuals %>%
-        dplyr::filter(regime == regime.val)
+        dplyr::filter(model.regime == regime.val)
       is = data %>%
-        dplyr::inner_join(dplyr::select(residuals, date), by = 'date')
+        dplyr::inner_join(dplyr::select(residuals, date), by = 'date') %>%
+        dplyr::rename(regime = regime)
       residuals = residuals %>%
-        dplyr::select(-date, -regime)
+        dplyr::select(-date, -model.regime)
 
       ### calculate impulse responses --------------
       # estimate error-covariance matrix
@@ -357,13 +363,13 @@ threshold_var_irf = function(
             dplyr::select(-regime) %>%
             n.lag(lags = p) %>%
             dplyr::select(dplyr::contains('.l')) %>%
-            dplyr::slice(p+1:nrow(U))
+            dplyr::slice(p:nrow(U))
 
           # estimate time series
           Y = as.matrix(data.frame(1, X)) %*% as.matrix(t(coef[,-1]))
           Y = Y + U
           colnames(Y) = regressors
-          Y = data.frame(Y, date = is$date)
+          Y = data.frame(Y, date = is$date[1:nrow(Y)])
 
           # return synthetic observations
           return(Y)
