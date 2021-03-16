@@ -43,23 +43,12 @@
      
   </a>
 </li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+<li>
+  <a href=".././reference/index.html">
     <span class="fa fa-cog"></span>
      
     Tools
-     
-    <span class="caret"></span>
   </a>
-  <ul class="dropdown-menu" role="menu">
-<li class="dropdown-header">Regime Assignment</li>
-    <li class="dropdown-header">Model Estimation</li>
-    <li class="dropdown-header">Mdoel Analysis</li>
-    <li class="divider">
-    <li>
-      <a href=".././reference/index.html">Function Documentation</a>
-    </li>
-  </ul>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -70,13 +59,12 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-<li class="dropdown-header">Getting Started</li>
-    <li>
-      <a href=".././articles/getting_started.html">0. Introduction</a>
+<li>
+      <a href=".././articles/introduction.html">Introduction</a>
     </li>
-    <li class="dropdown-header">1. Data</li>
-    <li class="dropdown-header">2. Model Estimation</li>
-    <li class="dropdown-header">3. Model Analysis</li>
+    <li>
+      <a href=".././articles/getting_started.html">Getting Started</a>
+    </li>
   </ul>
 </li>
       </ul>
@@ -102,6 +90,7 @@
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Sovereign, getting started</h1>
+                        <h4 class="author">Tyler J. Pike</h4>
             
       
       <small class="dont-index">Source: <a href="https://github.com/tylerJPike/sovereign/blob/master/vignettes/getting_started.Rmd"><code>vignettes/getting_started.Rmd</code></a></small>
@@ -111,139 +100,298 @@
 
     
     
-<p>As the sovereign package is under active development, its <strong>API is not guaranteed to be stable</strong>. As a result, this introductory vignette will remain fairly barebones for the time being, and is meant to simply and succinctly demonstrate the most up-to-date workflow supported by the sovereign package.</p>
+<p>It is well understood that almost every economic system - and more broadly, any system inherently driven by humans - is state-dependent. The sovereign package introduces a set of tools for conducting state-dependent empirical analysis, namely state-dependent forecasting, impulse response analysis, and forecast error variance decomposition. This introduction will walk through an analysis of a small macroeconomic system, including US inflation, output gap, and monetary policy. While considering two state-dependent regimes, the first based on NBER recessions, the second based on the sovereign package’s own estimation.</p>
+<p>The vignette will proceed by 1) preparing the data, both covariates and regimes, 2) estimating forecasts, impulse responses, and forecast error variance decomposition via a VAR and a threshold VAR (that is, a state-dependent VAR), 3) estimating forecasts and impulse responses via local projections and threshold local projections, and 4) concluding.</p>
 <div id="environment" class="section level2">
 <h2 class="hasAnchor">
 <a href="#environment" class="anchor"></a>0. Environment</h2>
+<p>Before beginning any analysis, we will explicitly load the sovereign package. This action will import all of the sovereign functions, as well as the pipe operator. Since sovereign will now be loaded into the global environment, we do not need to use declare functions from its namespace. However, we will make use of the tidyverse extensively in this vignette, so but we will explicitly call all functions from their respective packages, to ensure there is no confusion regarding the provenance of a given function.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># load packages</span>
-<span class="fu"><a href="https://rdrr.io/r/base/message.html">suppressPackageStartupMessages</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tylerJPike/sovereign">sovereign</a></span><span class="op">)</span><span class="op">)</span>     <span class="co"># analysis</span>
-<span class="fu"><a href="https://rdrr.io/r/base/message.html">suppressPackageStartupMessages</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://www.quantmod.com">quantmod</a></span><span class="op">)</span><span class="op">)</span>      <span class="co"># FRED api</span>
-<span class="fu"><a href="https://rdrr.io/r/base/message.html">suppressPackageStartupMessages</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span><span class="op">)</span>         <span class="co"># general cleaning</span>
-<span class="fu"><a href="https://rdrr.io/r/base/message.html">suppressPackageStartupMessages</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://lubridate.tidyverse.org">lubridate</a></span><span class="op">)</span><span class="op">)</span>     <span class="co"># date functions</span></code></pre></div>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tylerJPike/sovereign">sovereign</a></span><span class="op">)</span></code></pre></div>
 </div>
-<div id="create-data" class="section level2">
+<div id="data" class="section level2">
 <h2 class="hasAnchor">
-<a href="#create-data" class="anchor"></a>1. Create Data</h2>
+<a href="#data" class="anchor"></a>1. Data</h2>
+<p>First, we need to download and prepare the data. We are going to study a three variable macro-system, using US inflation (p), output gap (y), and federal funds rate (ff). Further, we are going to study these three variables through two economic states: one given to us from an outside authority, <a href="https://www.nber.org/research/business-cycle-dating">NBER dated recessions</a>, and one we will estimate ourselves using the k-means unsupervised machine learning technique.</p>
+<div id="var-covariates" class="section level3">
+<h3 class="hasAnchor">
+<a href="#var-covariates" class="anchor"></a>1.1 VAR Covariates</h3>
+<p>To create our small macro-system we need to first pull four variables from FRED using the quantmod package:<br>
+1.<a href="https://fred.stlouisfed.org/series/GDPC1">Real Gross Domestic Product</a><br>
+2.<a href="https://fred.stlouisfed.org/series/GDPOT">Real Potential Gross Domestic Product</a><br>
+3.<a href="https://fred.stlouisfed.org/series/GDPDEF">Gross Domestic Product: Implicit Price Deflator</a><br>
+4.<a href="https://fred.stlouisfed.org/series/GDPDEF">Effective Federal Funds Rate</a></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># pull and prepare data from FRED</span>
-<span class="fu">quantmod</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/quantmod/man/getSymbols.FRED.html">getSymbols.FRED</a></span><span class="op">(</span>
-    <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'UNRATE'</span>,<span class="st">'INDPRO'</span>,<span class="st">'GS10'</span><span class="op">)</span>, 
-    env <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/environment.html">globalenv</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
-<span class="co">#&gt; [1] "UNRATE" "INDPRO" "GS10"</span>
-
-<span class="va">Data</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">UNRATE</span>, <span class="va">INDPRO</span>, <span class="va">GS10</span><span class="op">)</span>
-
-<span class="va">Data</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="va">Data</span>, date <span class="op">=</span> <span class="fu">zoo</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/zoo/man/index.html">index</a></span><span class="op">(</span><span class="va">Data</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
-    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="fu">lubridate</span><span class="fu">::</span><span class="fu"><a href="http://lubridate.tidyverse.org/reference/year.html">year</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="fl">1990</span><span class="op">)</span> <span class="op">%&gt;%</span> 
-    <span class="fu"><a href="https://rdrr.io/r/stats/na.fail.html">na.omit</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
-</div>
-<div id="assign-regimes" class="section level2">
-<h2 class="hasAnchor">
-<a href="#assign-regimes" class="anchor"></a>2. Assign Regimes</h2>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R">
-<span class="co"># create a regime explicitly   </span>
-<span class="va">Data.threshold</span> <span class="op">=</span> <span class="va">Data</span> <span class="op">%&gt;%</span>
-    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>mp <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/if_else.html">if_else</a></span><span class="op">(</span><span class="va">GS10</span> <span class="op">&gt;</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="va">GS10</span><span class="op">)</span>, <span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span>
-
-<span class="co"># assign regimes based on unsurpervised kmeans</span>
-<span class="co">#  (will not be used further)</span>
-<span class="va">regimes</span> <span class="op">=</span> 
-    <span class="fu"><a href="../reference/learn_regimes.html">learn_regimes</a></span><span class="op">(</span>
-        data <span class="op">=</span> <span class="va">Data</span>, 
-        regime.n <span class="op">=</span> <span class="fl">3</span>, 
-        engine <span class="op">=</span> <span class="st">'kmeans'</span><span class="op">)</span></code></pre></div>
-</div>
-<div id="single-regime-analaysis" class="section level2">
-<h2 class="hasAnchor">
-<a href="#single-regime-analaysis" class="anchor"></a>3. Single-Regime Analaysis</h2>
+<code class="sourceCode R"><span class="co"># pull data from FRED </span>
+<span class="fu">quantmod</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/quantmod/man/getSymbols.FRED.html">getSymbols.FRED</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'GDPC1'</span>,<span class="st">'GDPPOT'</span>,<span class="st">'GDPDEF'</span>,<span class="st">'FEDFUNDS'</span><span class="op">)</span>, env <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/environment.html">globalenv</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<pre><code>## [1] "GDPC1"    "GDPPOT"   "GDPDEF"   "FEDFUNDS"</code></pre>
+<p>We then use these four variables to create the quarterly ouptut gap, inflation, and federal funds rate.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R">
-<span class="co">#------------------------------------------</span>
-<span class="co"># single-regime var</span>
-<span class="co">#------------------------------------------</span>
-<span class="co"># estimate VAR</span>
+<code class="sourceCode R"><span class="co"># real output gap and inflation</span>
+<span class="va">Y</span> <span class="op">=</span> 
+  <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/reduce.html">reduce</a></span><span class="op">(</span>
+    <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
+      <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="va">GDPC1</span>, date <span class="op">=</span> <span class="fu">zoo</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/zoo/man/index.html">index</a></span><span class="op">(</span><span class="va">GDPC1</span><span class="op">)</span><span class="op">)</span>,
+      <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="va">GDPPOT</span>, date <span class="op">=</span> <span class="fu">zoo</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/zoo/man/index.html">index</a></span><span class="op">(</span><span class="va">GDPPOT</span><span class="op">)</span><span class="op">)</span>,
+      <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="va">GDPDEF</span>, date <span class="op">=</span> <span class="fu">zoo</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/zoo/man/index.html">index</a></span><span class="op">(</span><span class="va">GDPDEF</span><span class="op">)</span><span class="op">)</span>
+    <span class="op">)</span>,
+    <span class="fu">dplyr</span><span class="fu">::</span><span class="va"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html">inner_join</a></span>, by <span class="op">=</span> <span class="st">'date'</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>
+    y <span class="op">=</span> <span class="fl">100</span><span class="op">*</span><span class="op">(</span><span class="op">(</span><span class="va">GDPC1</span><span class="op">-</span><span class="va">GDPPOT</span><span class="op">)</span><span class="op">/</span><span class="va">GDPPOT</span><span class="op">)</span>,
+    p <span class="op">=</span> <span class="fl">400</span><span class="op">*</span><span class="op">(</span><span class="va">GDPDEF</span> <span class="op">-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/lead-lag.html">lag</a></span><span class="op">(</span><span class="va">GDPDEF</span><span class="op">)</span><span class="op">)</span><span class="op">/</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/lead-lag.html">lag</a></span><span class="op">(</span><span class="va">GDPDEF</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">y</span>,<span class="va">p</span><span class="op">)</span>
+
+<span class="co"># federal funds rate</span>
+<span class="va">I</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="va">FEDFUNDS</span>, date <span class="op">=</span> <span class="fu">zoo</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/zoo/man/index.html">index</a></span><span class="op">(</span><span class="va">FEDFUNDS</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fu">lubridate</span><span class="fu">::</span><span class="fu"><a href="http://lubridate.tidyverse.org/reference/year.html">year</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span>, q <span class="op">=</span> <span class="fu">lubridate</span><span class="fu">::</span><span class="fu"><a href="http://lubridate.tidyverse.org/reference/quarter.html">quarter</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarize</a></span><span class="op">(</span>
+    date <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span>,
+    ff <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">FEDFUNDS</span>, na.rm <span class="op">=</span> <span class="cn">T</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">ff</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="op">)</span>
+  
+<span class="co"># merge data</span>
+<span class="va">Data</span> <span class="op">=</span> 
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html">inner_join</a></span><span class="op">(</span><span class="va">Y</span>, <span class="va">I</span>, by <span class="op">=</span> <span class="st">'date'</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://rdrr.io/r/stats/na.fail.html">na.omit</a></span><span class="op">(</span><span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">Data</span><span class="op">)</span></code></pre></div>
+<pre><code>##         date          y         p        ff
+## 1 1954-07-01 -1.4139012 0.5221215 1.0300000
+## 2 1954-10-01 -0.1175714 1.0977702 0.9866667
+## 3 1955-01-01  2.1123368 1.8611016 1.3433333
+## 4 1955-04-01  3.1059483 1.6617857 1.5000000
+## 5 1955-07-01  3.8394130 2.7943570 1.9400000
+## 6 1955-10-01  3.7837596 3.9873375 2.3566667</code></pre>
+<p>Here one will notice that we have produced a Data.frame with a column named <em>date</em>. This specific data construction is one of four data types accepted by sovereign functions. The other three accepted data types include <code>ts</code>, <code>xts</code>, and <code>zoo</code> time series objects.</p>
+</div>
+<div id="regimes" class="section level3">
+<h3 class="hasAnchor">
+<a href="#regimes" class="anchor"></a>1.2. Regimes</h3>
+<p>Now that we have created out three covariates of interest, we need to create our desired economic regimes. First, we will use an exogenously determined regime, NBER-dated recessions and expansions.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># pull NBER recessions from FRED </span>
+<span class="fu">quantmod</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/quantmod/man/getSymbols.FRED.html">getSymbols.FRED</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'USRECQ'</span><span class="op">)</span>, env <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/environment.html">globalenv</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<pre><code>## [1] "USRECQ"</code></pre>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># merge recessions into Data </span>
+<span class="va">Data.rec</span> <span class="op">=</span> <span class="va">Data</span> <span class="op">%&gt;%</span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html">left_join</a></span><span class="op">(</span>
+    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="va">USRECQ</span>, date <span class="op">=</span> <span class="fu">zoo</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/zoo/man/index.html">index</a></span><span class="op">(</span><span class="va">USRECQ</span><span class="op">)</span><span class="op">)</span>,
+    by <span class="op">=</span> <span class="st">'date'</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html">rename</a></span><span class="op">(</span>cycle_position <span class="op">=</span> <span class="va">USRECQ</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>cycle_position <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_when.html">case_when</a></span><span class="op">(</span><span class="va">cycle_position</span> <span class="op">==</span> <span class="fl">0</span> <span class="op">~</span> <span class="st">'expansion'</span>,
+                                                  <span class="va">cycle_position</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">~</span> <span class="st">'recession'</span><span class="op">)</span><span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">Data.rec</span><span class="op">)</span></code></pre></div>
+<pre><code>##         date          y         p        ff cycle_position
+## 1 1954-07-01 -1.4139012 0.5221215 1.0300000      expansion
+## 2 1954-10-01 -0.1175714 1.0977702 0.9866667      expansion
+## 3 1955-01-01  2.1123368 1.8611016 1.3433333      expansion
+## 4 1955-04-01  3.1059483 1.6617857 1.5000000      expansion
+## 5 1955-07-01  3.8394130 2.7943570 1.9400000      expansion
+## 6 1955-10-01  3.7837596 3.9873375 2.3566667      expansion</code></pre>
+<p>While a user may name their regime column anything they would like, for exposition we explicitly name our regime column, <em>cycle_position</em> (referring to the business cycle), and gave clear names to our economic states. We can do this because sovereign will ask us to name declare which column designates our regimes and will then assume that each unique value (numeric or string) in that column is a unique regime.</p>
+<p>Second, we will assign two regimes via the k-means clustering algorithm.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># let sovereign determine economic states via k-means clustering</span>
+<span class="va">Data.kmeans</span> <span class="op">=</span> 
+  <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/regimes.html">regimes</a></span><span class="op">(</span>
+    data <span class="op">=</span> <span class="va">Data</span>,
+    regime.n <span class="op">=</span> <span class="fl">2</span>,
+    engine <span class="op">=</span> <span class="st">'kmeans'</span><span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">Data.kmeans</span><span class="op">)</span></code></pre></div>
+<pre><code>##         date          y         p        ff regime
+## 1 1954-07-01 -1.4139012 0.5221215 1.0300000      2
+## 2 1954-10-01 -0.1175714 1.0977702 0.9866667      2
+## 3 1955-01-01  2.1123368 1.8611016 1.3433333      2
+## 4 1955-04-01  3.1059483 1.6617857 1.5000000      2
+## 5 1955-07-01  3.8394130 2.7943570 1.9400000      2
+## 6 1955-10-01  3.7837596 3.9873375 2.3566667      2</code></pre>
+<p>Here we have used sovereign to classify each observation by using the k-means clustering algorithm. One will note that the output of the <code>regime</code> function is the input matrix, Data, concatenated with a new <em>regime</em> column with two unique numeric values (i.e. two mutually exclusive regimes).</p>
+<p>We now have our small set of macroeconomic variables, as well as two different sets of economic regimes to introduce state-dependence.</p>
+</div>
+</div>
+<div id="var-analysis" class="section level2">
+<h2 class="hasAnchor">
+<a href="#var-analysis" class="anchor"></a>2. VAR analysis</h2>
+<p>The first set of analysis we will conduct is a standard single regime VAR, followed by a state-dependent analysis based on NBER dated recessions.</p>
+<div id="single-regime-var" class="section level3">
+<h3 class="hasAnchor">
+<a href="#single-regime-var" class="anchor"></a>2.1 Single-regime VAR</h3>
+<p>First we estimate the standard VAR over our macro-system and then visualize the resulting one-step ahead forecasts (left panel) and errors (right panel).</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># estimate VAR</span>
 <span class="va">var</span> <span class="op">=</span>
-    <span class="fu"><a href="../reference/VAR.html">VAR</a></span><span class="op">(</span>
+    <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/VAR.html">VAR</a></span><span class="op">(</span>
         data <span class="op">=</span> <span class="va">Data</span>,
         p <span class="op">=</span> <span class="fl">1</span>,
         horizon <span class="op">=</span> <span class="fl">10</span>,
-        freq <span class="op">=</span> <span class="st">'month'</span><span class="op">)</span>
+        freq <span class="op">=</span> <span class="st">'quarter'</span><span class="op">)</span>
 
-<span class="co"># estimate IRF</span>
+<span class="co"># plot forecasting output, one-period ahead horizon</span>
+<span class="co"># plot forecasts</span>
+<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_forecast.html">plot_forecast</a></span><span class="op">(</span><span class="va">var</span><span class="op">$</span><span class="va">forecasts</span><span class="op">[[</span><span class="st">'H_1'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
+<span class="co"># plot residuals</span>
+<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_error.html">plot_error</a></span><span class="op">(</span><span class="va">var</span><span class="op">$</span><span class="va">residuals</span><span class="op">[[</span><span class="st">'H_1'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></code></pre></div>
+<p><img src="getting_started_files/figure-html/unnamed-chunk-6-1.png" width="50%"><img src="getting_started_files/figure-html/unnamed-chunk-6-2.png" width="50%"></p>
+<p>Second we estimate the associate impulse response functions, bootstrapped confidence intervals, and plot them. Additionally, here we will note that all sovereign plots are based on ggplot2, and the underlying plot objects are the return values for any sovereign plotting function.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># estimate IRF</span>
 <span class="va">irf</span> <span class="op">=</span>
-    <span class="fu"><a href="../reference/var_irf.html">var_irf</a></span><span class="op">(</span>
+    <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/var_irf.html">var_irf</a></span><span class="op">(</span>
         <span class="va">var</span>,
         bootstraps.num <span class="op">=</span> <span class="fl">10</span>,
         CI <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.05</span>,<span class="fl">0.95</span><span class="op">)</span><span class="op">)</span>
 
-<span class="co"># estimate forecast error variance decomposition</span>
+<span class="co"># plot IRF</span>
+<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_irf.html">plot_irf</a></span><span class="op">(</span><span class="va">irf</span><span class="op">)</span></code></pre></div>
+<p><img src="getting_started_files/figure-html/unnamed-chunk-7-1.png" width="700" style="display: block; margin: auto;"></p>
+<p>Lastly, we estimate the forecast error variance decomposition and plot the system of decomposition.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># estimate forecast error variance decomposition</span>
 <span class="va">fevd</span> <span class="op">=</span>
-    <span class="fu"><a href="../reference/var_fevd.html">var_fevd</a></span><span class="op">(</span>
+    <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/var_fevd.html">var_fevd</a></span><span class="op">(</span>
         <span class="va">var</span>,
         horizon <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>
 
-<span class="co">#------------------------------------------</span>
-<span class="co"># single-regime local projection</span>
-<span class="co">#------------------------------------------</span>
-<span class="co"># estimate single-regime forecasts </span>
-<span class="co">#  (one or multiple horizons may be estimated)</span>
-<span class="va">lp</span> <span class="op">=</span> 
-    <span class="fu"><a href="../reference/LP.html">LP</a></span><span class="op">(</span>
-      data <span class="op">=</span> <span class="va">Data</span>,
-      p <span class="op">=</span> <span class="fl">1</span>,
-      horizon <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span>,
-      freq <span class="op">=</span> <span class="st">'month'</span><span class="op">)</span>
-
-<span class="co"># estimate single-regime IRF</span>
-<span class="va">lp.irf</span> <span class="op">=</span> <span class="fu"><a href="../reference/lp_irf.html">lp_irf</a></span><span class="op">(</span><span class="va">lp</span><span class="op">)</span></code></pre></div>
+<span class="co"># plot FEVD</span>
+<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_fevd.html">plot_fevd</a></span><span class="op">(</span><span class="va">fevd</span><span class="op">)</span></code></pre></div>
+<p><img src="getting_started_files/figure-html/unnamed-chunk-8-1.png" width="700" style="display: block; margin: auto;"></p>
 </div>
-<div id="multi-regime-analysis" class="section level2">
-<h2 class="hasAnchor">
-<a href="#multi-regime-analysis" class="anchor"></a>4. Multi-Regime Analysis</h2>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R">
-<span class="co">#-------------------------------------------</span>
-<span class="co"># multi-regime var</span>
-<span class="co">#------------------------------------------</span>
-<span class="co"># estimate multi-regime VAR</span>
+<div id="multi-regime-var" class="section level3">
+<h3 class="hasAnchor">
+<a href="#multi-regime-var" class="anchor"></a>2.1 Multi-regime VAR</h3>
+<p>We next mirror the analysis conducted with the single-regime VAR, but acknowledging the two different phases to the business cycle: expansions and recessions.</p>
+<p>First we estimate the threshold VAR, resulting in an expectation function with different parameters based on the conditioning state. That is, we will estimate one VAR per regime, and package these discrete models as one <code>threshold_VAR</code> object (list, not a true S3 object).</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># estimate multi-regime VAR</span>
 <span class="va">tvar</span> <span class="op">=</span>
-    <span class="fu"><a href="../reference/threshold_VAR.html">threshold_VAR</a></span><span class="op">(</span>
-        data <span class="op">=</span> <span class="va">Data.threshold</span>,
-        regime <span class="op">=</span> <span class="st">'mp'</span>,
+    <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/threshold_VAR.html">threshold_VAR</a></span><span class="op">(</span>
+        data <span class="op">=</span> <span class="va">Data.rec</span>,
+        regime <span class="op">=</span> <span class="st">'cycle_position'</span>,
         p <span class="op">=</span> <span class="fl">1</span>,
-        horizon <span class="op">=</span> <span class="fl">1</span>,
-        freq <span class="op">=</span> <span class="st">'month'</span><span class="op">)</span>
+        horizon <span class="op">=</span> <span class="fl">10</span>,
+        freq <span class="op">=</span> <span class="st">'quarter'</span><span class="op">)</span>
 
-<span class="co"># estimate IRF</span>
+<span class="co"># plot forecasting output, one-period ahead horizon</span>
+<span class="co"># plot forecasts (right panel)</span>
+<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_forecast.html">plot_forecast</a></span><span class="op">(</span><span class="va">tvar</span><span class="op">$</span><span class="va">forecasts</span><span class="op">[[</span><span class="st">'H_1'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
+<span class="co"># plot residuals (left panel)</span>
+<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_error.html">plot_error</a></span><span class="op">(</span><span class="va">tvar</span><span class="op">$</span><span class="va">residuals</span><span class="op">[[</span><span class="st">'H_1'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></code></pre></div>
+<p><img src="getting_started_files/figure-html/unnamed-chunk-9-1.png" width="50%"><img src="getting_started_files/figure-html/unnamed-chunk-9-2.png" width="50%"> We then estimate impulse response functions to describe the dynamics of the system within each economic state.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># estimate IRF</span>
 <span class="va">tvar.irf</span> <span class="op">=</span>
-    <span class="fu"><a href="../reference/threshold_var_irf.html">threshold_var_irf</a></span><span class="op">(</span>
+    <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/threshold_var_irf.html">threshold_var_irf</a></span><span class="op">(</span>
         <span class="va">tvar</span>,
         horizon <span class="op">=</span> <span class="fl">10</span>,
         bootstraps.num <span class="op">=</span> <span class="fl">10</span>,
         CI <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.05</span>,<span class="fl">0.95</span><span class="op">)</span><span class="op">)</span>
 
-<span class="co"># estimate forecast error variance decomposition</span>
+<span class="co"># plot IRF</span>
+<span class="co"># regime 1: expansion (right panel)</span>
+<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_irf.html">plot_irf</a></span><span class="op">(</span><span class="va">tvar.irf</span><span class="op">[[</span><span class="st">'regime_expansion'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
+<span class="co"># regime 2: recession (left panel)</span>
+<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_irf.html">plot_irf</a></span><span class="op">(</span><span class="va">tvar.irf</span><span class="op">[[</span><span class="st">'regime_recession'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></code></pre></div>
+<p><img src="getting_started_files/figure-html/unnamed-chunk-10-1.png" width="50%"><img src="getting_started_files/figure-html/unnamed-chunk-10-2.png" width="50%"></p>
+<p>And lastly we estimate and visualize the forecast error variance decomposition by state.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># estimate forecast error variance decomposition</span>
 <span class="va">tvar.fevd</span> <span class="op">=</span>
-    <span class="fu"><a href="../reference/threshold_var_fevd.html">threshold_var_fevd</a></span><span class="op">(</span>
+    <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/threshold_var_fevd.html">threshold_var_fevd</a></span><span class="op">(</span>
         <span class="va">tvar</span>,
         horizon <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>
 
-<span class="co">#-------------------------------------------</span>
-<span class="co"># multi-regime local projection</span>
-<span class="co">#------------------------------------------</span>
-<span class="co"># estimate multi-regime IRF</span>
-<span class="va">tlp</span> <span class="op">=</span> 
-    <span class="fu"><a href="../reference/threshold_LP.html">threshold_LP</a></span><span class="op">(</span>
-        data <span class="op">=</span> <span class="va">Data.threshold</span>,
-        regime <span class="op">=</span> <span class="st">'mp'</span>,
+<span class="co"># plot FEVD</span>
+<span class="co"># regime 1: expansion (right panel)</span>
+<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_fevd.html">plot_fevd</a></span><span class="op">(</span><span class="va">tvar.fevd</span><span class="op">[[</span><span class="st">'regime_expansion'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
+<span class="co"># regime 2: recession rates (left panel)</span>
+<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_fevd.html">plot_fevd</a></span><span class="op">(</span><span class="va">tvar.fevd</span><span class="op">[[</span><span class="st">'regime_recession'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></code></pre></div>
+<p><img src="getting_started_files/figure-html/unnamed-chunk-11-1.png" width="50%"><img src="getting_started_files/figure-html/unnamed-chunk-11-2.png" width="50%"> Then, upon inspection of both the impulse response functions and forecast error variance decomposition, it is clear that the macroeconomic system behaves differently based on economic state. We will next extend the analysis to assess if there is state-dependent differences in the system, when using local projections.</p>
+</div>
+</div>
+<div id="local-projection-analysis" class="section level2">
+<h2 class="hasAnchor">
+<a href="#local-projection-analysis" class="anchor"></a>3. Local Projection analysis</h2>
+<p>While this section will focus on local projections, if will follow the same structure of section (2), which was based on VAR analysis. Therefore, we will first estimate and inspect single-regime VAR forecasts, errors, and impulse response functions<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></p>
+<div id="single-regime-local-projection" class="section level3">
+<h3 class="hasAnchor">
+<a href="#single-regime-local-projection" class="anchor"></a>3.1 Single-Regime Local Projection</h3>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># estimate single-regime forecasts </span>
+<span class="co">#  (one or multiple horizons may be estimated)</span>
+<span class="va">lp</span> <span class="op">=</span> 
+    <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/LP.html">LP</a></span><span class="op">(</span>
+        data <span class="op">=</span> <span class="va">Data</span>,
         p <span class="op">=</span> <span class="fl">1</span>,
         horizon <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span>,
-        freq <span class="op">=</span> <span class="st">'month'</span><span class="op">)</span>
+        freq <span class="op">=</span> <span class="st">'quarter'</span><span class="op">)</span>
 
-<span class="co"># estimate multi-regime IRF</span>
-<span class="va">tlp.irf</span> <span class="op">=</span> <span class="fu"><a href="../reference/threshold_lp_irf.html">threshold_lp_irf</a></span><span class="op">(</span><span class="va">tlp</span><span class="op">)</span></code></pre></div>
+<span class="co"># plot forecasting output, one-quarter ahead horizon</span>
+<span class="co"># plot forecasts (right panel)</span>
+<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_forecast.html">plot_forecast</a></span><span class="op">(</span><span class="va">lp</span><span class="op">$</span><span class="va">forecasts</span><span class="op">[[</span><span class="st">'H_1'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
+<span class="co"># plot residuals (left panel)</span>
+<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_error.html">plot_error</a></span><span class="op">(</span><span class="va">lp</span><span class="op">$</span><span class="va">residuals</span><span class="op">[[</span><span class="st">'H_1'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></code></pre></div>
+<p><img src="getting_started_files/figure-html/unnamed-chunk-12-1.png" width="50%"><img src="getting_started_files/figure-html/unnamed-chunk-12-2.png" width="50%"></p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># estimate single-regime IRF</span>
+<span class="va">lp.irf</span> <span class="op">=</span> <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/lp_irf.html">lp_irf</a></span><span class="op">(</span><span class="va">lp</span><span class="op">)</span>
+
+<span class="co"># plot IRF</span>
+<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_irf.html">plot_irf</a></span><span class="op">(</span><span class="va">lp.irf</span><span class="op">)</span></code></pre></div>
+<p><img src="getting_started_files/figure-html/unnamed-chunk-13-1.png" width="700" style="display: block; margin: auto;"></p>
+</div>
+<div id="multi-regime-local-projection" class="section level3">
+<h3 class="hasAnchor">
+<a href="#multi-regime-local-projection" class="anchor"></a>3.2 Multi-Regime Local Projection</h3>
+<p>We next turn to estimating state-dependent local projections. However, unlike our VAR experiment, we will here use sovereign’s own regime classifications, attained with the k-means clustering algorithm.</p>
+<p>Again, we first estimate and visualize the one-period-ahead forecasts and errors.</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># estimate multi-regime IRF</span>
+<span class="va">tlp</span> <span class="op">=</span> 
+    <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/threshold_LP.html">threshold_LP</a></span><span class="op">(</span>
+        data <span class="op">=</span> <span class="va">Data.kmeans</span>,
+        regime <span class="op">=</span> <span class="st">'regime'</span>,
+        p <span class="op">=</span> <span class="fl">1</span>,
+        horizon <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span>,
+        freq <span class="op">=</span> <span class="st">'quarter'</span><span class="op">)</span>
+
+<span class="co"># plot forecasting output, one-quarter ahead horizon</span>
+<span class="co"># plot forecasts (right panel)</span>
+<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_forecast.html">plot_forecast</a></span><span class="op">(</span><span class="va">tlp</span><span class="op">$</span><span class="va">forecasts</span><span class="op">[[</span><span class="st">'H_1'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
+<span class="co"># plot residuals (left panel)</span>
+<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_error.html">plot_error</a></span><span class="op">(</span><span class="va">tlp</span><span class="op">$</span><span class="va">residuals</span><span class="op">[[</span><span class="st">'H_1'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></code></pre></div>
+<p><img src="getting_started_files/figure-html/unnamed-chunk-14-1.png" width="50%"><img src="getting_started_files/figure-html/unnamed-chunk-14-2.png" width="50%"></p>
+<p>And in our last step, we will create the state-dependent impulse response functions.</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># estimate multi-regime IRF</span>
+<span class="va">tlp.irf</span> <span class="op">=</span> 
+  <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/threshold_lp_irf.html">threshold_lp_irf</a></span><span class="op">(</span><span class="va">tlp</span><span class="op">)</span>
+
+<span class="co"># plot IRF</span>
+<span class="co"># regime 1: km-eans cluster 0 (right panel)</span>
+<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_irf.html">plot_irf</a></span><span class="op">(</span><span class="va">tlp.irf</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
+<span class="co"># regime 2: k-means cluster 1 (left panel)</span>
+<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_irf.html">plot_irf</a></span><span class="op">(</span><span class="va">tlp.irf</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></code></pre></div>
+<p><img src="getting_started_files/figure-html/unnamed-chunk-15-1.png" width="50%"><img src="getting_started_files/figure-html/unnamed-chunk-15-2.png" width="50%"></p>
+<p>Similar to our VAR analysis, we find that our small macro-system displays different behavior within different states. That is, we have successfully modeled a small-scale macroeconomy across multiple regimes and have identified a clear state-dependence within the system.</p>
+</div>
+</div>
+<div id="conclusion" class="section level2">
+<h2 class="hasAnchor">
+<a href="#conclusion" class="anchor"></a>4. Conclusion</h2>
+<p>In this short vignette, we have used a small-scale macroeconomy and two different types of economic states to demonstrate the basic sovereign package workflow. We identified how a user may use pre-define regimes, such as the NBER-dated business cycle, or use the sovereign package to classify regimes with various machine learning algorithms, as demonstrated with the k-means clustering algorithm. Moreover, we then used these economic regimes to estimate and analyze both single-state and multi-state VARs and local projections to study a small reduced-from macroeconomy. Through these state-dependent models, we were able to analyze forecasts, impulse response functions, and forecast error variance decompositions. That is, using the sovereign package, we were able succinctly and efficiently determine and visualize that our small scale representation of the US economy is in fact driven by a state-dependent process.</p>
+</div>
+<div class="footnotes">
+<hr>
+<ol>
+<li id="fn1"><p>There is not currently a well accepted forecast error variance decomposition method for local projections, so sovereign does not include this functionality.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+</ol>
 </div>
   </div>
 

@@ -13,7 +13,7 @@
 #' @return ggplot2 graph
 #'
 #' @export
-individual_fevd_plot = function(
+plot_individual_fevd = function(
   fevd,                 # fevd object
   response.var,         # string: name of variable to treat as the response
   title,                # string: title of the chart
@@ -39,7 +39,7 @@ individual_fevd_plot = function(
 }
 
 ### function to plot all fevd
-#' Plot all FEVDs
+#' Chart FEVDs
 #'
 #' @param fevd       fevd object
 #' @param responses  string vector: responses to plot
@@ -49,7 +49,7 @@ individual_fevd_plot = function(
 #'
 #' @export
 
-fevd_plot = function(
+plot_fevd = function(
   fevd,                  # fevd object
   responses = NULL,      # string vector: responses to plot (default to all variables)
   verticle = FALSE       # boolean: If true then stack all plots into one column
@@ -63,7 +63,7 @@ fevd_plot = function(
     purrr::map(.f = function(x){
 
       chart =
-        individual_fevd_plot(
+        plot_individual_fevd(
           fevd,
           response.var = x,
           title = paste0(x,' forecast error'),

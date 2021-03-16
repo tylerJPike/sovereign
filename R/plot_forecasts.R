@@ -14,7 +14,7 @@
 #'
 #' @export
 
-individual_forecast_plot = function(
+plot_individual_forecast = function(
   data,              # data.frame: sovereign forecast object
   target,            # string: series to plot
   title = NULL,      # string: chart title
@@ -68,7 +68,7 @@ individual_forecast_plot = function(
 }
 
 ### function to plot all forecasts
-#' Chart  forecasts
+#' Chart forecasts
 #'
 #' @param forecasts   data.frame: sovereign forecast object
 #' @param series      string: series to plot (default to all series)
@@ -78,7 +78,7 @@ individual_forecast_plot = function(
 #'
 #' @export
 
-forecast_plot = function(
+plot_forecast = function(
   forecasts,             # data.frame: sovereign forecast object
   series = NULL,         # string: series to plot (default to all series)
   verticle = FALSE       # boolean: If true then stack all plots into one column
@@ -96,7 +96,7 @@ forecast_plot = function(
     purrr::map(.f = function(x){
 
       chart =
-        individual_forecast_plot(
+        plot_individual_forecast(
           forecasts,
           target = x,
           title = x,

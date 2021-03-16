@@ -11,6 +11,10 @@ The sovereign package introduces a set of tools for state-dependent empirical an
 
 The sovereign package remains under active development. As a result, **the API is not to be considered stable**, and future updates will most likely deprecate and break current functions. 
 
+See the sovereign package [website](https://tylerjpike.github.io/sovereign/) for examples and documentation. 
+
+----
+
 ## Available Tools  
 
 Unsupervised Regime Assignment
@@ -19,11 +23,11 @@ Unsupervised Regime Assignment
 3. EM 
 
 Local Projections (LP)
-1. direct projection forecasting  
-1. impulse responses*  
+1. direct projection forecasting*  
+1. impulse responses*
 
 Vector Auto-Regression (VAR)
-1. recursive forecasting 
+1. recursive forecasting*
 2. forecast error variance decomposition*
 3. impulse responses*
 
@@ -81,7 +85,7 @@ Vector Auto-Regression (VAR)
     plot_forecast(var$forecasts[[1]])
 
     # plot residuals
-    error_plot(var$residuals[[1]])
+    plot_error(var$residuals[[1]])
 
     # estimate IRF
     irf =
@@ -91,7 +95,7 @@ Vector Auto-Regression (VAR)
             CI = c(0.05,0.95))
 
     # plot IRF
-    irf_plot(irf)
+    plot_irf(irf)
 
     # estimate forecast error variance decomposition
     fevd =
@@ -100,7 +104,7 @@ Vector Auto-Regression (VAR)
             horizon = 10)
 
     # plot FEVD
-    fevd_plot(fevd)
+    plot_fevd(fevd)
 
     #-------------------------------------------
     # multi-regime var
@@ -124,9 +128,9 @@ Vector Auto-Regression (VAR)
 
     # plot IRF
     # regime 1: low interest rates
-    irf_plot(tvar.irf[[1]])
+    plot_irf(tvar.irf[[1]])
     # regime 2: high interest rates
-    irf_plot(tvar.irf[[2]])
+    plot_irf(tvar.irf[[2]])
 
     # estimate forecast error variance decomposition
     tvar.fevd =
@@ -136,9 +140,9 @@ Vector Auto-Regression (VAR)
 
     # plot FEVD
     # regime 1: low interest rates
-    fevd_plot(tvar.fevd[[1]])
+    plot_fevd(tvar.fevd[[1]])
     # regime 2: high interest rates
-    fevd_plot(tvar.fevd[[2]])
+    plot_fevd(tvar.fevd[[2]])
 
     #-------------------------------------------
     # single-regime local projections
@@ -156,7 +160,7 @@ Vector Auto-Regression (VAR)
     lp.irf = lp_irf(lp)
 
     # plot IRF
-    irf_plot(lp.irf)
+    plot_irf(lp.irf)
 
     #-------------------------------------------
     # multi-regime local projections
@@ -175,9 +179,9 @@ Vector Auto-Regression (VAR)
 
     # plot IRF
     # regime 1: low interest rates
-    irf_plot(tlp.irf[[1]])
+    plot_irf(tlp.irf[[1]])
     # regime 2: high interest rates
-    irf_plot(tlp.irf[[2]])
+    plot_irf(tlp.irf[[2]])
     
 
 ---

@@ -22,12 +22,12 @@ test_that("VAR workflow", {
 
   # plot forecasts
   plot.forecast =
-    forecast_plot(var$forecasts[[1]])
+    plot_forecast(var$forecasts[[1]])
 
   expect_true(is.list(plot.forecast))
 
   plot.errors =
-    error_plot(var$residuals[[1]])
+    plot_error(var$residuals[[1]])
 
   expect_true(is.list(plot.errors))
 
@@ -41,7 +41,7 @@ test_that("VAR workflow", {
   expect_true(is.data.frame(irf))
 
   # plot IRF
-  plot.irf = irf_plot(irf)
+  plot.irf = plot_irf(irf)
 
   expect_true(is.list(plot.irf))
 
@@ -55,7 +55,7 @@ test_that("VAR workflow", {
   expect_true(is.data.frame(fevd))
 
   # plot fevd
-  plot.fevd = fevd_plot(fevd)
+  plot.fevd = plot_fevd(fevd)
 
   expect_true(is.list(plot.fevd))
 

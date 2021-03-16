@@ -14,7 +14,7 @@
 #' @return ggplot2 graph
 #'
 #' @export
-individual_irf_plot = function(
+plot_individual_irf = function(
   irf,                  # irf object
   shock.var,            # string: name of variable to treat as the shock
   response.var,         # string: name of variable to treat as the response
@@ -44,7 +44,7 @@ individual_irf_plot = function(
 }
 
 ### function to plot all irfs
-#' Plot all IRFs
+#' Chart IRFs
 #'
 #' @param irf        irf object
 #' @param shocks     string vector: shocks to plot
@@ -55,7 +55,7 @@ individual_irf_plot = function(
 #'
 #' @export
 
-irf_plot = function(
+plot_irf = function(
   irf,                   # irf object
   shocks = NULL,         # string vector: shocks to plot (default to all variables)
   responses = NULL,      # string vector: responses to plot (default to all variables)
@@ -76,7 +76,7 @@ irf_plot = function(
     purrr::map(.f = function(x){
 
       chart =
-        individual_irf_plot(
+        plot_individual_irf(
           irf,
           shock.var = x$shock,
           response.var = x$response,

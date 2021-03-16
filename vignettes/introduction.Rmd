@@ -1,9 +1,5 @@
 ---
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{introduction}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -21,6 +17,6 @@ where $ \hat{Y_t} $ is the predicted outcome of interest, $E$ is the expectation
 
 $$ \hat{Y_t} = E[Y_t | X_{t-1}, s_{t-1}] $$
 
-where $s$ is a discrete, that is, mutually exclusive, state of the world. For example, in an economic context, one may consider expansions and recessions as two different states of the world, and in the US, these labels are formally declared by the NBER.  
+where *s* is a discrete, that is, mutually exclusive, state of the world. For example, in an economic context, one may consider expansions and recessions as two different states of the world, and in the US, these labels are formally declared by the NBER.  
 
 The sovereign package provides the tools and methods to solves this state-dependent forecasting problem. Using vector auto-regressions or direct projections, a user may create both single- and multi-state time series forecasts, and in turn, analyze the resulting models through impulse response functions and forecast error variance decomposition.  

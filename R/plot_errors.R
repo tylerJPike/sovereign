@@ -14,7 +14,7 @@
 #'
 #' @export
 
-individual_error_plot = function(
+plot_individual_error = function(
   data,              # data.frame: sovereign residuals object
   target,              # string: series to plot
   title = NULL,      # string: chart title
@@ -78,7 +78,7 @@ individual_error_plot = function(
 #'
 #' @export
 
-error_plot = function(
+plot_error = function(
   residuals,             # data.frame: sovereign residuals object
   series = NULL,         # string: series to plot (default to all series)
   verticle = FALSE       # boolean: If true then stack all plots into one column
@@ -96,7 +96,7 @@ error_plot = function(
     purrr::map(.f = function(x){
 
       chart =
-        individual_error_plot(
+        plot_individual_error(
           residuals,
           target = x,
           title = x,

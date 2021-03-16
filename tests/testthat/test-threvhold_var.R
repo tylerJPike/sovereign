@@ -39,8 +39,8 @@ test_that("threshold VAR workflow", {
 
   expect_true(is.list(fevd))
 
-  plot.fevd.1 = fevd_plot(fevd[[1]])
-  plot.fevd.2 = fevd_plot(fevd[[2]])
+  plot.fevd.1 = plot_fevd(fevd[[1]])
+  plot.fevd.2 = plot_fevd(fevd[[2]])
 
   expect_true(is.list(plot.fevd.1))
   expect_true(is.list(plot.fevd.1))

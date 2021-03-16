@@ -84,23 +84,12 @@
      
   </a>
 </li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+<li>
+  <a href=".././reference/index.html">
     <span class="fa fa-cog"></span>
      
     Tools
-     
-    <span class="caret"></span>
   </a>
-  <ul class="dropdown-menu" role="menu">
-    <li class="dropdown-header">Regime Assignment</li>
-    <li class="dropdown-header">Model Estimation</li>
-    <li class="dropdown-header">Mdoel Analysis</li>
-    <li class="divider"></li>
-    <li>
-      <a href=".././reference/index.html">Function Documentation</a>
-    </li>
-  </ul>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -111,13 +100,12 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-    <li class="dropdown-header">Getting Started</li>
     <li>
-      <a href=".././articles/getting_started.html">0. Introduction</a>
+      <a href=".././articles/introduction.html">Introduction</a>
     </li>
-    <li class="dropdown-header">1. Data</li>
-    <li class="dropdown-header">2. Model Estimation</li>
-    <li class="dropdown-header">3. Model Analysis</li>
+    <li>
+      <a href=".././articles/getting_started.html">Getting Started</a>
+    </li>
   </ul>
 </li>
       </ul>
@@ -150,7 +138,7 @@
     <p>Estimate multi-regime forecast error variance decomposition</p>
     </div>
 
-    <pre class="usage"><span class='fu'>threshold_var_fevd</span><span class='op'>(</span><span class='va'>threshold_var</span>, horizon <span class='op'>=</span> <span class='fl'>10</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>threshold_var_fevd</span><span class='op'>(</span><span class='va'>threshold_var</span>, horizon <span class='op'>=</span> <span class='fl'>10</span>, scale <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -162,6 +150,10 @@
     <tr>
       <th>horizon</th>
       <td><p>int: number of periods</p></td>
+    </tr>
+    <tr>
+      <th>scale</th>
+      <td><p>boolean: scale variable contribution as percent of total error</p></td>
     </tr>
     </table>
 

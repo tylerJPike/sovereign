@@ -10,8 +10,6 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-# knitr::opts_chunk$set(echo = FALSE)
-# knitr::opts_knit$set(root.dir= normalizePath('..'))
 knitr::opts_chunk$set(error = FALSE)
 ```
 
@@ -145,9 +143,9 @@ var =
 
 # plot forecasting output, one-period ahead horizon
 # plot forecasts
-sovereign::forecast_plot(var$forecasts[['H_1']])
+sovereign::plot_forecast(var$forecasts[['H_1']])
 # plot residuals
-sovereign::error_plot(var$residuals[['H_1']])
+sovereign::plot_error(var$residuals[['H_1']])
 ```
 
 Second we estimate the associate impulse response functions, bootstrapped confidence intervals, and plot them. Additionally, here we will note that all sovereign plots are based on ggplot2, and the underlying plot objects are the return values for any sovereign plotting function.  
@@ -161,7 +159,7 @@ irf =
         CI = c(0.05,0.95))
 
 # plot IRF
-sovereign::irf_plot(irf)
+sovereign::plot_irf(irf)
 ```
 
 Lastly, we estimate the forecast error variance decomposition and plot the system of decomposition.  
@@ -174,7 +172,7 @@ fevd =
         horizon = 10)
 
 # plot FEVD
-sovereign::fevd_plot(fevd)
+sovereign::plot_fevd(fevd)
 ```
 
 ### 2.1 Multi-regime VAR
@@ -196,9 +194,9 @@ tvar =
 
 # plot forecasting output, one-period ahead horizon
 # plot forecasts (right panel)
-sovereign::forecast_plot(tvar$forecasts[['H_1']])
+sovereign::plot_forecast(tvar$forecasts[['H_1']])
 # plot residuals (left panel)
-sovereign::error_plot(tvar$residuals[['H_1']])
+sovereign::plot_error(tvar$residuals[['H_1']])
 ```
 We then estimate impulse response functions to describe the dynamics of the system within each economic state. 
 
@@ -214,9 +212,9 @@ tvar.irf =
 
 # plot IRF
 # regime 1: expansion (right panel)
-sovereign::irf_plot(tvar.irf[['regime_expansion']])
+sovereign::plot_irf(tvar.irf[['regime_expansion']])
 # regime 2: recession (left panel)
-sovereign::irf_plot(tvar.irf[['regime_recession']])
+sovereign::plot_irf(tvar.irf[['regime_recession']])
 
 ```
 
@@ -232,9 +230,9 @@ tvar.fevd =
 
 # plot FEVD
 # regime 1: expansion (right panel)
-sovereign::fevd_plot(tvar.fevd[['regime_expansion']])
+sovereign::plot_fevd(tvar.fevd[['regime_expansion']])
 # regime 2: recession rates (left panel)
-sovereign::fevd_plot(tvar.fevd[['regime_recession']])
+sovereign::plot_fevd(tvar.fevd[['regime_recession']])
 
 ```
 Then, upon inspection of both the impulse response functions and forecast error variance decomposition, it is clear that the macroeconomic system behaves differently based on economic state. We will next extend the analysis to assess if there is state-dependent differences in the system, when using local projections. 
@@ -243,7 +241,7 @@ Then, upon inspection of both the impulse response functions and forecast error 
 
 While this section will focus on local projections, if will follow the same structure of section (2), which was based on VAR analysis. Therefore, we will first estimate and inspect single-regime VAR forecasts, errors, and impulse response functions^[There is not currently a well accepted forecast error variance decomposition method for local projections, so sovereign does not include this functionality.]
 
-## 3.1 Single-Regime Local Projection
+### 3.1 Single-Regime Local Projection
 ```{r, message=F, warning=F, fig.show="hold", out.width="50%"}
 
 # estimate single-regime forecasts 
@@ -257,9 +255,9 @@ lp =
 
 # plot forecasting output, one-quarter ahead horizon
 # plot forecasts (right panel)
-sovereign::forecast_plot(lp$forecasts[['H_1']])
+sovereign::plot_forecast(lp$forecasts[['H_1']])
 # plot residuals (left panel)
-sovereign::error_plot(lp$residuals[['H_1']])
+sovereign::plot_error(lp$residuals[['H_1']])
 
 ```
 
@@ -269,11 +267,11 @@ sovereign::error_plot(lp$residuals[['H_1']])
 lp.irf = sovereign::lp_irf(lp)
 
 # plot IRF
-sovereign::irf_plot(lp.irf)
+sovereign::plot_irf(lp.irf)
 
 ```
 
-## 3.2 Multi-Regime Local Projection
+### 3.2 Multi-Regime Local Projection
 
 We next turn to estimating state-dependent local projections. However, unlike our VAR experiment, we will here use sovereign's own regime classifications, attained with the k-means clustering algorithm.
 
@@ -292,9 +290,9 @@ tlp =
 
 # plot forecasting output, one-quarter ahead horizon
 # plot forecasts (right panel)
-sovereign::forecast_plot(tlp$forecasts[['H_1']])
+sovereign::plot_forecast(tlp$forecasts[['H_1']])
 # plot residuals (left panel)
-sovereign::error_plot(tlp$residuals[['H_1']])
+sovereign::plot_error(tlp$residuals[['H_1']])
 ```
 
 And in our last step, we will create the state-dependent impulse response functions. 
@@ -306,9 +304,9 @@ tlp.irf =
 
 # plot IRF
 # regime 1: km-eans cluster 0 (right panel)
-sovereign::irf_plot(tlp.irf[[1]])
+sovereign::plot_irf(tlp.irf[[1]])
 # regime 2: k-means cluster 1 (left panel)
-sovereign::irf_plot(tlp.irf[[2]])
+sovereign::plot_irf(tlp.irf[[2]])
 
 ```
 
