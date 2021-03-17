@@ -50,22 +50,12 @@
     Tools
   </a>
 </li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+<li>
+  <a href=".././articles/getting_started.html">
     <span class="fa fa-cogs"></span>
      
     Workflow
-     
-    <span class="caret"></span>
   </a>
-  <ul class="dropdown-menu" role="menu">
-<li>
-      <a href=".././articles/introduction.html">Introduction</a>
-    </li>
-    <li>
-      <a href=".././articles/getting_started.html">Getting Started</a>
-    </li>
-  </ul>
 </li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
@@ -106,7 +96,7 @@
 <p><span class="math display">\[ \hat{Y_t} = E[Y_t | X_{t-1}] \]</span></p>
 <p>where $  $ is the predicted outcome of interest, <span class="math inline">\(E\)</span> is the expectation operator, <span class="math inline">\(X\)</span> is the information set, and <span class="math inline">\(t\)</span> is the time index. Note that the expectation <span class="math inline">\(E\)</span> may be estimated by an loss-minimizing function - parametric or non-parametric. Then, let the process be state-dependent:</p>
 <p><span class="math display">\[ \hat{Y_t} = E[Y_t | X_{t-1}, s_{t-1}] \]</span></p>
-<p>where <span class="math inline">\(s\)</span> is a discrete, that is, mutually exclusive, state of the world. For example, in an economic context, one may consider expansions and recessions as two different states of the world, and in the US, these labels are formally declared by the NBER.</p>
+<p>where <em>s</em> is a discrete, that is, mutually exclusive, state of the world. For example, in an economic context, one may consider expansions and recessions as two different states of the world, and in the US, these labels are formally declared by the NBER.</p>
 <p>The sovereign package provides the tools and methods to solves this state-dependent forecasting problem. Using vector auto-regressions or direct projections, a user may create both single- and multi-state time series forecasts, and in turn, analyze the resulting models through impulse response functions and forecast error variance decomposition.</p>
 </div>
   </div>

@@ -37,7 +37,7 @@ reference:
       - '`plot_irf`'
 
 navbar:
-  title: "OOS"
+  title: "sovereign"
   type: inverse
   left:
     - icon: fa-home
