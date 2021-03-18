@@ -30,7 +30,8 @@ Imports:
     randomForest,
     sandwich,  
     stats,  
-    stringr,  
+    stringr,
+    strucchange,  
     tidyr, 
     xts,   
     zoo  

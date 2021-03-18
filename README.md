@@ -21,6 +21,7 @@ Unsupervised Regime Assignment
 1. random forest  
 2. k-means clustering  
 3. EM 
+4. Bai & Perron (2003)  
 
 Local Projections (LP)
 1. direct projection forecasting*  
@@ -74,12 +75,14 @@ Vector Auto-Regression (VAR)
     # single-regime var
     #------------------------------------------
     # estimate VAR
+    # (using IC lag selection0
     var =
         VAR(
             data = Data,
-            p = 1,
             horizon = 10,
-            freq = 'month')
+            freq = 'month',
+            lag.ic = 'BIC',
+            lag.max = 4)
 
     # plot forecasts
     plot_forecast(var$forecasts[[1]])
