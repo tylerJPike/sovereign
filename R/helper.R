@@ -8,28 +8,28 @@ n.lag = function(
   lags,                       # int: number of lags to create
   variables = NULL            # string: vector of variable names to lag, default is all non-date variables
 ){
-  
+
   if(is.null(variables)){
     variables = names(dplyr::select(Data, -contains('date')))
   }
-  
+
   Data = c(0:lags) %>%
     purrr::map(
       .f = function(n){
-        
+
         if(n == 0){return(Data)}
-        
+
         X = Data %>%
           dplyr::mutate_at(variables, dplyr::lag, n)
-        
+
         names(X)[names(X) != 'date'] = paste0(names(X)[names(X) != 'date'], '.l', n)
-        
+
         return(X)
       }
     ) %>%
     purrr::reduce(dplyr::full_join, by = 'date')
-  
-  
+
+
   return(Data)
 }
 
@@ -39,9 +39,9 @@ forecast_date = function(
   horizon,
   freq
 ){
-  
+
   date = forecast.date
-  
+
   if(freq == 'day'){
     date = forecast.date + horizon
   }else if(freq == 'week'){
@@ -53,6 +53,34 @@ forecast_date = function(
   }else if(freq == 'year'){
     lubridate::year(date) = lubridate::year(date) + horizon
   }
-  
+
   return(date)
+}
+
+#------------------------------------------
+# Information criterion
+#------------------------------------------
+IC = function(
+  ic = 'AIC',
+  errors,
+  data,
+  p
+){
+
+  cov.matrix =  var(na.omit(dplyr::select(errors, -date)))
+
+  regressors = colnames(dplyr::select(data, -date))
+  regressors.cols = paste0(regressors, '.l1')
+  k = length(regressors.cols)
+
+  sample.size = nrow(na.omit(data))
+
+  if(ic == 'AIC'){
+    score = log(sum(abs(cov.matrix))) + (2*k^2*p)/sample.size
+  }else if(ic == 'BIC'){
+    score = log(sum(abs(cov.matrix))) + (log(sample.size)*k^2*p)/sample.size
+  }
+
+  return(score)
+
 }

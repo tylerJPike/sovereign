@@ -1,28 +1,7 @@
-#------------------------------------------
-# Function to estimate VAR
-#------------------------------------------
-#' Estimate single-regime VAR
-#'
-#' @param data     data.frame, matrix, ts, xts, zoo: Endogenous regressors
-#' @param p        int: lags
-#' @param horizon  int: forecast horizons
-#' @param freq     string: frequency of data (day, week, month, quarter, year)
-#'
-#' @return list object with elements `data`, `model`, `forecasts`, `residuals`
-#'
-#' @examples
-#' \dontrun{
-#' VAR(
-#'   data = Data,
-#'   p = 1,
-#'   horizon = 10,
-#'   freq = 'month')
-#' }
-#'
-#' @export
 
-# var function
-VAR = function(
+
+# var model, forecast, and error estimation function
+VAR_estimation = function(
   data,                # data.frame, matrix, ts, xts, zoo: Endogenous regressors
   p = 1,               # int: lags
   horizon = 10,        # int: forecast horizons
@@ -151,6 +130,104 @@ VAR = function(
       residuals = residuals
     )
   )
+}
+
+#------------------------------------------
+# Function to estimate VAR
+#------------------------------------------
+#' Estimate single-regime VAR
+#'
+#' @param data      data.frame, matrix, ts, xts, zoo: Endogenous regressors
+#' @param horizon   int: forecast horizons
+#' @param freq      string: frequency of data (day, week, month, quarter, year)
+#' @param p         int: lags
+#' @param lag.ic    string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
+#' @param lag.max   int: maximum number of lags to test in lag selection
+#'
+#' @return list object with elements `data`, `model`, `forecasts`, `residuals`
+#'
+#' @examples
+#' \dontrun{
+#'
+#'   var =
+#'     VAR(
+#'       data = Data,
+#'       p = 1,
+#'       horizon = 10,
+#'       freq = 'month')
+#'
+#'   # or with automatic lag selection
+#'
+#'   var =
+#'     VAR(
+#'       data = Data,
+#'       horizon = 10,
+#'       freq = 'month',
+#'       lag.ic = 'BIC',
+#'       lag.max = 4)
+#'
+#' }
+#'
+#' @export
+
+# var function
+VAR = function(
+  data,                # data.frame, matrix, ts, xts, zoo: Endogenous regressors
+  horizon = 10,        # int: forecast horizons
+  freq = 'month',      # string: frequency of data (day, week, month, quarter, year)
+  p = 1,               # int: lags
+  lag.ic = NULL,       # string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
+  lag.max = NULL       # int: maximum number of lags to test in lag selection
+){
+
+  if(!is.null(lag.ic)){
+
+    ic.scores = vector(length = lag.max+1)
+
+    models = c(1:lag.max) %>%
+      purrr::map(.f  = function(p){
+
+        # estimate candidate model
+        model =
+          VAR_estimation(
+            data = data,
+            p = p,
+            horizon = horizon,
+            freq = freq
+          )
+
+        # calculate IC
+        ic.score =
+          IC(
+            ic = lag.ic,
+            errors = model$residuals[[1]],
+            data = data,
+            p = p
+          )
+
+        ic.scores[p] = ic.score
+
+        # return candidate model
+        return(model)
+
+      })
+
+    # return IC minimizing VAR
+    min.ic = which.min(ic.scores)
+    model = models[[min.ic]]
+    return(model)
+
+  }else{
+    return(
+      VAR_estimation(
+        data = data,
+        p = p,
+        horizon = horizon,
+        freq = freq
+      )
+    )
+  }
+
 }
 
 #-------------------------------------------------------------------

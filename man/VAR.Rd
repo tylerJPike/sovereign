@@ -4,16 +4,20 @@
 \alias{VAR}
 \title{Estimate single-regime VAR}
 \usage{
-VAR(data, p = 1, horizon = 10, freq = "month")
+VAR(data, horizon = 10, freq = "month", p = 1, lag.ic = NULL, lag.max = NULL)
 }
 \arguments{
 \item{data}{data.frame, matrix, ts, xts, zoo: Endogenous regressors}
 
-\item{p}{int: lags}
-
 \item{horizon}{int: forecast horizons}
 
 \item{freq}{string: frequency of data (day, week, month, quarter, year)}
+
+\item{p}{int: lags}
+
+\item{lag.ic}{string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')}
+
+\item{lag.max}{int: maximum number of lags to test in lag selection}
 }
 \value{
 list object with elements \code{data}, \code{model}, \code{forecasts}, \code{residuals}
@@ -23,11 +27,24 @@ Estimate single-regime VAR
 }
 \examples{
 \dontrun{
-VAR(
-  data = Data,
-  p = 1,
-  horizon = 10,
-  freq = 'month')
+
+  var =
+    VAR(
+      data = Data,
+      p = 1,
+      horizon = 10,
+      freq = 'month')
+
+  # or with automatic lag selection
+
+  var =
+    VAR(
+      data = Data,
+      horizon = 10,
+      freq = 'month',
+      lag.ic = 'BIC',
+      lag.max = 4)
+
 }
 
 }

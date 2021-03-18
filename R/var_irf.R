@@ -303,10 +303,6 @@ threshold_var_irf = function(
   regressors = colnames(dplyr::select(data, -date, -regime))
 
   residuals = threshold_var$residuals[[1]]
-  # %>%
-  #   dplyr::left_join(
-  #     dplyr::select(data, model.regime = regime, date),
-  #     by = 'date')
 
   p.lower = CI[1]
   p.upper = CI[2]

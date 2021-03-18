@@ -7,13 +7,28 @@ test_that("VAR workflow", {
   date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
   Data = data.frame(date = date, AA, BB, CC)
 
-  # estimate VAR
+
+  # estimate VAR (with lag selection)
   var =
     VAR(
       data = Data,
       p = 1,
       horizon = 10,
       freq = 'month')
+
+  expect_true(is.list(var))
+  expect_true(is.list(var$model))
+  expect_true(is.list(var$forecasts))
+  expect_true(is.list(var$residuals))
+
+  # estimate VAR (with lag selection)
+  var =
+    VAR(
+      data = Data,
+      horizon = 10,
+      freq = 'month',
+      lag.ic = 'BIC',
+      lag.max = 3)
 
   expect_true(is.list(var))
   expect_true(is.list(var$model))
