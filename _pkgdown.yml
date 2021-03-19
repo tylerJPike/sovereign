@@ -1,6 +1,7 @@
 template:
   params:
     bootswatch: flatly
+    ganalytics: G-7Z8WPQX0E6
 
 development:
   mode: auto
