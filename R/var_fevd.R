@@ -130,7 +130,9 @@ var_fevd = function(
   cov.matrix = var(na.omit(dplyr::select(residuals, -date)))
 
   # forecast error variance decomposition
-  errors = fevd(Phi = coef[,-c(1,2)],  Sig = cov.matrix, lag = horizon)
+  errors = fevd(Phi =  dplyr::select(coef, -y, -dplyr::contains('cosnt'), -dplyr::contains('trend')),
+                Sig = cov.matrix,
+                lag = horizon)
 
   # reorganize results
   response = data.frame(t(errors$OmegaR))
@@ -200,17 +202,15 @@ threshold_var_fevd = function(
       # set regime specific data
       coef = threshold_var$model[[paste0('regime_',regime.val)]]$coef
       residuals = threshold_var$residuals[[1]] %>%
-      # %>%
-      #   dplyr::left_join(
-      #     dplyr::select(data, regime = regime, date),
-      #     by = 'date') %>%
         dplyr::filter(model.regime == regime.val)
 
       # error covariance matrix
       cov.matrix = var(na.omit(dplyr::select(residuals, -date, -model.regime)))
 
       # forecast error variance decomposition
-      errors = fevd(Phi = coef[,-c(1,2)],  Sig = cov.matrix, lag = horizon)
+      errors = fevd(Phi =  dplyr::select(coef, -y, -dplyr::contains('cosnt'), -dplyr::contains('trend')),
+                    Sig = cov.matrix,
+                    lag = horizon)
 
       # reorganize results
       response = data.frame(t(errors$OmegaR))

@@ -14,6 +14,7 @@ test_that("threshold VAR workflow", {
       data = Data,
       regime = 'reg',
       p = 1,
+      type = 'both',
       horizon = 10,
       freq = 'month')
 
