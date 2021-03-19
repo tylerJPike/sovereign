@@ -22,6 +22,21 @@ test_that("threshold VAR workflow", {
   expect_true(is.list(tvar$forecasts))
   expect_true(is.list(tvar$residuals))
 
+  # estimate VAR (with lag selection)
+  tvar =
+    threshold_VAR(
+      data = Data,
+      regime = 'reg',
+      horizon = 10,
+      freq = 'month',
+      lag.ic = 'BIC',
+      lag.max = 4)
+
+  expect_true(is.list(tvar))
+  expect_true(is.list(tvar$model))
+  expect_true(is.list(tvar$forecasts))
+  expect_true(is.list(tvar$residuals))
+
   # estimate IRF
   irf =
     threshold_var_irf(

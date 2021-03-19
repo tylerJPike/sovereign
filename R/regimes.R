@@ -4,7 +4,8 @@
 #------------------------------------------
 #' Assign regimes via unsupervised machine learning methods
 #'
-#' Regime assignment (clustering) methods available include the [unsupervised random forest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest), [k-mean clustering](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/kmeans), and EM via [Fraley and Raftery Model-based clustering](https://www.rdocumentation.org/packages/mclust/versions/5.4.7/topics/Mclust).
+#' Regime assignment (clustering) methods available include the [unsupervised random forest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest), [k-mean clustering](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/kmeans),
+#' and EM via [Fraley and Raftery Model-based clustering](https://www.rdocumentation.org/packages/mclust/versions/5.4.7/topics/Mclust), [Bai & Perron (2003) algorithm](https://www.rdocumentation.org/packages/strucchange/versions/1.5-2/topics/breakpoints) for simultaneous estimation of multiple breakpoints.
 #'
 #' @param data                  data.frame, matrix, ts, xts, zoo: Endogenous regressors
 #' @param regime.n              int: number of regimes to estimate (applies to kmeans and EM)
@@ -26,7 +27,7 @@
 regimes = function(
   data,                        # data.frame, matrix, ts, xts, zoo: Endogenous regressors
   regime.n = NULL,             # int: number of regimes to estimate (applies to kmeans and EM)
-  engine = 'rf'                # string: regime assignment technique ('rf', 'kmeans', 'EM)
+  engine = 'rf'                # string: regime assignment technique ('rf', 'kmeans', 'EM', 'BP')
 ){
 
   # function warnings
@@ -40,6 +41,11 @@ regimes = function(
   # cast as data frame if ts, xts, or zoo object
   if(is.ts(data) | xts::is.xts(data) | zoo::is.zoo(data)){
     data = data.frame(date = zoo::index(date), data)
+  }
+
+  # check for BP method
+  if(engine == 'bp' & ncol(dplyr::select(data, -date)) > 1){
+    errorCondition("The 'BP' method can only use univariate time series to determine regimes.")
   }
 
   # clean data
@@ -66,6 +72,23 @@ regimes = function(
     mclustBIC = mclust::mclustBIC
     model = mclust::Mclust(X, G = regime.n)
     regime = data.frame(date = X.date, X, regime = model$classification)
+
+  }else if(engine == 'BP'){
+
+    colnames(X) = 'x'
+    breakpoints = strucchange::breakpoints(x ~ lag(x), data = X)
+    breakpoints$breakpoints
+
+    if(is.na(breakpoints$breakpoints)){
+      regimes = data.frame(date = X.date, X, regime = 0)
+    }else{
+      regimes.val = c(0:length(breakpoints$breakpoints))
+      regimes.dates = data$date[c(1, breakpoints$breakpoints)]
+      regimes = dplyr::full_join(dplyr::select(data, date), data.frame(date = regimes.dates, regime = regimes.val), by = 'date')
+      regimes = tidyr::fill(regimes, regime)
+    }
+
+    regime = data.frame(date = X.date, X, regime = regimes$regime)
 
   }
 

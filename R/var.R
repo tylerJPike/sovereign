@@ -1,4 +1,7 @@
 
+#------------------------------------------
+# Function to estimate VAR
+#------------------------------------------
 
 # var model, forecast, and error estimation function
 VAR_estimation = function(
@@ -132,9 +135,6 @@ VAR_estimation = function(
   )
 }
 
-#------------------------------------------
-# Function to estimate VAR
-#------------------------------------------
 #' Estimate single-regime VAR
 #'
 #' @param data      data.frame, matrix, ts, xts, zoo: Endogenous regressors
@@ -179,6 +179,21 @@ VAR = function(
   lag.ic = NULL,       # string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
   lag.max = NULL       # int: maximum number of lags to test in lag selection
 ){
+
+  # function warnings
+  if(!is.numeric(p) | p %% 1 != 0){
+    errorCondition('p must be an integer')
+  }
+  if(!is.null(lag.ic)){
+    if(!lag.ic %in% c('BIC','AIC')){
+      errorCondition("lag.ic must be either 'BIC', 'AIC', or NULL")
+    }
+  }
+  if(!is.null(lag.max)){
+    if(lag.max %% 1 != 0){
+      errorCondition('lag.max must be an integer if IC-based lag selection is used')
+    }
+  }
 
   if(!is.null(lag.ic)){
 
@@ -234,30 +249,9 @@ VAR = function(
 # Function to estimate threshold VAR
 #  i.e. state-dependent VARs with an exogenous state-variable
 #-------------------------------------------------------------------
-#' Estimate multi-regime VAR
-#'
-#' @param data     data.frame, matrix, ts, xts, zoo: Endogenous regressors
-#' @param regime   string: name or regime assignment vector in the design matrix (data)
-#' @param p        int: lags
-#' @param horizon  int: forecast horizons
-#' @param freq     string: frequency of data (day, week, month, quarter, year)
-#'
-#' @return list of lists, each regime returns its own list with elements `data`, `model`, `forecasts`, `residuals`
-#'
-#' @examples
-#' \dontrun{
-#' threshold_VAR(
-#'   data = Data,
-#'   regime = 'regime',
-#'   p = 1,
-#'   horizon = 10,
-#'   freq = 'month')
-#' }
-#'
-#' @export
 
-# var function
-threshold_VAR = function(
+# estimate threshold var models, forecasts, and errors
+tVAR_estimate = function(
   data,                # data.frame, matrix, ts, xts, zoo: Endogenous regressors
   regime,              # string: name or regime assignment vector in the design matrix (data)
   p = 1,               # int: lags
@@ -408,10 +402,6 @@ threshold_VAR = function(
 
       r = purrr::reduce(r, dplyr::bind_rows) %>%
         dplyr::arrange(date)
-      # %>%
-      #   dplyr::left_join(
-      #     dplyr::select(Y, regime, date),
-      #     by = 'date')
 
     })
 
@@ -443,3 +433,108 @@ threshold_VAR = function(
     )
   )
 }
+
+#' Estimate multi-regime VAR
+#'
+#' @param data      data.frame, matrix, ts, xts, zoo: Endogenous regressors
+#' @param regime    string: name or regime assignment vector in the design matrix (data)
+#' @param horizon   int: forecast horizons
+#' @param freq      string: frequency of data (day, week, month, quarter, year)
+#' @param p         int: lags
+#' @param lag.ic    string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
+#' @param lag.max   int: maximum number of lags to test in lag selection
+#'
+#' @return list of lists, each regime returns its own list with elements `data`, `model`, `forecasts`, `residuals`
+#'
+#' @examples
+#' \dontrun{
+#' threshold_VAR(
+#'   data = Data,
+#'   regime = 'regime',
+#'   p = 1,
+#'   horizon = 10,
+#'   freq = 'month')
+#' }
+#'
+#' @export
+
+# threshold VAR function
+threshold_VAR = function(
+  data,                # data.frame, matrix, ts, xts, zoo: Endogenous regressors
+  regime,              # string: name or regime assignment vector in the design matrix (data)
+  horizon = 10,        # int: forecast horizons
+  freq = 'month',      # string: frequency of data (day, week, month, quarter, year)
+  p = 1,               # int: lags
+  lag.ic = NULL,       # string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
+  lag.max = NULL       # int: maximum number of lags to test in lag selection
+){
+
+  # function warnings
+  if(!is.numeric(p) | p %% 1 != 0){
+    errorCondition('p must be an integer')
+  }
+  if(!is.null(lag.ic)){
+    if(!lag.ic %in% c('BIC','AIC')){
+      errorCondition("lag.ic must be either 'BIC', 'AIC', or NULL")
+    }
+  }
+  if(!is.null(lag.max)){
+    if(lag.max %% 1 != 0){
+      errorCondition('lag.max must be an integer if IC-based lag selection is used')
+    }
+  }
+
+  if(!is.null(lag.ic) & !is.null(lag.max)){
+
+    ic.scores = vector(length = lag.max+1)
+
+    models = c(1:lag.max) %>%
+      purrr::map(.f  = function(p){
+
+        # estimate candidate model
+        model =
+          tVAR_estimate(
+            data = data,
+            p = p,
+            regime = regime,
+            horizon = horizon,
+            freq = freq
+          )
+
+        # calculate IC
+        ic.score =
+          IC(
+            ic = lag.ic,
+            errors = model$residuals[[1]],
+            data = data,
+            p = p
+          )
+
+        ic.scores[p] = ic.score
+
+        # return candidate model
+        return(model)
+
+      })
+
+    # return IC minimizing VAR
+    min.ic = which.min(ic.scores)
+    model = models[[min.ic]]
+    return(model)
+
+  }else{
+    return(
+      tVAR_estimate(
+        data = data,
+        p = p,
+        regime = regime,
+        horizon = horizon,
+        freq = freq
+      )
+    )
+  }
+
+
+}
+
+
