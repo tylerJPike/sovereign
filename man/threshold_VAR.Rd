@@ -9,6 +9,7 @@ threshold_VAR(
   regime,
   horizon = 10,
   freq = "month",
+  type = "const",
   p = 1,
   lag.ic = NULL,
   lag.max = NULL
@@ -23,6 +24,8 @@ threshold_VAR(
 
 \item{freq}{string: frequency of data (day, week, month, quarter, year)}
 
+\item{type}{string: type of deterministic terms to add ('none', 'const', 'trend', 'both')}
+
 \item{p}{int: lags}
 
 \item{lag.ic}{string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')}
@@ -36,13 +39,35 @@ list of lists, each regime returns its own list with elements \code{data}, \code
 Estimate multi-regime VAR
 }
 \examples{
-\dontrun{
-threshold_VAR(
-  data = Data,
-  regime = 'regime',
-  p = 1,
-  horizon = 10,
-  freq = 'month')
+\donttest{
+
+ # simple time series
+ AA = c(1:100) + rnorm(100)
+ BB = c(1:100) + rnorm(100)
+ CC = AA + BB + rnorm(100)
+ date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+ Data = data.frame(date = date, AA, BB, CC)
+ Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
+
+ # estimate VAR
+ tvar =
+    threshold_VAR(
+      data = Data,
+      p = 1,
+      regime = 'reg',
+      horizon = 10,
+      freq = 'month')
+
+  # or with automatic lag selection
+  tvar =
+    threshold_VAR(
+      data = Data,
+      horizon = 10,
+      freq = 'month',
+      regime = 'reg',
+      lag.ic = 'BIC',
+      lag.max = 4)
+
 }
 
 }

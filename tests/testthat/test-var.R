@@ -14,7 +14,8 @@ test_that("VAR workflow", {
       data = Data,
       p = 1,
       horizon = 10,
-      freq = 'month')
+      freq = 'month',
+      type = 'both')
 
   expect_true(is.list(var))
   expect_true(is.list(var$model))

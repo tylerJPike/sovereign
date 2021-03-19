@@ -4,7 +4,15 @@
 \alias{VAR}
 \title{Estimate single-regime VAR}
 \usage{
-VAR(data, horizon = 10, freq = "month", p = 1, lag.ic = NULL, lag.max = NULL)
+VAR(
+  data,
+  horizon = 10,
+  freq = "month",
+  type = "const",
+  p = 1,
+  lag.ic = NULL,
+  lag.max = NULL
+)
 }
 \arguments{
 \item{data}{data.frame, matrix, ts, xts, zoo: Endogenous regressors}
@@ -12,6 +20,8 @@ VAR(data, horizon = 10, freq = "month", p = 1, lag.ic = NULL, lag.max = NULL)
 \item{horizon}{int: forecast horizons}
 
 \item{freq}{string: frequency of data (day, week, month, quarter, year)}
+
+\item{type}{string: type of deterministic terms to add ('none', 'const', 'trend', 'both')}
 
 \item{p}{int: lags}
 
@@ -26,9 +36,17 @@ list object with elements \code{data}, \code{model}, \code{forecasts}, \code{res
 Estimate single-regime VAR
 }
 \examples{
-\dontrun{
+\donttest{
 
-  var =
+ # simple time series
+ AA = c(1:100) + rnorm(100)
+ BB = c(1:100) + rnorm(100)
+ CC = AA + BB + rnorm(100)
+ date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+ Data = data.frame(date = date, AA, BB, CC)
+
+ # estimate VAR
+ var =
     VAR(
       data = Data,
       p = 1,
@@ -36,7 +54,6 @@ Estimate single-regime VAR
       freq = 'month')
 
   # or with automatic lag selection
-
   var =
     VAR(
       data = Data,

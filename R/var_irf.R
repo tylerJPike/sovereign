@@ -124,7 +124,15 @@ var_irf = function(
   # set variables
   p = var$model$p
   freq = var$model$freq
-  # regressors = colnames(dplyr::select(data, -date))
+
+  if('const' %in% colnames(coef) & 'trend' %in% colnames(coef)){
+    type = 'both'
+  }else if('const' %in% colnames(coef)){
+    type = 'const'
+  }else if('trend' %in% colnames(coef)){
+    type = 'trend'
+  }
+
   p.lower = CI[1]
   p.upper = CI[2]
 
@@ -137,7 +145,7 @@ var_irf = function(
   cov.matrix = var(na.omit(dplyr::select(residuals, -date)))
 
   # estimate IRFs
-  irf = IRF(Phi = dplyr::select(coef, -y, -dplyr::contains('Intercept')),
+  irf = IRF(Phi = dplyr::select(coef, -y, -dplyr::contains('cosnt'), -dplyr::contains('trend')),
             Sig = cov.matrix,
             lag = horizon)
 
@@ -168,8 +176,11 @@ var_irf = function(
         n.lag(lags = p) %>%
         dplyr::select(dplyr::contains('.l'))
 
+      if('const' %in% type | 'both' %in% type){X$const = 1}
+      if('trend' %in% type | 'both' %in% type){X$trend = c(1:nrow(X))}
+
       # estimate time series
-      Y = as.matrix(data.frame(1, X)) %*% as.matrix(t(coef[,-1]))
+      Y = as.matrix(data.frame(X)) %*% as.matrix(t(coef[,-1]))
       Y = Y + U
       colnames(Y) = regressors
       Y = data.frame(Y, date = data$date)
@@ -189,13 +200,14 @@ var_irf = function(
           data = synth,
           p = p,
           horizon = 1,
-          freq = freq)
+          freq = freq,
+          type = type)
 
       # estimate error-covariance matrix
       cov.matrix = var(na.omit(dplyr::select(var.bag$residuals[[1]], -date)))
 
       # estimate IRFs
-      irf = IRF(Phi = dplyr::select(var.bag$model$coef, -y, -dplyr::contains('Intercept')),
+      irf = IRF(Phi = dplyr::select(coef, -y, -dplyr::contains('cosnt'), -dplyr::contains('trend')),
                 Sig = cov.matrix,
                 lag = horizon)
 
@@ -304,6 +316,15 @@ threshold_var_irf = function(
 
   residuals = threshold_var$residuals[[1]]
 
+  if('const' %in% colnames(threshold_var$model[[1]]$coef) &
+     'trend' %in% colnames(threshold_var$model[[1]]$coef)){
+    type = 'both'
+  }else if('const' %in% colnames(threshold_var$model[[1]]$coef)){
+    type = 'const'
+  }else if('trend' %in% colnames(threshold_var$model[[1]]$coef)){
+    type = 'trend'
+  }
+
   p.lower = CI[1]
   p.upper = CI[2]
 
@@ -329,7 +350,7 @@ threshold_var_irf = function(
       cov.matrix = var(na.omit(residuals))
 
       # estimate IRFs
-      irf = IRF(Phi = dplyr::select(coef, -y, -dplyr::contains('Intercept')),
+      irf = IRF(Phi = dplyr::select(coef, -y, -dplyr::contains('cosnt'), -dplyr::contains('trend')),
                 Sig = cov.matrix,
                 lag = horizon)
 
@@ -361,8 +382,11 @@ threshold_var_irf = function(
             dplyr::select(dplyr::contains('.l')) %>%
             dplyr::slice(p:nrow(U))
 
+          if('const' %in% type | 'both' %in% type){X$const = 1}
+          if('trend' %in% type | 'both' %in% type){X$trend = c(1:nrow(X))}
+
           # estimate time series
-          Y = as.matrix(data.frame(1, X)) %*% as.matrix(t(coef[,-1]))
+          Y = as.matrix(X) %*% as.matrix(t(coef[,-1]))
           Y = Y + U
           colnames(Y) = regressors
           Y = data.frame(Y, date = is$date[1:nrow(Y)])
@@ -382,13 +406,14 @@ threshold_var_irf = function(
               data = synth,
               p = p,
               horizon = 1,
-              freq = freq)
+              freq = freq,
+              type = type)
 
           # estimate error-covariance matrix
           cov.matrix = var(na.omit(dplyr::select(var.bag$residuals[[1]], -date)))
 
           # estimate IRFs
-          irf = IRF(Phi = dplyr::select(var.bag$model$coef, -y, -dplyr::contains('Intercept')),
+          irf = IRF(Phi = dplyr::select(coef, -y, -dplyr::contains('cosnt'), -dplyr::contains('trend')),
                     Sig = cov.matrix,
                     lag = horizon)
 

@@ -8,7 +8,8 @@ VAR_estimation = function(
   data,                # data.frame, matrix, ts, xts, zoo: Endogenous regressors
   p = 1,               # int: lags
   horizon = 10,        # int: forecast horizons
-  freq = 'month'       # string: frequency of data (day, week, month, quarter, year)
+  freq = 'month',      # string: frequency of data (day, week, month, quarter, year)
+  type = 'const'       # string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
 ){
 
   # function warnings
@@ -40,15 +41,22 @@ VAR_estimation = function(
   # remove date
   Y = Y %>% dplyr::select(-date)
 
+  # add deterministic components
+  if('const' %in% type |  'both' %in% type){Y$const = 1}
+  if('trend' %in% type |  'both' %in% type){Y$trend = c(1:nrow(Y))}
+
 
   ### estimate coefficients ----------------------
   models = as.list(regressors) %>%
     purrr::map(.f = function(target){
 
-      X = Y %>% dplyr::select(dplyr::contains('.l'), target = target)
+      X = Y %>%
+        dplyr::select(
+          dplyr::contains('.l'), target = target,
+          dplyr::contains('const'), dplyr::contains('trend'))
 
       # estimate OLS
-      model = stats::lm(target ~ ., data = X)
+      model = stats::lm(target ~ . - 1, data = X)
 
       # coefficients
       c = broom::tidy(model) %>% dplyr::select(term, coef = estimate)
@@ -83,15 +91,26 @@ VAR_estimation = function(
 
     # update X
     if(i == 1){
-      X = Y %>% dplyr::select(dplyr::contains('.l'))
+
+      X = Y %>%
+        dplyr::select(
+          dplyr::contains('.l'),
+          dplyr::contains('const'),
+          dplyr::contains('trend'))
+
     }else{
+
       X = forecast_prev %>%
         n.lag(lags = p) %>%
         dplyr::select(dplyr::contains('.l'))
+
+      if('const' %in% type |  'both' %in% type){X$const = 1}
+      if('trend' %in% type |  'both' %in% type){X$trend = c(1:nrow(X)) + (i-1)}
+
     }
 
     # estimate i-step ahead forecast
-    forecast = as.matrix(data.frame(1, X)) %*% as.matrix(t(coef[,-1]))
+    forecast = as.matrix(X) %*% as.matrix(t(coef[,-1]))
     colnames(forecast) = regressors
 
     # add in dates
@@ -140,6 +159,7 @@ VAR_estimation = function(
 #' @param data      data.frame, matrix, ts, xts, zoo: Endogenous regressors
 #' @param horizon   int: forecast horizons
 #' @param freq      string: frequency of data (day, week, month, quarter, year)
+#' @param type      string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
 #' @param p         int: lags
 #' @param lag.ic    string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
 #' @param lag.max   int: maximum number of lags to test in lag selection
@@ -147,9 +167,17 @@ VAR_estimation = function(
 #' @return list object with elements `data`, `model`, `forecasts`, `residuals`
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'
-#'   var =
+#'  # simple time series
+#'  AA = c(1:100) + rnorm(100)
+#'  BB = c(1:100) + rnorm(100)
+#'  CC = AA + BB + rnorm(100)
+#'  date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+#'  Data = data.frame(date = date, AA, BB, CC)
+#'
+#'  # estimate VAR
+#'  var =
 #'     VAR(
 #'       data = Data,
 #'       p = 1,
@@ -157,7 +185,6 @@ VAR_estimation = function(
 #'       freq = 'month')
 #'
 #'   # or with automatic lag selection
-#'
 #'   var =
 #'     VAR(
 #'       data = Data,
@@ -175,6 +202,7 @@ VAR = function(
   data,                # data.frame, matrix, ts, xts, zoo: Endogenous regressors
   horizon = 10,        # int: forecast horizons
   freq = 'month',      # string: frequency of data (day, week, month, quarter, year)
+  type = 'const',      # string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
   p = 1,               # int: lags
   lag.ic = NULL,       # string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
   lag.max = NULL       # int: maximum number of lags to test in lag selection
@@ -208,7 +236,8 @@ VAR = function(
             data = data,
             p = p,
             horizon = horizon,
-            freq = freq
+            freq = freq,
+            type = type
           )
 
         # calculate IC
@@ -238,7 +267,8 @@ VAR = function(
         data = data,
         p = p,
         horizon = horizon,
-        freq = freq
+        freq = freq,
+        type = type
       )
     )
   }
@@ -256,7 +286,8 @@ tVAR_estimate = function(
   regime,              # string: name or regime assignment vector in the design matrix (data)
   p = 1,               # int: lags
   horizon = 10,        # int: forecast horizons
-  freq = 'month'      # string: frequency of data (day, week, month, quarter, year)
+  freq = 'month',      # string: frequency of data (day, week, month, quarter, year)
+  type = 'const'       # string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
 ){
 
   # function warnings
@@ -292,6 +323,10 @@ tVAR_estimate = function(
       dplyr::select(data, regime = regime, date),
       by = 'date')
 
+  # add deterministic components
+  if('const' %in% type | 'both' %in% type){Y$const = 1}
+  if('trend' %in% type | 'both' %in% type){Y$trend = c(1:nrow(Y))}
+
   ### estimate coefficients ----------------------
 
   models = Y %>%
@@ -305,10 +340,13 @@ tVAR_estimate = function(
       models = as.list(regressors) %>%
         purrr::map(.f = function(target){
 
-          X = Y %>% dplyr::select(dplyr::contains('.l'), target = target)
+          X = Y %>%
+            dplyr::select(
+              dplyr::contains('.l'), target = target,
+              dplyr::contains('const'), dplyr::contains('trend'))
 
           # estimate OLS
-          model = stats::lm(target ~ ., data = X)
+          model = stats::lm(target ~ . - 1, data = X)
 
           # coefficients
           c = broom::tidy(model) %>% dplyr::select(term, coef = estimate)
@@ -358,15 +396,26 @@ tVAR_estimate = function(
 
         # update X
         if(i == 1){
-          X = Y %>% dplyr::select(dplyr::contains('.l'))
+
+          X = Y %>%
+            dplyr::select(
+              dplyr::contains('.l'),
+              dplyr::contains('const'),
+              dplyr::contains('trend'))
+
         }else{
+
           X = forecast_prev %>%
             n.lag(lags = p) %>%
             dplyr::select(dplyr::contains('.l'))
+
+          if('const' %in% type |  'both' %in% type){X$const = 1}
+          if('trend' %in% type |  'both' %in% type){X$trend = c(1:nrow(X)) + (i-1)}
+
         }
 
         # estimate i-step ahead forecast
-        forecast = as.matrix(data.frame(1, X)) %*% as.matrix(t(coef[,-1]))
+        forecast = as.matrix(X) %*% as.matrix(t(coef[,-1]))
         colnames(forecast) = regressors
 
         # add in dates
@@ -440,20 +489,43 @@ tVAR_estimate = function(
 #' @param regime    string: name or regime assignment vector in the design matrix (data)
 #' @param horizon   int: forecast horizons
 #' @param freq      string: frequency of data (day, week, month, quarter, year)
+#' @param type      string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
 #' @param p         int: lags
 #' @param lag.ic    string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
 #' @param lag.max   int: maximum number of lags to test in lag selection
 #'
 #' @return list of lists, each regime returns its own list with elements `data`, `model`, `forecasts`, `residuals`
 #'
-#' @examples
-#' \dontrun{
-#' threshold_VAR(
-#'   data = Data,
-#'   regime = 'regime',
-#'   p = 1,
-#'   horizon = 10,
-#'   freq = 'month')
+##' @examples
+#' \donttest{
+#'
+#'  # simple time series
+#'  AA = c(1:100) + rnorm(100)
+#'  BB = c(1:100) + rnorm(100)
+#'  CC = AA + BB + rnorm(100)
+#'  date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+#'  Data = data.frame(date = date, AA, BB, CC)
+#'  Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
+#'
+#'  # estimate VAR
+#'  tvar =
+#'     threshold_VAR(
+#'       data = Data,
+#'       p = 1,
+#'       regime = 'reg',
+#'       horizon = 10,
+#'       freq = 'month')
+#'
+#'   # or with automatic lag selection
+#'   tvar =
+#'     threshold_VAR(
+#'       data = Data,
+#'       horizon = 10,
+#'       freq = 'month',
+#'       regime = 'reg',
+#'       lag.ic = 'BIC',
+#'       lag.max = 4)
+#'
 #' }
 #'
 #' @export
@@ -464,6 +536,7 @@ threshold_VAR = function(
   regime,              # string: name or regime assignment vector in the design matrix (data)
   horizon = 10,        # int: forecast horizons
   freq = 'month',      # string: frequency of data (day, week, month, quarter, year)
+  type = 'const',      # string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
   p = 1,               # int: lags
   lag.ic = NULL,       # string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
   lag.max = NULL       # int: maximum number of lags to test in lag selection
@@ -498,7 +571,8 @@ threshold_VAR = function(
             p = p,
             regime = regime,
             horizon = horizon,
-            freq = freq
+            freq = freq,
+            type = type
           )
 
         # calculate IC
@@ -529,7 +603,8 @@ threshold_VAR = function(
         p = p,
         regime = regime,
         horizon = horizon,
-        freq = freq
+        freq = freq,
+        type = type
       )
     )
   }
