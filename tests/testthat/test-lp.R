@@ -8,12 +8,14 @@ test_that("Local projection workflow", {
   Data = data.frame(date = date, AA, BB, CC)
   Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
 
-  # local projection forecasts (new workflow)
+  # local projection forecasts
   lp =
     LP(
       data = Data,
-      p = 1,
       horizon = 1,
+      lag.ic = 'AIC',
+      lag.max = 4,
+      type =  'none',
       freq = 'month')
 
   expect_true(is.list(lp))
@@ -26,7 +28,10 @@ test_that("Local projection workflow", {
       data = Data,
       p = 1,
       horizon = c(1:10),
+      type = 'both',
       NW = TRUE,
+      NW_prewhite = FALSE,
+      NW_lags = 1,
       freq = 'month')
 
   expect_true(is.list(lp))
@@ -50,6 +55,19 @@ test_that("Local projection workflow", {
       p = 1,
       horizon = c(1:10),
       NW = FALSE,
+      freq = 'month')
+
+
+  expect_true(is.list(tlp))
+
+  tlp =
+    threshold_LP(
+      data = Data,
+      regime = 'reg',
+      type = 'both',
+      horizon = c(1:10),
+      lag.ic = 'AIC',
+      lag.max = 4,
       freq = 'month')
 
   expect_true(is.list(tlp))

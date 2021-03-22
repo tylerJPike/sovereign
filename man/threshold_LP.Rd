@@ -7,12 +7,15 @@
 threshold_LP(
   data,
   regime,
-  p = 1,
   horizons = 1,
   freq = "month",
+  type = "const",
+  p = 1,
+  lag.ic = NULL,
+  lag.max = NULL,
   NW = FALSE,
   NW_lags = NULL,
-  NW_prewhite = TRUE
+  NW_prewhite = NULL
 )
 }
 \arguments{
@@ -20,11 +23,17 @@ threshold_LP(
 
 \item{regime}{string: name or regime assignment vector in the design matrix (data)}
 
-\item{p}{int: lags}
-
 \item{horizons}{int: forecast horizons}
 
 \item{freq}{string: frequency of data (day, week, month, quarter, year)}
+
+\item{type}{string: type of deterministic terms to add ('none', 'const', 'trend', 'both')}
+
+\item{p}{int: lags}
+
+\item{lag.ic}{string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')}
+
+\item{lag.max}{int: maximum number of lags to test in lag selection}
 
 \item{NW}{boolean: Newey-West correction on variance-covariance matrix}
 
@@ -39,13 +48,33 @@ list object with elements \code{data}, \code{model}, \code{forecasts}, \code{res
 Estimate multi-regime local projections
 }
 \examples{
-\dontrun{
-threshold_LP(
-  data = Data,
-  regime = 'regime',
-  p = 1,
-  horizon = 1,
-  freq = 'month')
+\donttest{
+
+  # simple time series
+  AA = c(1:100) + rnorm(100)
+  BB = c(1:100) + rnorm(100)
+  CC = AA + BB + rnorm(100)
+  date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+  Data = data.frame(date = date, AA, BB, CC)
+  # add regime
+  Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
+
+  # local projection forecasts
+  tlp =
+    threshold_LP(
+      data = Data,
+      regime = 'reg',
+      horizon = c(1:10),
+      freq = 'month',
+      p = 1,,
+      type =  'const',
+      NW = TRUE,
+      NW_lags = 1,
+      NW_prewhite = FALSE)
+
+ # impulse response function
+ tirf = threshold_lp_irf(tlp)
+
 }
 
 }

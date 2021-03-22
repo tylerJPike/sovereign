@@ -20,18 +20,28 @@ long-form data.frame with one row per target-shock-horizon identifier
 Estimate single-regime impulse response functions
 }
 \examples{
-\dontrun{
-lp =
-  LP(
-    data = Data,
-    p = 1,
-    horizon = 1,
-    freq = 'month')
+\donttest{
 
-irf =
-  lp_irf(
-    lp,
-    CI = c(0.05,0.95))
+  # simple time series
+  AA = c(1:100) + rnorm(100)
+  BB = c(1:100) + rnorm(100)
+  CC = AA + BB + rnorm(100)
+  date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+  Data = data.frame(date = date, AA, BB, CC)
+
+  # local projection forecasts
+  lp =
+    LP(
+      data = Data,
+      horizon = c(1:10),
+      lag.ic = 'AIC',
+      lag.max = 4,
+      type =  'both',
+      freq = 'month')
+
+  # impulse response function
+  irf = lp_irf(lp)
+
 }
 
 }

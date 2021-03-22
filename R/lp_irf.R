@@ -10,18 +10,28 @@
 #' @return long-form data.frame with one row per target-shock-horizon identifier
 #'
 #' @examples
-#' \dontrun{
-#' lp =
-#'   LP(
-#'     data = Data,
-#'     p = 1,
-#'     horizon = 1,
-#'     freq = 'month')
+#' \donttest{
 #'
-#' irf =
-#'   lp_irf(
-#'     lp,
-#'     CI = c(0.05,0.95))
+#'   # simple time series
+#'   AA = c(1:100) + rnorm(100)
+#'   BB = c(1:100) + rnorm(100)
+#'   CC = AA + BB + rnorm(100)
+#'   date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+#'   Data = data.frame(date = date, AA, BB, CC)
+#'
+#'   # local projection forecasts
+#'   lp =
+#'     LP(
+#'       data = Data,
+#'       horizon = c(1:10),
+#'       lag.ic = 'AIC',
+#'       lag.max = 4,
+#'       type =  'both',
+#'       freq = 'month')
+#'
+#'   # impulse response function
+#'   irf = lp_irf(lp)
+#'
 #' }
 #'
 #' @export
@@ -35,6 +45,9 @@ lp_irf = function(
   # function warnings
   if(!is.numeric(CI) | length(CI) != 2 | min(CI) < 0 | max(CI) > 1 | is.na(sum(CI))){
     errorCondition('CI must be a two element numeric vector bound [0,1]')
+  }
+  if(!'H_1' %in% names(lp$model)){
+    errorCondition('The Lp object must have more than one horizon to generate impulse responses')
   }
 
   # set data
@@ -52,7 +65,7 @@ lp_irf = function(
       # extract coefficients
       coef = horizon$coef %>%
         dplyr::rename(target = y) %>%
-        dplyr::select(-dplyr::contains('Intercept')) %>%
+        dplyr::select(-dplyr::contains('const'), -dplyr::contains('trend')) %>%
         tidyr::pivot_longer(cols = dplyr::all_of(regressors.cols), names_to = 'shock', values_to = 'coef') %>%
         dplyr::mutate(horizon = horizon$horizon,
                       shock = stringr::str_replace(shock, '.l1',''))%>%
@@ -61,7 +74,7 @@ lp_irf = function(
       # extract se
       se = horizon$se %>%
         dplyr::rename(target = y) %>%
-        dplyr::select(-dplyr::contains('Intercept')) %>%
+        dplyr::select(-dplyr::contains('const'), -dplyr::contains('trend')) %>%
         tidyr::pivot_longer(cols = dplyr::all_of(regressors.cols), names_to = 'shock', values_to = 'se') %>%
         dplyr::mutate(horizon = horizon$horizon,
                       shock = stringr::str_replace(shock, '.l1','')) %>%
@@ -99,19 +112,32 @@ lp_irf = function(
 #' @return list of long-form data.frame with one row per target-shock-horizon identifier
 #'
 #' @examples
-#' \dontrun{
-#' tlp =
-#'   threshold_LP(
-#'     data = Data,
-#'     regime = 'regime',
-#'     p = 1,
-#'     horizon = 1,
-#'     freq = 'month')
+#' \donttest{
 #'
-#' tirf =
-#'   threshold_lp_irf(
-#'     threshold_lp = tlp,
-#'     CI = c(0.05,0.95))
+#'   # simple time series
+#'   AA = c(1:100) + rnorm(100)
+#'   BB = c(1:100) + rnorm(100)
+#'   CC = AA + BB + rnorm(100)
+#'   date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+#'   Data = data.frame(date = date, AA, BB, CC)
+#'   # add regime
+#'   Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
+#'
+#'   # local projection forecasts
+#'   tlp =
+#'     threshold_LP(
+#'       data = Data,
+#'       regime = 'reg',
+#'       horizon = c(1:10),
+#'       freq = 'month',
+#'       p = 1,,
+#'       type =  'const',
+#'       NW = TRUE,
+#'       NW_lags = 1,
+#'       NW_prewhite = FALSE)
+#'
+#'  # impulse response function
+#'  tirf = threshold_lp_irf(tlp)
 #' }
 #'
 #' @export

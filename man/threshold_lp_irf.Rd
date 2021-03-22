@@ -18,19 +18,32 @@ list of long-form data.frame with one row per target-shock-horizon identifier
 Estimate multi-regime impulse response functions
 }
 \examples{
-\dontrun{
-tlp =
-  threshold_LP(
-    data = Data,
-    regime = 'regime',
-    p = 1,
-    horizon = 1,
-    freq = 'month')
+\donttest{
 
-tirf =
-  threshold_lp_irf(
-    threshold_lp = tlp,
-    CI = c(0.05,0.95))
+  # simple time series
+  AA = c(1:100) + rnorm(100)
+  BB = c(1:100) + rnorm(100)
+  CC = AA + BB + rnorm(100)
+  date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+  Data = data.frame(date = date, AA, BB, CC)
+  # add regime
+  Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
+
+  # local projection forecasts
+  tlp =
+    threshold_LP(
+      data = Data,
+      regime = 'reg',
+      horizon = c(1:10),
+      freq = 'month',
+      p = 1,,
+      type =  'const',
+      NW = TRUE,
+      NW_lags = 1,
+      NW_prewhite = FALSE)
+
+ # impulse response function
+ tirf = threshold_lp_irf(tlp)
 }
 
 }

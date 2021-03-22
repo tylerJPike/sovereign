@@ -1,51 +1,19 @@
 #------------------------------------------
 # Function to estimate LP
 #------------------------------------------
-#' Estimate single-regime local projections
-#'
-#' @param data         data.frame, matrix, ts, xts, zoo: Endogenous regressors
-#' @param p            int: lags
-#' @param horizons     int: forecast horizons
-#' @param freq         string: frequency of data (day, week, month, quarter, year)
-#' @param NW           boolean: Newey-West correction on variance-covariance matrix
-#' @param NW_lags      int: number of lags to use in Newey-West correction
-#' @param NW_prewhite  boolean: TRUE prewhite option for Newey-West correction (see sandwich::NeweyWest function)
-#'
-#' @return list object with elements `data`, `model`, `forecasts`, `residuals`; if there is more than one forecast horizon estimated, then `model`, `forecasts`, `residuals` will each be a list where each element corresponds to a single horizon
-#'
-#' @examples
-#' \dontrun{
-#' LP(
-#'   data = Data,
-#'   p = 1,
-#'   horizon = 1,
-#'   freq = 'month')
-#' }
-#'
-#' @export
 
-# LP function
-LP = function(
+# LP estimate LP models, forecasts and residuals
+LP_estimate = function(
   data,                   # data.frame, matrix, ts, xts, zoo: Endogenous regressors
   p = 1,                  # int: lags
-  horizons = 1,            # int: forecast horizons, can be a numeric vector with multiple horizons
+  horizons = 1,           # int: forecast horizons, can be a numeric vector with multiple horizons
   freq = 'month',         # string: frequency of data (day, week, month, quarter, year)
+  type = 'const',         # string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
   # OLS-based IRF parameters
   NW = FALSE,             # Newey-West correction on variance-covariance matrix
   NW_lags = NULL,         # number of lags to use in Newey-West correction
-  NW_prewhite = TRUE      # prewhite option for Newey-West correction (see sandwich::NeweyWest function)
+  NW_prewhite = NULL      # prewhite option for Newey-West correction (see sandwich::NeweyWest function)
 ){
-
-  # function warnings
-  if(!is.matrix(data) & !is.data.frame(data)){
-    errorCondition('data must be a matrix or data.frame')
-  }
-  if(!is.numeric(p) | p %% 1 != 0){
-    errorCondition('p must be an integer')
-  }
-  if(!freq %in% c('day','week','month','quarter','year')){
-    errorCondition("freq must be one of the following strings: 'day','week','month','quarter','year'")
-  }
 
   # cast as data frame if ts, xts, or zoo object
   if(is.ts(data) | xts::is.xts(data) | zoo::is.zoo(data)){
@@ -62,6 +30,10 @@ LP = function(
   # remove date
   Y = Y %>% dplyr::select(-date)
 
+  # add deterministic components
+  if('const' %in% type | 'both' %in% type){Y$const = 1}
+  if('trend' %in% type | 'both' %in% type){Y$trend = c(1:nrow(Y))}
+
   # operate by horizon
   outputs = as.list(horizons) %>%
     purrr::map(.f = function(horizon){
@@ -73,14 +45,16 @@ LP = function(
         # lead target
         if(horizon > 1){
           X = Y %>%
-            dplyr::select(dplyr::contains('.l'), target = target) %>%
+            dplyr::select(dplyr::contains('.l'), target = target,
+                          dplyr::contains('const'), dplyr::contains('trend')) %>%
             dplyr::mutate(target = dplyr::lead(target, horizon-1))
         }else{
-          X = Y %>% dplyr::select(dplyr::contains('.l'), target = target)
+          X = Y %>% dplyr::select(dplyr::contains('.l'), target = target,
+                                  dplyr::contains('const'), dplyr::contains('trend'))
         }
 
         # estimate OLS
-        model = stats::lm(target ~ ., data = X)
+        model = stats::lm(target ~ . -1, data = X)
 
         # correct standard errors
         if(NW == TRUE){
@@ -117,10 +91,11 @@ LP = function(
     ### estimate forecasts -----------------------
 
     # set design matrix
-    X = Y %>% dplyr::select(dplyr::contains('.l'))
+    X = Y %>% dplyr::select(dplyr::contains('.l'),
+                            dplyr::contains('const'), dplyr::contains('trend'))
 
     # estimate i-step ahead forecast
-    forecast = as.matrix(data.frame(1, X)) %*% as.matrix(t(coef[,-1]))
+    forecast = as.matrix(X) %*% as.matrix(t(coef[,-1]))
     colnames(forecast) = regressors
 
     # add in dates
@@ -170,17 +145,15 @@ LP = function(
 
 }
 
-
-#------------------------------------------
-# Function to estimate threshold LP
-#------------------------------------------
-#' Estimate multi-regime local projections
+#' Estimate single-regime local projections
 #'
-#' @param data     data.frame, matrix, ts, xts, zoo: Endogenous regressors
-#' @param regime   string: name or regime assignment vector in the design matrix (data)
-#' @param p        int: lags
-#' @param horizons int: forecast horizons
-#' @param freq     string: frequency of data (day, week, month, quarter, year)
+#' @param data         data.frame, matrix, ts, xts, zoo: Endogenous regressors
+#' @param horizons     int: forecast horizons
+#' @param freq         string: frequency of data (day, week, month, quarter, year)
+#' @param type         string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
+#' @param p            int: lags
+#' @param lag.ic       string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
+#' @param lag.max      int: maximum number of lags to test in lag selection
 #' @param NW           boolean: Newey-West correction on variance-covariance matrix
 #' @param NW_lags      int: number of lags to use in Newey-West correction
 #' @param NW_prewhite  boolean: TRUE prewhite option for Newey-West correction (see sandwich::NeweyWest function)
@@ -188,31 +161,63 @@ LP = function(
 #' @return list object with elements `data`, `model`, `forecasts`, `residuals`; if there is more than one forecast horizon estimated, then `model`, `forecasts`, `residuals` will each be a list where each element corresponds to a single horizon
 #'
 #' @examples
-#' \dontrun{
-#' threshold_LP(
-#'   data = Data,
-#'   regime = 'regime',
-#'   p = 1,
-#'   horizon = 1,
-#'   freq = 'month')
+#' \donttest{
+#'
+#'   # simple time series
+#'   AA = c(1:100) + rnorm(100)
+#'   BB = c(1:100) + rnorm(100)
+#'   CC = AA + BB + rnorm(100)
+#'   date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+#'   Data = data.frame(date = date, AA, BB, CC)
+#'
+#'   # local projection forecasts
+#'   lp =
+#'     LP(
+#'       data = Data,
+#'       horizon = c(1:10),
+#'       lag.ic = 'AIC',
+#'       lag.max = 4,
+#'       type =  'both',
+#'       freq = 'month')
+#'
+#'   # impulse response function
+#'   irf = lp_irf(lp)
+#'
 #' }
 #'
 #' @export
-
-# LP function
-threshold_LP = function(
+LP = function(
   data,                   # data.frame, matrix, ts, xts, zoo: Endogenous regressors
-  regime,                 # string: name or regime assignment vector in the design matrix (data)
-  p = 1,                  # int: lags
   horizons = 1,           # int: forecast horizons, can be a numeric vector with multiple horizons
   freq = 'month',         # string: frequency of data (day, week, month, quarter, year)
+  type = 'const',         # string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
+  # lag selection
+  p = 1,                  # int: lags
+  lag.ic = NULL,          # string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
+  lag.max = NULL,         # int: maximum number of lags to test in lag selection
   # OLS-based IRF parameters
   NW = FALSE,             # Newey-West correction on variance-covariance matrix
   NW_lags = NULL,         # number of lags to use in Newey-West correction
-  NW_prewhite = TRUE      # prewhite option for Newey-West correction (see sandwich::NeweyWest function)
+  NW_prewhite = NULL      # prewhite option for Newey-West correction (see sandwich::NeweyWest function)
 ){
 
   # function warnings
+  if(!is.numeric(p) | p %% 1 != 0){
+    errorCondition('p must be an integer')
+  }
+  if(!is.null(lag.ic)){
+    if(!lag.ic %in% c('BIC','AIC')){
+      errorCondition("lag.ic must be either 'BIC', 'AIC', or NULL")
+    }
+  }
+  if(!is.null(lag.max)){
+    if(lag.max %% 1 != 0){
+      errorCondition('lag.max must be an integer if IC-based lag selection is used')
+    }
+  }
+  if(!type %in% c('none', 'const', 'trend', 'both')){
+    errorCondition('type must be one of the following strings: "none", "const", "trend", "both"')
+  }
   if(!is.matrix(data) & !is.data.frame(data)){
     errorCondition('data must be a matrix or data.frame')
   }
@@ -222,9 +227,93 @@ threshold_LP = function(
   if(!freq %in% c('day','week','month','quarter','year')){
     errorCondition("freq must be one of the following strings: 'day','week','month','quarter','year'")
   }
-  if(!regime %in% colnames(data)){
-    errorCondition('regime must be the name of a column in data')
+
+ # estimate LP
+  if(!is.null(lag.ic)){
+
+    ic.scores = vector(length = lag.max+1)
+
+    models = c(1:lag.max) %>%
+      purrr::map(.f  = function(p){
+
+        # estimate candidate model
+        model =
+          LP_estimate(
+            data,
+            p = p,
+            horizons = horizons,
+            freq = freq,
+            type = type,
+            NW = NW,
+            NW_lags = NW_lags,
+            NW_prewhite = NW_prewhite
+          )
+
+        # calculate IC
+        if(length(horizons) > 1){
+          ic.score =
+            IC(
+              ic = lag.ic,
+              errors = model$residuals[[1]],
+              data = data,
+              p = p
+            )
+        }else{
+          ic.score =
+            IC(
+              ic = lag.ic,
+              errors = model$residuals,
+              data = data,
+              p = p
+            )
+        }
+
+        ic.scores[p] = ic.score
+
+        # return candidate model
+        return(model)
+
+      })
+
+    # return IC minimizing VAR
+    min.ic = which.min(ic.scores)
+    model = models[[min.ic]]
+    return(model)
+
+  }else{
+    return(
+      LP_estimate(
+        data,
+        p = p,
+        horizons = horizons,
+        freq = freq,
+        type = type,
+        NW = NW,
+        NW_lags = NW_lags,
+        NW_prewhite = NW_prewhite
+      )
+    )
   }
+
+}
+
+#------------------------------------------
+# Function to estimate threshold LP
+#------------------------------------------
+
+# estimate multi-regime LP models, forecasts, and residuals
+threshold_LP_estimate = function(
+  data,                   # data.frame, matrix, ts, xts, zoo: Endogenous regressors
+  regime,                 # string: name or regime assignment vector in the design matrix (data)
+  p = 1,                  # int: lags
+  horizons = 1,           # int: forecast horizons, can be a numeric vector with multiple horizons
+  freq = 'month',         # string: frequency of data (day, week, month, quarter, year)
+  type = 'const',         # string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
+  # OLS-based IRF parameters
+  NW = FALSE,             # Newey-West correction on variance-covariance matrix
+  NW_lags = NULL,         # number of lags to use in Newey-West correction
+  NW_prewhite = TRUE      # prewhite option for Newey-West correction (see sandwich::NeweyWest function)
+){
 
   # cast as data frame if ts, xts, or zoo object
   if(is.ts(data) | xts::is.xts(data) | zoo::is.zoo(data)){
@@ -242,8 +331,12 @@ threshold_LP = function(
       dplyr::select(data, regime = regime, date),
       by = 'date')
 
-  regimes = unique(Y$regime)
+  # add deterministic components
+  if('const' %in% type | 'both' %in% type){Y$const = 1}
+  if('trend' %in% type | 'both' %in% type){Y$trend = c(1:nrow(Y))}
 
+  # detect regime values
+  regimes = unique(Y$regime)
 
   ### estimate coefficients ----------------------
   # iterate by regime
@@ -261,7 +354,8 @@ threshold_LP = function(
             if(horizon > 1){
 
               X = Y %>%
-                dplyr::select(dplyr::contains('.l'), target = target, regime = regime) %>%
+                dplyr::select(dplyr::contains('.l'), target = target, regime = regime,
+                              dplyr::contains('const'), dplyr::contains('trend')) %>%
                 dplyr::mutate(target = dplyr::lead(target, horizon-1)) %>%
                 dplyr::filter(regime == regime.val) %>%
                 dplyr::select(-regime)
@@ -269,14 +363,15 @@ threshold_LP = function(
             }else{
 
               X = Y %>%
-                dplyr::select(dplyr::contains('.l'), target = target, regime = regime) %>%
+                dplyr::select(dplyr::contains('.l'), target = target, regime = regime,
+                              dplyr::contains('const'), dplyr::contains('trend')) %>%
                 dplyr::filter(regime == regime.val) %>%
                 dplyr::select(-regime)
 
             }
 
             # estimate OLS
-            model = stats::lm(target ~ ., data = X)
+            model = stats::lm(target ~ .-1, data = X)
 
             # correct standard errors
             if(NW == TRUE){
@@ -335,10 +430,11 @@ threshold_LP = function(
 
           coef = models[[paste0('regime_', regime.val)]][[paste0('H_',horizon)]]$coef
 
-          X = Y %>% dplyr::select(dplyr::contains('.l'))
+          X = Y %>% dplyr::select(dplyr::contains('.l'),
+                                  dplyr::contains('const'), dplyr::contains('trend'))
 
 
-          forecast = as.matrix(data.frame(1, X)) %*% as.matrix(t(coef[,-1]))
+          forecast = as.matrix(X) %*% as.matrix(t(coef[,-1]))
           colnames(forecast) = regressors
 
           forecasts =
@@ -410,5 +506,170 @@ threshold_LP = function(
       regime = regime
     )
   )
+
+}
+
+#' Estimate multi-regime local projections
+#'
+#' @param data         data.frame, matrix, ts, xts, zoo: Endogenous regressors
+#' @param regime       string: name or regime assignment vector in the design matrix (data)
+#' @param horizons     int: forecast horizons
+#' @param freq         string: frequency of data (day, week, month, quarter, year)
+#' @param type         string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
+#' @param p            int: lags
+#' @param lag.ic       string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
+#' @param lag.max      int: maximum number of lags to test in lag selection
+#' @param NW           boolean: Newey-West correction on variance-covariance matrix
+#' @param NW_lags      int: number of lags to use in Newey-West correction
+#' @param NW_prewhite  boolean: TRUE prewhite option for Newey-West correction (see sandwich::NeweyWest function)
+#'
+#' @return list object with elements `data`, `model`, `forecasts`, `residuals`; if there is more than one forecast horizon estimated, then `model`, `forecasts`, `residuals` will each be a list where each element corresponds to a single horizon
+#'
+#' @examples
+#' \donttest{
+#'
+#'   # simple time series
+#'   AA = c(1:100) + rnorm(100)
+#'   BB = c(1:100) + rnorm(100)
+#'   CC = AA + BB + rnorm(100)
+#'   date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+#'   Data = data.frame(date = date, AA, BB, CC)
+#'   # add regime
+#'   Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
+#'
+#'   # local projection forecasts
+#'   tlp =
+#'     threshold_LP(
+#'       data = Data,
+#'       regime = 'reg',
+#'       horizon = c(1:10),
+#'       freq = 'month',
+#'       p = 1,,
+#'       type =  'const',
+#'       NW = TRUE,
+#'       NW_lags = 1,
+#'       NW_prewhite = FALSE)
+#'
+#'  # impulse response function
+#'  tirf = threshold_lp_irf(tlp)
+#'
+#' }
+#'
+#' @export
+
+threshold_LP = function(
+  data,                   # data.frame, matrix, ts, xts, zoo: Endogenous regressors
+  regime,                 # string: name or regime assignment vector in the design matrix (data)
+  horizons = 1,           # int: forecast horizons, can be a numeric vector with multiple horizons
+  freq = 'month',         # string: frequency of data (day, week, month, quarter, year)
+  type = 'const',         # string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
+  # lag selection
+  p = 1,                  # int: lags
+  lag.ic = NULL,          # string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
+  lag.max = NULL,         # int: maximum number of lags to test in lag selection
+  # OLS-based IRF parameters
+  NW = FALSE,             # Newey-West correction on variance-covariance matrix
+  NW_lags = NULL,         # number of lags to use in Newey-West correction
+  NW_prewhite = NULL      # prewhite option for Newey-West correction (see sandwich::NeweyWest function)
+){
+
+  # function warnings
+  if(!is.numeric(p) | p %% 1 != 0){
+    errorCondition('p must be an integer')
+  }
+  if(!is.null(lag.ic)){
+    if(!lag.ic %in% c('BIC','AIC')){
+      errorCondition("lag.ic must be either 'BIC', 'AIC', or NULL")
+    }
+  }
+  if(!is.null(lag.max)){
+    if(lag.max %% 1 != 0){
+      errorCondition('lag.max must be an integer if IC-based lag selection is used')
+    }
+  }
+  if(!is.matrix(data) & !is.data.frame(data)){
+    errorCondition('data must be a matrix or data.frame')
+  }
+  if(!is.numeric(p) | p %% 1 != 0){
+    errorCondition('p must be an integer')
+  }
+  if(!freq %in% c('day','week','month','quarter','year')){
+    errorCondition("freq must be one of the following strings: 'day','week','month','quarter','year'")
+  }
+  if(!regime %in% colnames(data)){
+    errorCondition('regime must be the name of a column in data')
+  }
+  if(!type %in% c('none', 'const', 'trend', 'both')){
+    errorCondition('type must be one of the following strings: "none", "const", "trend", "both"')
+  }
+
+  # estimate LP
+  if(!is.null(lag.ic)){
+
+    ic.scores = vector(length = lag.max+1)
+
+    models = c(1:lag.max) %>%
+      purrr::map(.f  = function(p){
+
+        # estimate candidate model
+        model =
+          threshold_LP_estimate(
+            data,
+            p = p,
+            regime = regime,
+            horizons = horizons,
+            freq = freq,
+            type = type,
+            NW = NW,
+            NW_lags = NW_lags,
+            NW_prewhite = NW_prewhite
+          )
+
+        # calculate IC
+        if(length(horizons) > 1){
+          ic.score =
+            IC(
+              ic = lag.ic,
+              errors = model$residuals[[1]],
+              data = data,
+              p = p
+            )
+        }else{
+          ic.score =
+            IC(
+              ic = lag.ic,
+              errors = model$residuals,
+              data = data,
+              p = p
+            )
+        }
+
+        ic.scores[p] = ic.score
+
+        # return candidate model
+        return(model)
+
+      })
+
+    # return IC minimizing VAR
+    min.ic = which.min(ic.scores)
+    model = models[[min.ic]]
+    return(model)
+
+  }else{
+    return(
+      threshold_LP_estimate(
+        data,
+        p = p,
+        regime = regime,
+        horizons = horizons,
+        freq = freq,
+        type = type,
+        NW = NW,
+        NW_lags = NW_lags,
+        NW_prewhite = NW_prewhite
+      )
+    )
+  }
 
 }
