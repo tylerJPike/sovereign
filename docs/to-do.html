@@ -54,6 +54,16 @@
 <![endif]-->
 
 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7Z8WPQX0E6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-7Z8WPQX0E6');
+</script>
+
 
   </head>
 
@@ -129,14 +139,15 @@
 <ol>
 <li>code
 <ol>
-<li>fix forecasting &amp; unify with OOS output</li>
-<li><del>parametric regime labeling</del></li>
-<li><del>Reogranize VAR output</del></li>
-<li>add warning when threshold method is used with only one regime</li>
-<li>add strucchange::breakpoint to regime learning</li>
-<li><del>add forecast chart</del></li>
-<li><del>add residuals chart</del></li>
-<li>add regime chart<br>
+<li>fix forecasting</li>
+<li>fix IRF CI (?)</li>
+<li>regime chart</li>
+<li>LP
+<ol>
+<li>lag selection</li>
+<li>deterministic terms<br>
+</li>
+</ol>
 </li>
 </ol>
 </li>
@@ -145,7 +156,7 @@
 <li>document output structure by function (see below)</li>
 <li>include runnable examples by function</li>
 <li>add academic references</li>
-<li>vignette</li>
+<li>update vignette</li>
 </ol>
 </li>
 </ol>
@@ -157,9 +168,7 @@
 <li>Code
 <ol>
 <li>Forecasting with expected outcome weighted by prob of state</li>
-<li>Univariate - AR - model<br>
-</li>
-<li>VAR and LP bells and whistles</li>
+<li>State-dependent ML</li>
 </ol>
 </li>
 <li>Documentation</li>
@@ -169,11 +178,7 @@
 <h2 class="hasAnchor">
 <a href="#low-priority" class="anchor"></a>Low Priority</h2>
 <ol>
-<li>Code
-<ol>
-<li>State-dependent ML<br>
-</li>
-</ol>
+<li>Code<br>
 </li>
 <li>Documentation</li>
 </ol>
