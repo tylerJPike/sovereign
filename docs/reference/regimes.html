@@ -40,7 +40,8 @@
 
 
 <meta property="og:title" content="Assign regimes via unsupervised machine learning methods — regimes" />
-<meta property="og:description" content="Regime assignment (clustering) methods available include the unsupervised random forest, k-mean clustering, and EM via Fraley and Raftery Model-based clustering." />
+<meta property="og:description" content="Regime assignment (clustering) methods available include the unsupervised random forest, k-mean clustering,
+and EM via Fraley and Raftery Model-based clustering, Bai &amp;amp; Perron (2003) algorithm for simultaneous estimation of multiple breakpoints." />
 
 
 
@@ -54,6 +55,16 @@
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
 
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7Z8WPQX0E6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-7Z8WPQX0E6');
+</script>
 
 
   </head>
@@ -125,7 +136,8 @@
     </div>
 
     <div class="ref-description">
-    <p>Regime assignment (clustering) methods available include the <a href='https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest'>unsupervised random forest</a>, <a href='https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/kmeans'>k-mean clustering</a>, and EM via <a href='https://www.rdocumentation.org/packages/mclust/versions/5.4.7/topics/Mclust'>Fraley and Raftery Model-based clustering</a>.</p>
+    <p>Regime assignment (clustering) methods available include the <a href='https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest'>unsupervised random forest</a>, <a href='https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/kmeans'>k-mean clustering</a>,
+and EM via <a href='https://www.rdocumentation.org/packages/mclust/versions/5.4.7/topics/Mclust'>Fraley and Raftery Model-based clustering</a>, <a href='https://www.rdocumentation.org/packages/strucchange/versions/1.5-2/topics/breakpoints'>Bai &amp; Perron (2003) algorithm</a> for simultaneous estimation of multiple breakpoints.</p>
     </div>
 
     <pre class="usage"><span class='fu'>regimes</span><span class='op'>(</span><span class='va'>data</span>, regime.n <span class='op'>=</span> <span class='cn'>NULL</span>, engine <span class='op'>=</span> <span class='st'>"rf"</span><span class='op'>)</span></pre>
