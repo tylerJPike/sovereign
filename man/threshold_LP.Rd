@@ -6,7 +6,6 @@
 \usage{
 threshold_LP(
   data,
-  regime,
   horizons = 1,
   freq = "month",
   type = "const",
@@ -15,13 +14,14 @@ threshold_LP(
   lag.max = NULL,
   NW = FALSE,
   NW_lags = NULL,
-  NW_prewhite = NULL
+  NW_prewhite = NULL,
+  regime = NULL,
+  regime.method = "rf",
+  regime.n = 2
 )
 }
 \arguments{
 \item{data}{data.frame, matrix, ts, xts, zoo: Endogenous regressors}
-
-\item{regime}{string: name or regime assignment vector in the design matrix (data)}
 
 \item{horizons}{int: forecast horizons}
 
@@ -40,6 +40,12 @@ threshold_LP(
 \item{NW_lags}{int: number of lags to use in Newey-West correction}
 
 \item{NW_prewhite}{boolean: TRUE prewhite option for Newey-West correction (see sandwich::NeweyWest function)}
+
+\item{regime}{string: name or regime assignment vector in the design matrix (data)}
+
+\item{regime.method}{string: regime assignment technique ('rf', 'kmeans', 'EM', 'BP')}
+
+\item{regime.n}{int: number of regimes to estimate (applies to kmeans and EM)}
 }
 \value{
 list object with elements \code{data}, \code{model}, \code{forecasts}, \code{residuals}; if there is more than one forecast horizon estimated, then \code{model}, \code{forecasts}, \code{residuals} will each be a list where each element corresponds to a single horizon

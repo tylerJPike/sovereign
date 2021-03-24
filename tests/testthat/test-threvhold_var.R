@@ -6,13 +6,11 @@ test_that("threshold VAR workflow", {
   CC = AA + BB + rnorm(100)
   date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
   Data = data.frame(date = date, AA, BB, CC)
-  Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
 
   # estimate VAR
   tvar =
     threshold_VAR(
       data = Data,
-      regime = 'reg',
       p = 1,
       type = 'both',
       horizon = 10,
@@ -24,6 +22,9 @@ test_that("threshold VAR workflow", {
   expect_true(is.list(tvar$residuals))
 
   # estimate VAR (with lag selection)
+
+  Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
+
   tvar =
     threshold_VAR(
       data = Data,

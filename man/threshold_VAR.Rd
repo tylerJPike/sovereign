@@ -6,19 +6,19 @@
 \usage{
 threshold_VAR(
   data,
-  regime,
   horizon = 10,
   freq = "month",
   type = "const",
   p = 1,
   lag.ic = NULL,
-  lag.max = NULL
+  lag.max = NULL,
+  regime = NULL,
+  regime.method = "rf",
+  regime.n = 2
 )
 }
 \arguments{
 \item{data}{data.frame, matrix, ts, xts, zoo: Endogenous regressors}
-
-\item{regime}{string: name or regime assignment vector in the design matrix (data)}
 
 \item{horizon}{int: forecast horizons}
 
@@ -31,6 +31,12 @@ threshold_VAR(
 \item{lag.ic}{string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')}
 
 \item{lag.max}{int: maximum number of lags to test in lag selection}
+
+\item{regime}{string: name or regime assignment vector in the design matrix (data)}
+
+\item{regime.method}{string: regime assignment technique ('rf', 'kmeans', 'EM', 'BP')}
+
+\item{regime.n}{int: number of regimes to estimate (applies to kmeans and EM)}
 }
 \value{
 list of lists, each regime returns its own list with elements \code{data}, \code{model}, \code{forecasts}, \code{residuals}
@@ -58,13 +64,14 @@ Estimate multi-regime VAR
       horizon = 10,
       freq = 'month')
 
-  # or with automatic lag selection
+  # or with automatic lag selection and regime detection
   tvar =
     threshold_VAR(
       data = Data,
       horizon = 10,
       freq = 'month',
-      regime = 'reg',
+      regime.method = 'rf',
+      regime.n = 2,
       lag.ic = 'BIC',
       lag.max = 4)
 

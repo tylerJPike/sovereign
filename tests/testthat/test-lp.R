@@ -63,6 +63,18 @@ test_that("Local projection workflow", {
   tlp =
     threshold_LP(
       data = Data,
+      p = 1,
+      horizon = c(1:10),
+      NW = FALSE,
+      freq = 'month')
+
+
+  expect_true(is.list(tlp))
+
+
+  tlp =
+    threshold_LP(
+      data = Data,
       regime = 'reg',
       type = 'both',
       horizon = c(1:10),

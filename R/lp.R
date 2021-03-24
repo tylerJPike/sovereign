@@ -512,7 +512,6 @@ threshold_LP_estimate = function(
 #' Estimate multi-regime local projections
 #'
 #' @param data         data.frame, matrix, ts, xts, zoo: Endogenous regressors
-#' @param regime       string: name or regime assignment vector in the design matrix (data)
 #' @param horizons     int: forecast horizons
 #' @param freq         string: frequency of data (day, week, month, quarter, year)
 #' @param type         string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
@@ -522,6 +521,9 @@ threshold_LP_estimate = function(
 #' @param NW           boolean: Newey-West correction on variance-covariance matrix
 #' @param NW_lags      int: number of lags to use in Newey-West correction
 #' @param NW_prewhite  boolean: TRUE prewhite option for Newey-West correction (see sandwich::NeweyWest function)
+#' @param regime        string: name or regime assignment vector in the design matrix (data)
+#' @param regime.method string: regime assignment technique ('rf', 'kmeans', 'EM', 'BP')
+#' @param regime.n      int: number of regimes to estimate (applies to kmeans and EM)
 #'
 #' @return list object with elements `data`, `model`, `forecasts`, `residuals`; if there is more than one forecast horizon estimated, then `model`, `forecasts`, `residuals` will each be a list where each element corresponds to a single horizon
 #'
@@ -544,7 +546,7 @@ threshold_LP_estimate = function(
 #'       regime = 'reg',
 #'       horizon = c(1:10),
 #'       freq = 'month',
-#'       p = 1,,
+#'       p = 1,
 #'       type =  'const',
 #'       NW = TRUE,
 #'       NW_lags = 1,
@@ -559,7 +561,6 @@ threshold_LP_estimate = function(
 
 threshold_LP = function(
   data,                   # data.frame, matrix, ts, xts, zoo: Endogenous regressors
-  regime,                 # string: name or regime assignment vector in the design matrix (data)
   horizons = 1,           # int: forecast horizons, can be a numeric vector with multiple horizons
   freq = 'month',         # string: frequency of data (day, week, month, quarter, year)
   type = 'const',         # string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
@@ -570,7 +571,11 @@ threshold_LP = function(
   # OLS-based IRF parameters
   NW = FALSE,             # Newey-West correction on variance-covariance matrix
   NW_lags = NULL,         # number of lags to use in Newey-West correction
-  NW_prewhite = NULL      # prewhite option for Newey-West correction (see sandwich::NeweyWest function)
+  NW_prewhite = NULL,     # prewhite option for Newey-West correction (see sandwich::NeweyWest function)
+  # regimes
+  regime = NULL,          # string: name or regime assignment vector in the design matrix (data)
+  regime.method = 'rf',   # string: regime assignment technique ('rf', 'kmeans', 'EM', 'BP')
+  regime.n = 2            # int: number of regimes to estimate (applies to kmeans and EM)
 ){
 
   # function warnings
@@ -596,11 +601,22 @@ threshold_LP = function(
   if(!freq %in% c('day','week','month','quarter','year')){
     errorCondition("freq must be one of the following strings: 'day','week','month','quarter','year'")
   }
-  if(!regime %in% colnames(data)){
-    errorCondition('regime must be the name of a column in data')
-  }
   if(!type %in% c('none', 'const', 'trend', 'both')){
     errorCondition('type must be one of the following strings: "none", "const", "trend", "both"')
+  }
+
+
+  # create regimes
+  if(is.null(regime)){
+
+    data =
+      regimes(
+        data,
+        regime.n = regime.n,
+        engine = regime.method)
+
+    regime = 'regime'
+
   }
 
   # estimate LP

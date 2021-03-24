@@ -485,14 +485,16 @@ tVAR_estimate = function(
 
 #' Estimate multi-regime VAR
 #'
-#' @param data      data.frame, matrix, ts, xts, zoo: Endogenous regressors
-#' @param regime    string: name or regime assignment vector in the design matrix (data)
-#' @param horizon   int: forecast horizons
-#' @param freq      string: frequency of data (day, week, month, quarter, year)
-#' @param type      string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
-#' @param p         int: lags
-#' @param lag.ic    string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
-#' @param lag.max   int: maximum number of lags to test in lag selection
+#' @param data          data.frame, matrix, ts, xts, zoo: Endogenous regressors
+#' @param horizon       int: forecast horizons
+#' @param freq          string: frequency of data (day, week, month, quarter, year)
+#' @param type          string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
+#' @param p             int: lags
+#' @param lag.ic        string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
+#' @param lag.max       int: maximum number of lags to test in lag selection
+#' @param regime        string: name or regime assignment vector in the design matrix (data)
+#' @param regime.method string: regime assignment technique ('rf', 'kmeans', 'EM', 'BP')
+#' @param regime.n      int: number of regimes to estimate (applies to kmeans and EM)
 #'
 #' @return list of lists, each regime returns its own list with elements `data`, `model`, `forecasts`, `residuals`
 #'
@@ -516,13 +518,14 @@ tVAR_estimate = function(
 #'       horizon = 10,
 #'       freq = 'month')
 #'
-#'   # or with automatic lag selection
+#'   # or with automatic lag selection and regime detection
 #'   tvar =
 #'     threshold_VAR(
 #'       data = Data,
 #'       horizon = 10,
 #'       freq = 'month',
-#'       regime = 'reg',
+#'       regime.method = 'rf',
+#'       regime.n = 2,
 #'       lag.ic = 'BIC',
 #'       lag.max = 4)
 #'
@@ -532,14 +535,16 @@ tVAR_estimate = function(
 
 # threshold VAR function
 threshold_VAR = function(
-  data,                # data.frame, matrix, ts, xts, zoo: Endogenous regressors
-  regime,              # string: name or regime assignment vector in the design matrix (data)
-  horizon = 10,        # int: forecast horizons
-  freq = 'month',      # string: frequency of data (day, week, month, quarter, year)
-  type = 'const',      # string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
-  p = 1,               # int: lags
-  lag.ic = NULL,       # string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
-  lag.max = NULL       # int: maximum number of lags to test in lag selection
+  data,                  # data.frame, matrix, ts, xts, zoo: Endogenous regressors
+  horizon = 10,          # int: forecast horizons
+  freq = 'month',        # string: frequency of data (day, week, month, quarter, year)
+  type = 'const',        # string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
+  p = 1,                 # int: lags
+  lag.ic = NULL,         # string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
+  lag.max = NULL,        # int: maximum number of lags to test in lag selection
+  regime = NULL,         # string: name or regime assignment vector in the design matrix (data)
+  regime.method = 'rf',  # string: regime assignment technique ('rf', 'kmeans', 'EM', 'BP')
+  regime.n = 2           # int: number of regimes to estimate (applies to kmeans and EM)
 ){
 
   # function warnings
@@ -557,6 +562,20 @@ threshold_VAR = function(
     }
   }
 
+  # create regimes
+  if(is.null(regime)){
+
+    data =
+      regimes(
+        data,
+        regime.n = regime.n,
+        engine = regime.method)
+
+    regime = 'regime'
+
+  }
+
+  # create VAR
   if(!is.null(lag.ic) & !is.null(lag.max)){
 
     ic.scores = vector(length = lag.max+1)
