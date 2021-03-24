@@ -30,8 +30,8 @@ plot_individual_irf = function(
   # plot
   irf.plot <- plotdata  %>%
     ggplot2::ggplot(ggplot2::aes(x=horizon, y=response, ymin=response.lower, ymax=response.upper)) +
-    ggplot2::geom_hline(yintercept = 0, color="red") +
-    ggplot2::geom_ribbon(fill="grey", alpha=0.2) +
+    ggplot2::geom_hline(yintercept = 0, color="black ") +
+    ggplot2::geom_ribbon(fill="lightblue", alpha=0.2) +
     ggplot2::geom_line() +
     ggplot2::theme_light() +
     ggplot2::ggtitle(title)+
