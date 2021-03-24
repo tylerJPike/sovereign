@@ -101,10 +101,12 @@ LP_estimate = function(
     # add in dates
     forecasts =
       data.frame(
-        date = forecast_date(
-          forecast.date = data$date,
-          horizon = horizon,
-          freq = freq),
+        date = data$date,
+        forecast.date =
+          forecast_date(
+            forecast.date = data$date,
+            horizon = horizon-1,
+            freq = freq),
         forecast)
 
     ### calculate residuals -----------------------
@@ -418,11 +420,11 @@ threshold_LP_estimate = function(
 
 
   ### estimate forecasts and residuals --------
-  # iterate by regime
+  # iterate by horizon
   fr = as.list(horizons) %>%
     purrr::map(.f = function(horizon){
 
-      # operate by horizon
+      # operate by regime
       outputs = as.list(regimes) %>%
         purrr::map(.f = function(regime.val){
 
@@ -430,21 +432,23 @@ threshold_LP_estimate = function(
 
           coef = models[[paste0('regime_', regime.val)]][[paste0('H_',horizon)]]$coef
 
-          X = Y %>% dplyr::select(dplyr::contains('.l'),
-                                  dplyr::contains('const'), dplyr::contains('trend'))
-
+          X = Y %>%
+            dplyr::select(
+              dplyr::contains('.l'),
+              dplyr::contains('const'),
+              dplyr::contains('trend'))
 
           forecast = as.matrix(X) %*% as.matrix(t(coef[,-1]))
           colnames(forecast) = regressors
 
           forecasts =
             data.frame(
+              date = Y$date,
               forecast.date = forecast_date(
                 forecast.date = Y$date,
                 horizon = horizon-1,
                 freq = freq),
-              forecast,
-              date = Y$date) %>%
+              forecast) %>%
             dplyr::left_join(dplyr::select(Y, date, model.regime = regime), by = 'date')
 
           # calculate residuals
@@ -454,11 +458,9 @@ threshold_LP_estimate = function(
 
           # return output
           residuals = residuals %>%
-            dplyr::filter(regime.val == model.regime) %>%
-            dplyr::select(-forecast.date)
+            dplyr::filter(regime.val == model.regime)
           forecasts = forecasts %>%
-            dplyr::filter(regime.val == model.regime) %>%
-            dplyr::select(-forecast.date)
+            dplyr::filter(regime.val == model.regime)
 
           return(
             list(

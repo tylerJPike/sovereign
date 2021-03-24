@@ -127,7 +127,7 @@ var_fevd = function(
   regressors = colnames(dplyr::select(data, -date))
 
   # error covariance matrix
-  cov.matrix = var(na.omit(dplyr::select(residuals, -date)))
+  cov.matrix = var(na.omit(dplyr::select(residuals, -date, -forecast.date)))
 
   # forecast error variance decomposition
   errors = fevd(Phi =  dplyr::select(coef, -y, -dplyr::contains('cosnt'), -dplyr::contains('trend')),
@@ -205,7 +205,7 @@ threshold_var_fevd = function(
         dplyr::filter(model.regime == regime.val)
 
       # error covariance matrix
-      cov.matrix = var(na.omit(dplyr::select(residuals, -date, -model.regime)))
+      cov.matrix = var(na.omit(dplyr::select(residuals, -date, -model.regime, -forecast.date)))
 
       # forecast error variance decomposition
       errors = fevd(Phi =  dplyr::select(coef, -y, -dplyr::contains('cosnt'), -dplyr::contains('trend')),

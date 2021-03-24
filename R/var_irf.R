@@ -142,7 +142,7 @@ var_irf = function(
 
   ### calculate impulse responses --------------
   # estimate error-covariance matrix
-  cov.matrix = var(na.omit(dplyr::select(residuals, -date)))
+  cov.matrix = var(na.omit(dplyr::select(residuals, -date, -forecast.date)))
 
   # estimate IRFs
   irf = IRF(Phi = dplyr::select(coef, -y, -dplyr::contains('cosnt'), -dplyr::contains('trend')),
@@ -168,7 +168,7 @@ var_irf = function(
                             size = nrow(residuals),
                             replace = TRUE),]
       U = U %>%
-        dplyr::select(-date) %>%
+        dplyr::select(-date, -forecast.date) %>%
         dplyr::mutate_all(function(X){return(X-mean(X, na.rm = T))})
 
       # create lags
@@ -204,7 +204,7 @@ var_irf = function(
           type = type)
 
       # estimate error-covariance matrix
-      cov.matrix = var(na.omit(dplyr::select(var.bag$residuals[[1]], -date)))
+      cov.matrix = var(na.omit(dplyr::select(var.bag$residuals[[1]], -date, -forecast.date)))
 
       # estimate IRFs
       irf = IRF(Phi = dplyr::select(coef, -y, -dplyr::contains('cosnt'), -dplyr::contains('trend')),
@@ -343,7 +343,7 @@ threshold_var_irf = function(
         dplyr::inner_join(dplyr::select(residuals, date), by = 'date') %>%
         dplyr::rename(regime = regime)
       residuals = residuals %>%
-        dplyr::select(-date, -model.regime)
+        dplyr::select(-date, -model.regime, -forecast.date)
 
       ### calculate impulse responses --------------
       # estimate error-covariance matrix
@@ -410,7 +410,7 @@ threshold_var_irf = function(
               type = type)
 
           # estimate error-covariance matrix
-          cov.matrix = var(na.omit(dplyr::select(var.bag$residuals[[1]], -date)))
+          cov.matrix = var(na.omit(dplyr::select(var.bag$residuals[[1]], -date, -forecast.date)))
 
           # estimate IRFs
           irf = IRF(Phi = dplyr::select(coef, -y, -dplyr::contains('cosnt'), -dplyr::contains('trend')),

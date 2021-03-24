@@ -12,7 +12,7 @@ test_that("VAR workflow", {
   var =
     VAR(
       data = Data,
-      p = 1,
+      p = 2,
       horizon = 10,
       freq = 'month',
       type = 'both')

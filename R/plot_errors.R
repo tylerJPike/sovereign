@@ -86,7 +86,7 @@ plot_error = function(
 
   # remove regime information if present
   residuals = residuals %>%
-    dplyr::select(-dplyr::contains('model.regime'))
+    dplyr::select(-dplyr::contains('model.regime'), -date, date = forecast.date)
 
   # set series
   if(is.null(series)){series = colnames(dplyr::select(residuals, -date))}

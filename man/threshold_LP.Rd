@@ -72,7 +72,7 @@ Estimate multi-regime local projections
       regime = 'reg',
       horizon = c(1:10),
       freq = 'month',
-      p = 1,,
+      p = 1,
       type =  'const',
       NW = TRUE,
       NW_lags = 1,

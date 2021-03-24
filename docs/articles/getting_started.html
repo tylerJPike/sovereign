@@ -202,12 +202,12 @@
 
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">Data.kmeans</span><span class="op">)</span></code></pre></div>
 <pre><code>##         date          y         p        ff regime
-## 1 1954-07-01 -1.4139012 0.5221215 1.0300000      1
-## 2 1954-10-01 -0.1175714 1.0977702 0.9866667      1
-## 3 1955-01-01  2.1123368 1.8611016 1.3433333      1
-## 4 1955-04-01  3.1059483 1.6617857 1.5000000      1
-## 5 1955-07-01  3.8394130 2.7943570 1.9400000      1
-## 6 1955-10-01  3.7837596 3.9873375 2.3566667      1</code></pre>
+## 1 1954-07-01 -1.4139012 0.5221215 1.0300000      2
+## 2 1954-10-01 -0.1175714 1.0977702 0.9866667      2
+## 3 1955-01-01  2.1123368 1.8611016 1.3433333      2
+## 4 1955-04-01  3.1059483 1.6617857 1.5000000      2
+## 5 1955-07-01  3.8394130 2.7943570 1.9400000      2
+## 6 1955-10-01  3.7837596 3.9873375 2.3566667      2</code></pre>
 <p>Here we have used sovereign to classify each observation by using the k-means clustering algorithm. One will note that the output of the <code>regime</code> function is the input matrix, Data, concatenated with a new <em>regime</em> column with two unique numeric values (i.e. two mutually exclusive regimes).</p>
 <p>We now have our small set of macroeconomic variables, as well as two different sets of economic regimes to introduce state-dependence.</p>
 </div>

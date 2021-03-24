@@ -98,10 +98,20 @@ VAR_estimation = function(
           dplyr::contains('const'),
           dplyr::contains('trend'))
 
+      X.date = data$date
+
     }else{
 
-      X = forecast_prev %>%
-        n.lag(lags = p) %>%
+      X =
+        dplyr::bind_rows(
+          dplyr::select(data[1:i,], date, regressors),
+          dplyr::select(forecast_prev[i+1:nrow(forecast_prev),], date = forecast.date, regressors)) %>%
+        n.lag(lags = p)
+
+      X.date = X$date
+
+      X = X %>%
+        dplyr::filter(!is.na(date)) %>%
         dplyr::select(dplyr::contains('.l'))
 
       if('const' %in% type |  'both' %in% type){X$const = 1}
@@ -113,13 +123,23 @@ VAR_estimation = function(
     forecast = as.matrix(X) %*% as.matrix(t(coef[,-1]))
     colnames(forecast) = regressors
 
+    # set forecast date
+    if(i == 1){
+      forecast.date = na.omit(X.date)
+    }else{
+      forecast.date =
+        forecast_date(
+          forecast.date = na.omit(X.date),
+          horizon = i-1,
+          freq = freq
+        )
+    }
+
     # add in dates
     forecast =
       data.frame(
-        date = forecast_date(
-          forecast.date = data$date,
-          horizon = i,
-          freq = freq),
+        date = data$date,
+        forecast.date = forecast.date,
         forecast
       )
 
@@ -327,8 +347,10 @@ tVAR_estimate = function(
   if('const' %in% type | 'both' %in% type){Y$const = 1}
   if('trend' %in% type | 'both' %in% type){Y$trend = c(1:nrow(Y))}
 
-  ### estimate coefficients ----------------------
+  # detect regime values
+  regimes = unique(Y$regime)
 
+  ### estimate coefficients ----------------------
   models = Y %>%
     # split by regime
     dplyr::group_split(regime) %>%
@@ -379,18 +401,13 @@ tVAR_estimate = function(
 
   names(models) = paste0('regime_', unique(Y$regime))
 
-  ### estimate forecasts -----------------------
 
-  forecasts = Y %>%
-    # split by regime
-    dplyr::group_split(regime) %>%
-    purrr::map(.f = function(Y){
+  fr = as.list(regimes) %>%
+    purrr::map(.f = function(regime.val){
 
-      # set appropriate model for the regime
-      regime.val = unique(Y$regime)
-      model = models[[paste0('regime_', regime.val)]]
-      coef = model$coef
+      coef = models[[paste0('regime_', regime.val)]]$coef
 
+      ### estimate forecasts -----------------------
       forecasts = list()
       for(i in 1:horizon){
 
@@ -403,10 +420,20 @@ tVAR_estimate = function(
               dplyr::contains('const'),
               dplyr::contains('trend'))
 
+          X.date = data$date
+
         }else{
 
-          X = forecast_prev %>%
-            n.lag(lags = p) %>%
+          X =
+            dplyr::bind_rows(
+              dplyr::select(data[1:i,], date, regressors),
+              dplyr::select(forecast_prev[i+1:nrow(forecast_prev),], date = forecast.date, regressors)) %>%
+            n.lag(lags = p)
+
+          X.date = X$date
+
+          X = X %>%
+            dplyr::filter(!is.na(date)) %>%
             dplyr::select(dplyr::contains('.l'))
 
           if('const' %in% type |  'both' %in% type){X$const = 1}
@@ -418,58 +445,93 @@ tVAR_estimate = function(
         forecast = as.matrix(X) %*% as.matrix(t(coef[,-1]))
         colnames(forecast) = regressors
 
+        # set forecast date
+        if(i == 1){
+          forecast.date = na.omit(X.date)
+        }else{
+          forecast.date =
+            forecast_date(
+              forecast.date = na.omit(X.date),
+              horizon = i-1,
+              freq = freq
+            )
+        }
+
         # add in dates
         forecast =
           data.frame(
-            date = forecast_date(
-              forecast.date = Y$date,
-              horizon = i,
-              freq = freq),
+            date = data$date,
+            forecast.date = forecast.date,
             forecast
-          )
+          ) %>%
+          dplyr::left_join(dplyr::select(Y, date, model.regime = regime), by = 'date')
 
         # store forecasts
-        forecasts[[paste0('H_',i)]] =
-          data.frame(forecast, model.regime = regime.val)
+        forecasts[[paste0('H_',i)]] = forecast
         forecast_prev = forecast
+
       }
 
-      return(forecasts)
+      ### calculate residuals -----------------------
+      residuals = forecasts %>%
+        # error by forecast horizon
+        purrr::map(.f = function(forecast){
 
-    })
+          error = data.frame(forecast)
+          error[,c(regressors)] = forecast[,c(regressors)] - data.frame(data)[, c(regressors)]
 
-  names(forecasts) = paste0('regime_', unique(Y$regime))
+          return(error)
 
-  # merge forecasts
-  forecasts = as.list(c(1:horizon)) %>%
-    purrr::map(.f = function(horizon){
-
-      r = forecasts %>%
-        purrr::map(.f = function(regime){
-          return(regime[[paste0('H_',horizon)]])
         })
 
-      r = purrr::reduce(r, dplyr::bind_rows) %>%
+      ### return output -----------------------
+      residuals = residuals %>%
+        purrr::map(.f = function(r){
+          return( dplyr::filter(r, regime.val == model.regime) )
+        })
+
+      forecasts = forecasts  %>%
+        purrr::map(.f = function(f){
+          return( dplyr::filter(f, regime.val == model.regime) )
+        })
+
+      return(
+        list(
+          forecasts = forecasts,
+          residuals = residuals
+        )
+      )
+
+  })
+
+  ### Organize and return output -------
+  forecasts = as.list(c(1:horizon)) %>%
+    purrr::map(.f = function(h){
+
+        f = fr %>%
+          purrr::map(.f = function(r){
+              return(r$forecast[[paste0('H_',h)]])
+            }) %>%
+          purrr::reduce(dplyr::bind_rows) %>%
+          dplyr::arrange(date)
+
+      })
+
+
+  residuals = as.list(c(1:horizon)) %>%
+    purrr::map(.f = function(h){
+
+      f = fr %>%
+        purrr::map(.f = function(r){
+          return(r$residuals[[paste0('H_',h)]])
+        }) %>%
+        purrr::reduce(dplyr::bind_rows) %>%
         dplyr::arrange(date)
 
     })
 
-  names(forecasts) = paste0('H_', c(1:horizon))
-
-
-
-  ### calculate residuals -----------------------
-
-  residuals = forecasts %>%
-    # error by forecast horizon
-    purrr::map(.f = function(forecast){
-
-      error = data.frame(forecast)
-      error[,c(regressors)] = forecast[,c(regressors)] - data.frame(data)[, c(regressors)]
-
-      return(error)
-
-    })
+  names(forecasts) = paste0('H_',c(1 : horizon))
+  names(residuals) = paste0('H_',c(1 : horizon))
 
   ### return output --------------
   return(

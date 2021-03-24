@@ -140,13 +140,15 @@
 
     <pre class="usage"><span class='fu'>threshold_VAR</span><span class='op'>(</span>
   <span class='va'>data</span>,
-  <span class='va'>regime</span>,
   horizon <span class='op'>=</span> <span class='fl'>10</span>,
   freq <span class='op'>=</span> <span class='st'>"month"</span>,
   type <span class='op'>=</span> <span class='st'>"const"</span>,
   p <span class='op'>=</span> <span class='fl'>1</span>,
   lag.ic <span class='op'>=</span> <span class='cn'>NULL</span>,
-  lag.max <span class='op'>=</span> <span class='cn'>NULL</span>
+  lag.max <span class='op'>=</span> <span class='cn'>NULL</span>,
+  regime <span class='op'>=</span> <span class='cn'>NULL</span>,
+  regime.method <span class='op'>=</span> <span class='st'>"rf"</span>,
+  regime.n <span class='op'>=</span> <span class='fl'>2</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -155,10 +157,6 @@
     <tr>
       <th>data</th>
       <td><p>data.frame, matrix, ts, xts, zoo: Endogenous regressors</p></td>
-    </tr>
-    <tr>
-      <th>regime</th>
-      <td><p>string: name or regime assignment vector in the design matrix (data)</p></td>
     </tr>
     <tr>
       <th>horizon</th>
@@ -183,6 +181,18 @@
     <tr>
       <th>lag.max</th>
       <td><p>int: maximum number of lags to test in lag selection</p></td>
+    </tr>
+    <tr>
+      <th>regime</th>
+      <td><p>string: name or regime assignment vector in the design matrix (data)</p></td>
+    </tr>
+    <tr>
+      <th>regime.method</th>
+      <td><p>string: regime assignment technique ('rf', 'kmeans', 'EM', 'BP')</p></td>
+    </tr>
+    <tr>
+      <th>regime.n</th>
+      <td><p>int: number of regimes to estimate (applies to kmeans and EM)</p></td>
     </tr>
     </table>
 
@@ -210,16 +220,17 @@
       horizon <span class='op'>=</span> <span class='fl'>10</span>,
       freq <span class='op'>=</span> <span class='st'>'month'</span><span class='op'>)</span>
 
-  <span class='co'># or with automatic lag selection</span>
+  <span class='co'># or with automatic lag selection and regime detection</span>
   <span class='va'>tvar</span> <span class='op'>=</span>
     <span class='fu'>threshold_VAR</span><span class='op'>(</span>
       data <span class='op'>=</span> <span class='va'>Data</span>,
       horizon <span class='op'>=</span> <span class='fl'>10</span>,
       freq <span class='op'>=</span> <span class='st'>'month'</span>,
-      regime <span class='op'>=</span> <span class='st'>'reg'</span>,
+      regime.method <span class='op'>=</span> <span class='st'>'rf'</span>,
+      regime.n <span class='op'>=</span> <span class='fl'>2</span>,
       lag.ic <span class='op'>=</span> <span class='st'>'BIC'</span>,
       lag.max <span class='op'>=</span> <span class='fl'>4</span><span class='op'>)</span>
-
+</div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='input'>
 <span class='co'># }</span>
 
 </div></pre>
