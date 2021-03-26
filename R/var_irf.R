@@ -116,6 +116,9 @@ var_irf = function(
     errorCondition('horizon must be a positive integer')
   }
 
+  # function variables
+  y = forecast.date = shock = target = response = response.lower = response.upper =  response.med = response.adjust = NULL
+
   # set data
   coef = var$model$coef
   residuals = var$residuals[[1]]
@@ -142,7 +145,7 @@ var_irf = function(
 
   ### calculate impulse responses --------------
   # estimate error-covariance matrix
-  cov.matrix = var(na.omit(dplyr::select(residuals, -date, -forecast.date)))
+  cov.matrix = stats::var(stats::na.omit(dplyr::select(residuals, -date, -forecast.date)))
 
   # estimate IRFs
   irf = IRF(Phi = dplyr::select(coef, -y, -dplyr::contains('cosnt'), -dplyr::contains('trend')),
@@ -204,7 +207,7 @@ var_irf = function(
           type = type)
 
       # estimate error-covariance matrix
-      cov.matrix = var(na.omit(dplyr::select(var.bag$residuals[[1]], -date, -forecast.date)))
+      cov.matrix = stats::var(stats::na.omit(dplyr::select(var.bag$residuals[[1]], -date, -forecast.date)))
 
       # estimate IRFs
       irf = IRF(Phi = dplyr::select(coef, -y, -dplyr::contains('cosnt'), -dplyr::contains('trend')),
@@ -226,7 +229,7 @@ var_irf = function(
   ci.lower = bagged.irf %>%
     purrr::reduce(dplyr::bind_rows) %>%
     dplyr::group_by(shock, horizon) %>%
-    dplyr::summarise_all(quantile, p.lower, na.rm = T) %>%
+    dplyr::summarise_all(stats::quantile, p.lower, na.rm = T) %>%
     dplyr::arrange(shock, horizon) %>%
     tidyr::pivot_longer(cols = regressors, names_to = 'target', values_to = 'response.lower') %>%
     dplyr::arrange(shock, horizon)
@@ -234,7 +237,7 @@ var_irf = function(
   ci.upper = bagged.irf %>%
     purrr::reduce(dplyr::bind_rows) %>%
     dplyr::group_by(shock, horizon) %>%
-    dplyr::summarise_all(quantile, p.upper, na.rm = T) %>%
+    dplyr::summarise_all(stats::quantile, p.upper, na.rm = T) %>%
     dplyr::arrange(shock, horizon) %>%
     tidyr::pivot_longer(cols = regressors, names_to = 'target', values_to = 'response.upper') %>%
     dplyr::arrange(shock, horizon)
@@ -242,7 +245,7 @@ var_irf = function(
   ci.med = bagged.irf %>%
     purrr::reduce(dplyr::bind_rows) %>%
     dplyr::group_by(shock, horizon) %>%
-    dplyr::summarise_all(quantile, 0.5, na.rm = T) %>%
+    dplyr::summarise_all(stats::quantile, 0.5, na.rm = T) %>%
     dplyr::arrange(shock, horizon) %>%
     tidyr::pivot_longer(cols = regressors, names_to = 'target', values_to = 'response.med') %>%
     dplyr::arrange(shock, horizon)
@@ -307,6 +310,9 @@ threshold_var_irf = function(
     errorCondition('horizon must be a positive integer')
   }
 
+  # function variables
+  y = forecast.date = shock = target = response = response.lower = response.upper = model.regime =  response.med = response.adjust =  NULL
+
   # set data
   data = threshold_var$data
   p = threshold_var$model[[1]]$p
@@ -347,7 +353,7 @@ threshold_var_irf = function(
 
       ### calculate impulse responses --------------
       # estimate error-covariance matrix
-      cov.matrix = var(na.omit(residuals))
+      cov.matrix = stats::var(stats::na.omit(residuals))
 
       # estimate IRFs
       irf = IRF(Phi = dplyr::select(coef, -y, -dplyr::contains('cosnt'), -dplyr::contains('trend')),
@@ -410,7 +416,7 @@ threshold_var_irf = function(
               type = type)
 
           # estimate error-covariance matrix
-          cov.matrix = var(na.omit(dplyr::select(var.bag$residuals[[1]], -date, -forecast.date)))
+          cov.matrix = stats::var(stats::na.omit(dplyr::select(var.bag$residuals[[1]], -date, -forecast.date)))
 
           # estimate IRFs
           irf = IRF(Phi = dplyr::select(coef, -y, -dplyr::contains('cosnt'), -dplyr::contains('trend')),
@@ -432,7 +438,7 @@ threshold_var_irf = function(
       ci.lower = bagged.irf %>%
         purrr::reduce(dplyr::bind_rows) %>%
         dplyr::group_by(shock, horizon) %>%
-        dplyr::summarise_all(quantile, p.lower, na.rm = T) %>%
+        dplyr::summarise_all(stats::quantile, p.lower, na.rm = T) %>%
         dplyr::arrange(shock, horizon) %>%
         tidyr::pivot_longer(cols = regressors, names_to = 'target', values_to = 'response.lower') %>%
         dplyr::arrange(shock, horizon)
@@ -440,7 +446,7 @@ threshold_var_irf = function(
       ci.upper = bagged.irf %>%
         purrr::reduce(dplyr::bind_rows) %>%
         dplyr::group_by(shock, horizon) %>%
-        dplyr::summarise_all(quantile, p.upper, na.rm = T) %>%
+        dplyr::summarise_all(stats::quantile, p.upper, na.rm = T) %>%
         dplyr::arrange(shock, horizon) %>%
         tidyr::pivot_longer(cols = regressors, names_to = 'target', values_to = 'response.upper') %>%
         dplyr::arrange(shock, horizon)
@@ -448,7 +454,7 @@ threshold_var_irf = function(
       ci.med = bagged.irf %>%
         purrr::reduce(dplyr::bind_rows) %>%
         dplyr::group_by(shock, horizon) %>%
-        dplyr::summarise_all(quantile, 0.5, na.rm = T) %>%
+        dplyr::summarise_all(stats::quantile, 0.5, na.rm = T) %>%
         dplyr::arrange(shock, horizon) %>%
         tidyr::pivot_longer(cols = regressors, names_to = 'target', values_to = 'response.med') %>%
         dplyr::arrange(shock, horizon)

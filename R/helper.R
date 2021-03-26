@@ -10,7 +10,7 @@ n.lag = function(
 ){
 
   if(is.null(variables)){
-    variables = names(dplyr::select(Data, -contains('date')))
+    variables = names(dplyr::select(Data, -dplyr::contains('date')))
   }
 
   Data = c(0:lags) %>%
@@ -67,13 +67,13 @@ IC = function(
   p
 ){
 
-  cov.matrix =  var(na.omit(dplyr::select(errors, -date)))
+  cov.matrix =  stats::var(stats::na.omit(dplyr::select(errors, -date)))
 
   regressors = colnames(dplyr::select(data, -date))
   regressors.cols = paste0(regressors, '.l1')
   k = length(regressors.cols)
 
-  sample.size = nrow(na.omit(data))
+  sample.size = nrow(stats::na.omit(data))
 
   if(ic == 'AIC'){
     score = log(sum(abs(cov.matrix))) + (2*k^2*p)/sample.size

@@ -26,6 +26,9 @@ plot_individual_forecast = function(
   # set covariates
   series = colnames(dplyr::select(data, -date))
 
+  # function variables
+  forecast.date = observed = forecast = NULL
+
   # set plot data
   plotdata = data %>%
     tidyr::pivot_longer(cols = series, names_to = 'series', values_to =  'forecast') %>%
@@ -87,6 +90,9 @@ plot_forecast = function(
   # remove regime information if present; set correct date
   forecasts = forecasts %>%
     dplyr::select(-dplyr::contains('model.regime'), -date, date = forecast.date)
+
+  # function variables
+  forecast.date = observed = forecast = NULL
 
   # set series
   if(is.null(series)){series = colnames(dplyr::select(forecasts, -date))}

@@ -50,6 +50,9 @@ lp_irf = function(
     errorCondition('The Lp object must have more than one horizon to generate impulse responses')
   }
 
+  # function variables
+  y  = shock = target = response.lower = response.upper = horizon = NA
+
   # set data
   data = lp$data
 
@@ -84,8 +87,8 @@ lp_irf = function(
       irf = dplyr::full_join(coef, se, by = c('target', 'shock', 'horizon')) %>%
         dplyr::select(target, shock, horizon, coef, se) %>%
         # estimate confidence intervals
-        dplyr::mutate(response.lower = coef + se*qnorm(CI[1]),
-                      response.upper = coef + se*qnorm(CI[2])) %>%
+        dplyr::mutate(response.lower = coef + se*stats::qnorm(CI[1]),
+                      response.upper = coef + se*stats::qnorm(CI[2])) %>%
         # return uniform output
         dplyr::select(target, shock, horizon, response.lower, response = coef, response.upper)
 

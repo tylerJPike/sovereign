@@ -20,6 +20,9 @@ plot_individual_fevd = function(
   ylab                  # string: y-axis label
 ){
 
+  # function variables
+  response = error = horizon = shock = NULL
+
   # filter for one shock and one target
   plotdata = fevd %>%
     dplyr::filter(response == response.var)
@@ -57,6 +60,9 @@ plot_fevd = function(
 
   # set responses
   if(is.null(responses)){responses = unique(fevd$response)}
+
+  # function variables
+  response = error = horizon = shock = NULL
 
   # generate plots
   plots = as.list(responses) %>%

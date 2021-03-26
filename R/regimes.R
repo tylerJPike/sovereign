@@ -39,7 +39,7 @@ regimes = function(
   }
 
   # cast as data frame if ts, xts, or zoo object
-  if(is.ts(data) | xts::is.xts(data) | zoo::is.zoo(data)){
+  if(stats::is.ts(data) | xts::is.xts(data) | zoo::is.zoo(data)){
     data = data.frame(date = zoo::index(date), data)
   }
 

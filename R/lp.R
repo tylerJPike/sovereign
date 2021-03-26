@@ -16,9 +16,12 @@ LP_estimate = function(
 ){
 
   # cast as data frame if ts, xts, or zoo object
-  if(is.ts(data) | xts::is.xts(data) | zoo::is.zoo(data)){
+  if(stats::is.ts(data) | xts::is.xts(data) | zoo::is.zoo(data)){
     data = data.frame(date = zoo::index(date), data)
   }
+
+  # function variables
+  term = estimate = std.error = NULL
 
   # declare regressors
   regressors = colnames(dplyr::select(data, -date))
@@ -318,9 +321,12 @@ threshold_LP_estimate = function(
 ){
 
   # cast as data frame if ts, xts, or zoo object
-  if(is.ts(data) | xts::is.xts(data) | zoo::is.zoo(data)){
+  if(stats::is.ts(data) | xts::is.xts(data) | zoo::is.zoo(data)){
     data = data.frame(date = zoo::index(date), data)
   }
+
+  # function variables
+  term = estimate = std.error = model.regime = NULL
 
   # declare regressors
   regressors = colnames(dplyr::select(data, -date, -regime))

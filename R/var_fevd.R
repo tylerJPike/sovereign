@@ -120,6 +120,9 @@ var_fevd = function(
     errorCondition('horizon must be a positive integer')
   }
 
+  # function variables
+  forecast.date = y = shock = error = NULL
+
   # set data
   coef = var$model$coef
   residuals = var$residuals[[1]]
@@ -127,7 +130,7 @@ var_fevd = function(
   regressors = colnames(dplyr::select(data, -date))
 
   # error covariance matrix
-  cov.matrix = var(na.omit(dplyr::select(residuals, -date, -forecast.date)))
+  cov.matrix = stats::var(stats::na.omit(dplyr::select(residuals, -date, -forecast.date)))
 
   # forecast error variance decomposition
   errors = fevd(Phi =  dplyr::select(coef, -y, -dplyr::contains('cosnt'), -dplyr::contains('trend')),
@@ -185,6 +188,9 @@ threshold_var_fevd = function(
     errorCondition('horizon must be a positive integer')
   }
 
+  # function variables
+  forecast.date = y = shock = error = model.regime = NULL
+
   # set data
   data = threshold_var$data
 
@@ -205,7 +211,7 @@ threshold_var_fevd = function(
         dplyr::filter(model.regime == regime.val)
 
       # error covariance matrix
-      cov.matrix = var(na.omit(dplyr::select(residuals, -date, -model.regime, -forecast.date)))
+      cov.matrix = stats::var(stats::na.omit(dplyr::select(residuals, -date, -model.regime, -forecast.date)))
 
       # forecast error variance decomposition
       errors = fevd(Phi =  dplyr::select(coef, -y, -dplyr::contains('cosnt'), -dplyr::contains('trend')),

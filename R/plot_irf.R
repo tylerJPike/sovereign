@@ -22,6 +22,9 @@ plot_individual_irf = function(
   ylab                  # string: y-axis label
 ){
 
+  # function variables
+  response = error = horizon = shock = target = response.lower = response.upper = NULL
+
   # filter for one shock and one target
   plotdata = irf %>%
     dplyr::filter(shock == shock.var & target == response.var) %>%
@@ -69,6 +72,9 @@ plot_irf = function(
   if(is.null(responses)){
     responses = unique(irf$shock)
   }
+
+  # function variables
+  response = error = horizon = shock = NULL
 
   # generate plots
   plot.names = tidyr::expand_grid(shock = shocks, response = responses)

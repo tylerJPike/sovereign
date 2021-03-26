@@ -27,9 +27,12 @@ VAR_estimation = function(
   }
 
   # cast as data frame if ts, xts, or zoo object
-  if(is.ts(data) | xts::is.xts(data) | zoo::is.zoo(data)){
+  if(stats::is.ts(data) | xts::is.xts(data) | zoo::is.zoo(data)){
     data = data.frame(date = zoo::index(date), data)
   }
+
+  # function variables
+  term = estimate = std.error = NULL
 
   # declare regressors
   regressors = colnames(dplyr::select(data, -date))
@@ -125,11 +128,11 @@ VAR_estimation = function(
 
     # set forecast date
     if(i == 1){
-      forecast.date = na.omit(X.date)
+      forecast.date = stats::na.omit(X.date)
     }else{
       forecast.date =
         forecast_date(
-          forecast.date = na.omit(X.date),
+          forecast.date = stats::na.omit(X.date),
           horizon = i-1,
           freq = freq
         )
@@ -328,9 +331,12 @@ tVAR_estimate = function(
   }
 
   # cast as data frame if ts, xts, or zoo object
-  if(is.ts(data) | xts::is.xts(data) | zoo::is.zoo(data)){
+  if(stats::is.ts(data) | xts::is.xts(data) | zoo::is.zoo(data)){
     data = data.frame(date = zoo::index(date), data)
   }
+
+  # function variables
+  term = estimate = std.error = model.regime = NULL
 
   # declare regressors
   regressors = colnames(dplyr::select(data, -date, -regime))
@@ -447,11 +453,11 @@ tVAR_estimate = function(
 
         # set forecast date
         if(i == 1){
-          forecast.date = na.omit(X.date)
+          forecast.date = stats::na.omit(X.date)
         }else{
           forecast.date =
             forecast_date(
-              forecast.date = na.omit(X.date),
+              forecast.date = stats::na.omit(X.date),
               horizon = i-1,
               freq = freq
             )
