@@ -304,7 +304,7 @@ VAR = function(
 #-------------------------------------------------------------------
 
 # estimate threshold var models, forecasts, and errors
-tVAR_estimate = function(
+RVAR_estimate = function(
   data,                # data.frame, matrix, ts, xts, zoo: Endogenous regressors
   regime,              # string: name or regime assignment vector in the design matrix (data)
   p = 1,               # int: lags
@@ -578,8 +578,8 @@ tVAR_estimate = function(
 #'  Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
 #'
 #'  # estimate VAR
-#'  tvar =
-#'     threshold_VAR(
+#'  rvar =
+#'     RVAR(
 #'       data = Data,
 #'       p = 1,
 #'       regime = 'reg',
@@ -587,8 +587,8 @@ tVAR_estimate = function(
 #'       freq = 'month')
 #'
 #'   # or with automatic lag selection and regime detection
-#'   tvar =
-#'     threshold_VAR(
+#'   rvar =
+#'     RVAR(
 #'       data = Data,
 #'       horizon = 10,
 #'       freq = 'month',
@@ -601,8 +601,8 @@ tVAR_estimate = function(
 #'
 #' @export
 
-# threshold VAR function
-threshold_VAR = function(
+# regime-dependent VAR function
+RVAR = function(
   data,                  # data.frame, matrix, ts, xts, zoo: Endogenous regressors
   horizon = 10,          # int: forecast horizons
   freq = 'month',        # string: frequency of data (day, week, month, quarter, year)
@@ -653,7 +653,7 @@ threshold_VAR = function(
 
         # estimate candidate model
         model =
-          tVAR_estimate(
+          RVAR_estimate(
             data = data,
             p = p,
             regime = regime,
@@ -685,7 +685,7 @@ threshold_VAR = function(
 
   }else{
     return(
-      tVAR_estimate(
+      RVAR_estimate(
         data = data,
         p = p,
         regime = regime,

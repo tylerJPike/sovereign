@@ -161,7 +161,7 @@ var_fevd = function(
 
 #' Estimate multi-regime forecast error variance decomposition
 #'
-#' @param threshold_var    threshold_var output
+#' @param rvar    threshold_var output
 #' @param horizon          int: number of periods
 #' @param scale            boolean: scale variable contribution as percent of total error
 #'
@@ -177,8 +177,8 @@ var_fevd = function(
 #' @export
 
 # uses the fevd function found in var_fevd.R
-threshold_var_fevd = function(
-  threshold_var,         # threshold_VAR output
+rvar_fevd = function(
+  rvar,                  # RVAR output
   horizon = 10,          # int: number of periods
   scale = TRUE           # boolean: scale variable contribution as percent of total error
 ){
@@ -192,9 +192,9 @@ threshold_var_fevd = function(
   forecast.date = y = shock = error = model.regime = NULL
 
   # set data
-  data = threshold_var$data
+  data = rvar$data
 
-  regime = threshold_var$regime
+  regime = rvar$regime
   regimes = unlist(unique(dplyr::select(data, regime)))
   regimes = dplyr::select(data, regime = regime)
   regimes = unique(regimes$regime)
@@ -206,8 +206,8 @@ threshold_var_fevd = function(
     purrr::map(.f = function(regime.val){
 
       # set regime specific data
-      coef = threshold_var$model[[paste0('regime_',regime.val)]]$coef
-      residuals = threshold_var$residuals[[1]] %>%
+      coef = rvar$model[[paste0('regime_',regime.val)]]$coef
+      residuals = rvar$residuals[[1]] %>%
         dplyr::filter(model.regime == regime.val)
 
       # error covariance matrix

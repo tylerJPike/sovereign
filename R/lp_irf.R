@@ -109,7 +109,7 @@ lp_irf = function(
 #------------------------------------------
 #' Estimate multi-regime impulse response functions
 #'
-#' @param threshold_lp     threshold_LP output
+#' @param rlp     threshold_LP output
 #' @param CI               numeric vector: c(lower ci bound, upper ci bound)
 #'
 #' @return list of long-form data.frame with one row per target-shock-horizon identifier
@@ -128,7 +128,7 @@ lp_irf = function(
 #'
 #'   # local projection forecasts
 #'   tlp =
-#'     threshold_LP(
+#'     RLP(
 #'       data = Data,
 #'       regime = 'reg',
 #'       horizon = c(1:10),
@@ -140,14 +140,14 @@ lp_irf = function(
 #'       NW_prewhite = FALSE)
 #'
 #'  # impulse response function
-#'  tirf = threshold_lp_irf(tlp)
+#'  rirf = rlp_irf(tlp)
 #' }
 #'
 #' @export
 
-threshold_lp_irf = function(
-  threshold_lp,             # VAR output
-  CI = c(0.1, 0.9)          # numeric vector: c(lower ci bound, upper ci bound)
+rlp_irf = function(
+  rlp,                # RLP output
+  CI = c(0.1, 0.9)    # numeric vector: c(lower ci bound, upper ci bound)
 ){
 
   # function warnings
@@ -156,8 +156,8 @@ threshold_lp_irf = function(
   }
 
   # set regime values
-  regime = threshold_lp$regime
-  regimes = threshold_lp$data %>%
+  regime = rlp$regime
+  regimes = rlp$data %>%
     dplyr::select(regime = regime)
   regimes = unique(regimes$regime)
 
@@ -168,9 +168,9 @@ threshold_lp_irf = function(
       # set information for IRF
       lp =
         list(
-          data = threshold_lp$data,
-          model = threshold_lp$models[[paste0('regime_',regime.val)]],
-          regime = threshold_lp$regime
+          data = rlp$data,
+          model = rlp$models[[paste0('regime_',regime.val)]],
+          regime = rlp$regime
         )
 
       # calculate IRFs
@@ -178,7 +178,7 @@ threshold_lp_irf = function(
         lp_irf(
           lp,
           CI = CI,
-          regime = threshold_lp$regime)
+          regime = rlp$regime)
 
     })
 

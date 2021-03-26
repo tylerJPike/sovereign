@@ -14,8 +14,17 @@
 #' @return `data` as a data.frame with a regime column assigning rows to mutually exclusive regimes.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'
+#'  # simple time series
+#'  AA = c(1:100) + rnorm(100)
+#'  BB = c(1:100) + rnorm(100)
+#'  CC = AA + BB + rnorm(100)
+#'  date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+#'  Data = data.frame(date = date, AA, BB, CC)
+#'
+#'  # estimate reigme
+#'  regime =
 #'   regimes(
 #'      data = Data,
 #'      regime.n = 3,

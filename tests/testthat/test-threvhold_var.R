@@ -8,25 +8,25 @@ test_that("threshold VAR workflow", {
   Data = data.frame(date = date, AA, BB, CC)
 
   # estimate VAR
-  tvar =
-    threshold_VAR(
+  rvar =
+    RVAR(
       data = Data,
       p = 1,
       type = 'both',
       horizon = 10,
       freq = 'month')
 
-  expect_true(is.list(tvar))
-  expect_true(is.list(tvar$model))
-  expect_true(is.list(tvar$forecasts))
-  expect_true(is.list(tvar$residuals))
+  expect_true(is.list(rvar))
+  expect_true(is.list(rvar$model))
+  expect_true(is.list(rvar$forecasts))
+  expect_true(is.list(rvar$residuals))
 
   # estimate VAR (with lag selection)
 
   Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
 
-  tvar =
-    threshold_VAR(
+  rvar =
+    RVAR(
       data = Data,
       regime = 'reg',
       horizon = 10,
@@ -34,15 +34,15 @@ test_that("threshold VAR workflow", {
       lag.ic = 'BIC',
       lag.max = 4)
 
-  expect_true(is.list(tvar))
-  expect_true(is.list(tvar$model))
-  expect_true(is.list(tvar$forecasts))
-  expect_true(is.list(tvar$residuals))
+  expect_true(is.list(rvar))
+  expect_true(is.list(rvar$model))
+  expect_true(is.list(rvar$forecasts))
+  expect_true(is.list(rvar$residuals))
 
   # estimate IRF
   irf =
-    threshold_var_irf(
-      tvar,
+    rvar_irf(
+      rvar,
       bootstraps.num = 10,
       CI = c(0.05,0.95))
 
@@ -50,8 +50,8 @@ test_that("threshold VAR workflow", {
 
   # estimate forecast error variance decomposition
   fevd =
-    threshold_var_fevd(
-      tvar,
+    rvar_fevd(
+      rvar,
       horizon = 10)
 
   expect_true(is.list(fevd))

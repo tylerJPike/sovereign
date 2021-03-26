@@ -21,8 +21,17 @@ Regime assignment (clustering) methods available include the \href{https://www.r
 and EM via \href{https://www.rdocumentation.org/packages/mclust/versions/5.4.7/topics/Mclust}{Fraley and Raftery Model-based clustering}, \href{https://www.rdocumentation.org/packages/strucchange/versions/1.5-2/topics/breakpoints}{Bai & Perron (2003) algorithm} for simultaneous estimation of multiple breakpoints.
 }
 \examples{
-\dontrun{
+\donttest{
 
+ # simple time series
+ AA = c(1:100) + rnorm(100)
+ BB = c(1:100) + rnorm(100)
+ CC = AA + BB + rnorm(100)
+ date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+ Data = data.frame(date = date, AA, BB, CC)
+
+ # estimate reigme
+ regime =
   regimes(
      data = Data,
      regime.n = 3,

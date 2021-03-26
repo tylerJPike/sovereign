@@ -275,7 +275,7 @@ var_irf = function(
 
 #' Estimate multi-regime impulse response functions
 #'
-#' @param threshold_var    threshold_VAR output
+#' @param rvar    rvar output
 #' @param horizon          int: number of periods
 #' @param bootstraps.num   int: number of bootstraps
 #' @param CI               numeric vector: c(lower ci bound, upper ci bound)
@@ -284,16 +284,16 @@ var_irf = function(
 #'
 #' @examples
 #' \dontrun{
-#' threshold_var_irf(
-#'   threshold_var,
+#' rvar_irf(
+#'   rvar,
 #'   bootstraps.num = 10,
 #'   CI = c(0.05,0.95))
 #' }
 #'
 #' @export
 
-threshold_var_irf = function(
-  threshold_var,         # threshold VAR output
+rvar_irf = function(
+  rvar,         # threshold VAR output
   horizon = 10,          # int: number of periods
   bootstraps.num = 100,  # int: number of bootstraps
   CI = c(0.1, 0.9)       # numeric vector: c(lower ci bound, upper ci bound)
@@ -314,20 +314,20 @@ threshold_var_irf = function(
   y = forecast.date = shock = target = response = response.lower = response.upper = model.regime =  response.med = response.adjust =  NULL
 
   # set data
-  data = threshold_var$data
-  p = threshold_var$model[[1]]$p
-  freq = threshold_var$model[[1]]$freq
-  regime = threshold_var$regime
+  data = rvar$data
+  p = rvar$model[[1]]$p
+  freq = rvar$model[[1]]$freq
+  regime = rvar$regime
   regressors = colnames(dplyr::select(data, -date, -regime))
 
-  residuals = threshold_var$residuals[[1]]
+  residuals = rvar$residuals[[1]]
 
-  if('const' %in% colnames(threshold_var$model[[1]]$coef) &
-     'trend' %in% colnames(threshold_var$model[[1]]$coef)){
+  if('const' %in% colnames(rvar$model[[1]]$coef) &
+     'trend' %in% colnames(rvar$model[[1]]$coef)){
     type = 'both'
-  }else if('const' %in% colnames(threshold_var$model[[1]]$coef)){
+  }else if('const' %in% colnames(rvar$model[[1]]$coef)){
     type = 'const'
-  }else if('trend' %in% colnames(threshold_var$model[[1]]$coef)){
+  }else if('trend' %in% colnames(rvar$model[[1]]$coef)){
     type = 'trend'
   }
 
@@ -342,7 +342,7 @@ threshold_var_irf = function(
     purrr::map(.f = function(regime.val){
 
       # set regime specific data
-      coef = threshold_var$model[[paste0('regime_',regime.val)]]$coef
+      coef = rvar$model[[paste0('regime_',regime.val)]]$coef
       residuals = residuals %>%
         dplyr::filter(model.regime == regime.val)
       is = data %>%

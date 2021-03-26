@@ -307,7 +307,7 @@ LP = function(
 #------------------------------------------
 
 # estimate multi-regime LP models, forecasts, and residuals
-threshold_LP_estimate = function(
+RLP_estimate = function(
   data,                   # data.frame, matrix, ts, xts, zoo: Endogenous regressors
   regime,                 # string: name or regime assignment vector in the design matrix (data)
   p = 1,                  # int: lags
@@ -548,8 +548,8 @@ threshold_LP_estimate = function(
 #'   Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
 #'
 #'   # local projection forecasts
-#'   tlp =
-#'     threshold_LP(
+#'   rlp =
+#'     RLP(
 #'       data = Data,
 #'       regime = 'reg',
 #'       horizon = c(1:10),
@@ -561,13 +561,13 @@ threshold_LP_estimate = function(
 #'       NW_prewhite = FALSE)
 #'
 #'  # impulse response function
-#'  tirf = threshold_lp_irf(tlp)
+#'  rirf = rlp_irf(rlp)
 #'
 #' }
 #'
 #' @export
 
-threshold_LP = function(
+RLP = function(
   data,                   # data.frame, matrix, ts, xts, zoo: Endogenous regressors
   horizons = 1,           # int: forecast horizons, can be a numeric vector with multiple horizons
   freq = 'month',         # string: frequency of data (day, week, month, quarter, year)
@@ -637,7 +637,7 @@ threshold_LP = function(
 
         # estimate candidate model
         model =
-          threshold_LP_estimate(
+          RLP_estimate(
             data,
             p = p,
             regime = regime,
@@ -682,7 +682,7 @@ threshold_LP = function(
 
   }else{
     return(
-      threshold_LP_estimate(
+      RLP_estimate(
         data,
         p = p,
         regime = regime,

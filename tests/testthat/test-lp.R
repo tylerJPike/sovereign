@@ -48,8 +48,8 @@ test_that("Local projection workflow", {
   expect_true(is.list(plot.all))
 
   # multi-regime local projection
-  tlp =
-    threshold_LP(
+  rlp =
+    RLP(
       data = Data,
       regime = 'reg',
       p = 1,
@@ -58,10 +58,10 @@ test_that("Local projection workflow", {
       freq = 'month')
 
 
-  expect_true(is.list(tlp))
+  expect_true(is.list(rlp))
 
-  tlp =
-    threshold_LP(
+  rlp =
+    RLP(
       data = Data,
       p = 1,
       horizon = c(1:10),
@@ -69,11 +69,11 @@ test_that("Local projection workflow", {
       freq = 'month')
 
 
-  expect_true(is.list(tlp))
+  expect_true(is.list(rlp))
 
 
-  tlp =
-    threshold_LP(
+  rlp =
+    RLP(
       data = Data,
       regime = 'reg',
       type = 'both',
@@ -82,11 +82,11 @@ test_that("Local projection workflow", {
       lag.max = 4,
       freq = 'month')
 
-  expect_true(is.list(tlp))
+  expect_true(is.list(rlp))
 
   # multi-regime horizon irf
-  tirf = threshold_lp_irf(tlp)
+  rlp.irf = rlp_irf(rlp)
 
-  expect_true(is.list(irf))
+  expect_true(is.list(rlp.irf))
 
 })

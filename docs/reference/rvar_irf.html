@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Function reference • sovereign</title>
+<title>Estimate multi-regime impulse response functions — rvar_irf • sovereign</title>
 
 
 <!-- jquery -->
@@ -39,7 +39,8 @@
 
 
 
-<meta property="og:title" content="Function reference" />
+<meta property="og:title" content="Estimate multi-regime impulse response functions — rvar_irf" />
+<meta property="og:description" content="Estimate multi-regime impulse response functions" />
 
 
 
@@ -68,7 +69,7 @@
   </head>
 
   <body data-spy="scroll" data-target="#toc">
-    <div class="container template-reference-index">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
   <div class="container">
@@ -126,165 +127,54 @@
       </header>
 
 <div class="row">
-  <div class="contents col-md-9">
+  <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Reference</h1>
+    <h1>Estimate multi-regime impulse response functions</h1>
+    <small class="dont-index">Source: <a href='https://github.com/tylerJPike/sovereign/blob/master/R/var_irf.R'><code>R/var_irf.R</code></a></small>
+    <div class="hidden name"><code>rvar_irf.Rd</code></div>
     </div>
 
-    <table class="ref-index">
+    <div class="ref-description">
+    <p>Estimate multi-regime impulse response functions</p>
+    </div>
 
-    <colgroup>
-      
-      <col class="alias" />
-      <col class="title" />
-    </colgroup>
+    <pre class="usage"><span class='fu'>rvar_irf</span><span class='op'>(</span><span class='va'>rvar</span>, horizon <span class='op'>=</span> <span class='fl'>10</span>, bootstraps.num <span class='op'>=</span> <span class='fl'>100</span>, CI <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.1</span>, <span class='fl'>0.9</span><span class='op'>)</span><span class='op'>)</span></pre>
 
-    <tbody>
-      <tr>
-        <th colspan="2">
-          <h2 id="section-regimes" class="hasAnchor"><a href="#section-regimes" class="anchor"></a>Regimes</h2>
-          <p class="section-desc"><p>Functions to classify state</p></p>
-        </th>
-      </tr>
-      
-      
-    </tbody><tbody>
-      
-      
-      <tr>
-        
-        <td>
-          <p><code><a href="regimes.html">regimes()</a></code> </p>
-        </td>
-        <td><p>Assign regimes via unsupervised machine learning methods</p></td>
-      </tr>
-    </tbody><tbody>
-      <tr>
-        <th colspan="2">
-          <h2 id="section-model-estimation" class="hasAnchor"><a href="#section-model-estimation" class="anchor"></a>Model Estimation</h2>
-          <p class="section-desc"><p>Functions used to estimate models</p></p>
-        </th>
-      </tr>
-      
-      
-    </tbody><tbody>
-      
-      
-      <tr>
-        
-        <td>
-          <p><code><a href="VAR.html">VAR()</a></code> </p>
-        </td>
-        <td><p>Estimate single-regime VAR</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="RVAR.html">RVAR()</a></code> </p>
-        </td>
-        <td><p>Estimate multi-regime VAR</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="LP.html">LP()</a></code> </p>
-        </td>
-        <td><p>Estimate single-regime local projections</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="RLP.html">RLP()</a></code> </p>
-        </td>
-        <td><p>Estimate multi-regime local projections</p></td>
-      </tr>
-    </tbody><tbody>
-      <tr>
-        <th colspan="2">
-          <h2 id="section-model-analysis" class="hasAnchor"><a href="#section-model-analysis" class="anchor"></a>Model Analysis</h2>
-          <p class="section-desc"><p>Functions to anlayze forecasting dynamics</p></p>
-        </th>
-      </tr>
-      
-      
-    </tbody><tbody>
-      
-      
-      <tr>
-        
-        <td>
-          <p><code><a href="var_irf.html">var_irf()</a></code> </p>
-        </td>
-        <td><p>Estimate single-regime impulse response functions</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="rvar_irf.html">rvar_irf()</a></code> </p>
-        </td>
-        <td><p>Estimate multi-regime impulse response functions</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="var_fevd.html">var_fevd()</a></code> </p>
-        </td>
-        <td><p>Estimate single-regime forecast error variance decomposition</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="rvar_fevd.html">rvar_fevd()</a></code> </p>
-        </td>
-        <td><p>Estimate multi-regime forecast error variance decomposition</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="lp_irf.html">lp_irf()</a></code> </p>
-        </td>
-        <td><p>Estimate single-regime impulse response functions</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="rlp_irf.html">rlp_irf()</a></code> </p>
-        </td>
-        <td><p>Estimate multi-regime impulse response functions</p></td>
-      </tr>
-    </tbody><tbody>
-      <tr>
-        <th colspan="2">
-          <h2 id="section-plots" class="hasAnchor"><a href="#section-plots" class="anchor"></a>Plots</h2>
-          <p class="section-desc"><p>Functions to plot forecast analysis</p></p>
-        </th>
-      </tr>
-      
-      
-    </tbody><tbody>
-      
-      
-      <tr>
-        
-        <td>
-          <p><code><a href="plot_forecast.html">plot_forecast()</a></code> </p>
-        </td>
-        <td><p>Chart forecasts</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plot_error.html">plot_error()</a></code> </p>
-        </td>
-        <td><p>Chart residuals</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plot_fevd.html">plot_fevd()</a></code> </p>
-        </td>
-        <td><p>Chart FEVDs</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plot_irf.html">plot_irf()</a></code> </p>
-        </td>
-        <td><p>Chart IRFs</p></td>
-      </tr>
-    </tbody>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>rvar</th>
+      <td><p>rvar output</p></td>
+    </tr>
+    <tr>
+      <th>horizon</th>
+      <td><p>int: number of periods</p></td>
+    </tr>
+    <tr>
+      <th>bootstraps.num</th>
+      <td><p>int: number of bootstraps</p></td>
+    </tr>
+    <tr>
+      <th>CI</th>
+      <td><p>numeric vector: c(lower ci bound, upper ci bound)</p></td>
+    </tr>
     </table>
-  </div>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>list of lists, each regime returns its own list with elements <code>irfs</code>, <code>ci.lower</code>, and <code>ci.upper</code>; all elements are long-form data.frames</p>
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+<span class='fu'>rvar_irf</span><span class='op'>(</span>
+  <span class='va'>rvar</span>,
+  bootstraps.num <span class='op'>=</span> <span class='fl'>10</span>,
+  CI <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.05</span>,<span class='fl'>0.95</span><span class='op'>)</span><span class='op'>)</span>
+<span class='op'>}</span>
+
+</div></pre>
+  </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
       <h2 data-toc-skip>Contents</h2>

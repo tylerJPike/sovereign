@@ -184,8 +184,8 @@ First we estimate the threshold VAR, resulting in an expectation function with d
 ```{r, message=F, warning=F, fig.show="hold", out.width="50%"}
 
 # estimate multi-regime VAR
-tvar =
-    sovereign::threshold_VAR(
+rvar =
+    sovereign::RVAR(
         data = Data.rec,
         regime = 'cycle_position',
         p = 1,
@@ -194,27 +194,27 @@ tvar =
 
 # plot forecasting output, one-period ahead horizon
 # plot forecasts (right panel)
-sovereign::plot_forecast(tvar$forecasts[['H_1']])
+sovereign::plot_forecast(rvar$forecasts[['H_1']])
 # plot residuals (left panel)
-sovereign::plot_error(tvar$residuals[['H_1']])
+sovereign::plot_error(rvar$residuals[['H_1']])
 ```
 We then estimate impulse response functions to describe the dynamics of the system within each economic state. 
 
 ```{r, message=F, warning=F, fig.show="hold", out.width="50%"}
 
 # estimate IRF
-tvar.irf =
-    sovereign::threshold_var_irf(
-        tvar,
+rvar.irf =
+    sovereign::rvar_irf(
+        rvar,
         horizon = 10,
         bootstraps.num = 10,
         CI = c(0.05,0.95))
 
 # plot IRF
 # regime 1: expansion (right panel)
-sovereign::plot_irf(tvar.irf[['regime_expansion']])
+sovereign::plot_irf(rvar.irf[['regime_expansion']])
 # regime 2: recession (left panel)
-sovereign::plot_irf(tvar.irf[['regime_recession']])
+sovereign::plot_irf(rvar.irf[['regime_recession']])
 
 ```
 
@@ -223,16 +223,16 @@ And lastly we estimate and visualize the forecast error variance decomposition b
 ```{r, message=F, warning=F, fig.show="hold", out.width="50%"}
 
 # estimate forecast error variance decomposition
-tvar.fevd =
-    sovereign::threshold_var_fevd(
-        tvar,
+rvar.fevd =
+    sovereign::rvar_fevd(
+        rvar,
         horizon = 10)
 
 # plot FEVD
 # regime 1: expansion (right panel)
-sovereign::plot_fevd(tvar.fevd[['regime_expansion']])
+sovereign::plot_fevd(rvar.fevd[['regime_expansion']])
 # regime 2: recession rates (left panel)
-sovereign::plot_fevd(tvar.fevd[['regime_recession']])
+sovereign::plot_fevd(rvar.fevd[['regime_recession']])
 
 ```
 Then, upon inspection of both the impulse response functions and forecast error variance decomposition, it is clear that the macroeconomic system behaves differently based on economic state. We will next extend the analysis to assess if there is state-dependent differences in the system, when using local projections. 
@@ -280,8 +280,8 @@ Again, we first estimate and visualize the one-period-ahead forecasts and errors
 ```{r, message=F, warning=F, fig.show="hold", out.width="50%"}
 
 # estimate multi-regime IRF
-tlp = 
-    sovereign::threshold_LP(
+rlp = 
+    sovereign::RLP(
         data = Data.kmeans,
         regime = 'regime',
         p = 1,
@@ -290,23 +290,23 @@ tlp =
 
 # plot forecasting output, one-quarter ahead horizon
 # plot forecasts (right panel)
-sovereign::plot_forecast(tlp$forecasts[['H_1']])
+sovereign::plot_forecast(rlp$forecasts[['H_1']])
 # plot residuals (left panel)
-sovereign::plot_error(tlp$residuals[['H_1']])
+sovereign::plot_error(rlp$residuals[['H_1']])
 ```
 
 And in our last step, we will create the state-dependent impulse response functions. 
 
 ```{r, message=F, warning=F, fig.show="hold", out.width="50%"}
 # estimate multi-regime IRF
-tlp.irf = 
-  sovereign::threshold_lp_irf(tlp)
+rlp.irf = 
+  sovereign::rlp_irf(rlp)
 
 # plot IRF
 # regime 1: km-eans cluster 0 (right panel)
-sovereign::plot_irf(tlp.irf[[1]])
+sovereign::plot_irf(rlp.irf[[1]])
 # regime 2: k-means cluster 1 (left panel)
-sovereign::plot_irf(tlp.irf[[2]])
+sovereign::plot_irf(rlp.irf[[2]])
 
 ```
 

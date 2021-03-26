@@ -17,18 +17,18 @@ reference:
     desc: Functions used to estimate models
     contents:
       - '`VAR`'
-      - '`threshold_VAR`'
+      - '`RVAR`'
       - '`LP`'
-      - '`threshold_LP`'
+      - '`RLP`'
   - title: Model Analysis
     desc: Functions to anlayze forecasting dynamics
     contents:
       - '`var_irf`'
-      - '`threshold_var_irf`'
+      - '`rvar_irf`'
       - '`var_fevd`'
-      - '`threshold_var_fevd`'
+      - '`rvar_fevd`'
       - '`lp_irf`'
-      - '`threshold_lp_irf`'
+      - '`rlp_irf`'
   - title: Plots
     desc: Functions to plot forecast analysis
     contents:

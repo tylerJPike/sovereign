@@ -113,8 +113,8 @@ Vector Auto-Regression (VAR)
     # multi-regime var
     #-------------------------------------------
     # estimate multi-regime VAR
-    tvar =
-        threshold_VAR(
+    var =
+        RVAR(
             data = Data.threshold,
             regime = 'mp',
             p = 1,
@@ -122,30 +122,30 @@ Vector Auto-Regression (VAR)
             freq = 'month')
     
     # estimate IRF
-    tvar.irf =
-        threshold_var_irf(
-            tvar,
+    rvar.irf =
+        rvar_irf(
+            rvar,
             horizon = 10,
             bootstraps.num = 10,
             CI = c(0.05,0.95))
 
     # plot IRF
     # regime 1: low interest rates
-    plot_irf(tvar.irf[[1]])
+    plot_irf(rvar.irf[[1]])
     # regime 2: high interest rates
-    plot_irf(tvar.irf[[2]])
+    plot_irf(rvar.irf[[2]])
 
     # estimate forecast error variance decomposition
-    tvar.fevd =
-        threshold_var_fevd(
-            tvar,
+    rvar.fevd =
+        rvar_fevd(
+            rvar,
             horizon = 10)
 
     # plot FEVD
     # regime 1: low interest rates
-    plot_fevd(tvar.fevd[[1]])
+    plot_fevd(rvar.fevd[[1]])
     # regime 2: high interest rates
-    plot_fevd(tvar.fevd[[2]])
+    plot_fevd(rvar.fevd[[2]])
 
     #-------------------------------------------
     # single-regime local projections
@@ -169,8 +169,8 @@ Vector Auto-Regression (VAR)
     # multi-regime local projections
     #-------------------------------------------
     # estimate multi-regime IRF
-    tlp = 
-        threshold_LP(
+    rlp = 
+        RLP(
             data = Data,
             regime = 'mp',
             p = 1,
@@ -178,13 +178,13 @@ Vector Auto-Regression (VAR)
             freq = 'month')
 
     # estimate multi-regime IRF
-    tlp.irf = lp_irf(tlp)
+    rlp.irf = rlp_irf(rlp)
 
     # plot IRF
     # regime 1: low interest rates
-    plot_irf(tlp.irf[[1]])
+    plot_irf(rlp.irf[[1]])
     # regime 2: high interest rates
-    plot_irf(tlp.irf[[2]])
+    plot_irf(rlp.irf[[2]])
     
 
 ---
