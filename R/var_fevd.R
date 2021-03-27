@@ -101,10 +101,30 @@ fevd = function(Phi,  Sig, lag = 4)
 #' @return long-form data.frame
 #'
 #' @examples
-#' \dontrun{
-#' var_fevd(
-#'   var,
-#'   bootstraps.num = 10)
+#' \donttest{
+#'
+#'  # simple time series
+#'  AA = c(1:100) + rnorm(100)
+#'  BB = c(1:100) + rnorm(100)
+#'  CC = AA + BB + rnorm(100)
+#'  date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+#'  Data = data.frame(date = date, AA, BB, CC)
+#'
+#'  # estimate VAR
+#'   var =
+#'     VAR(
+#'       data = Data,
+#'       horizon = 10,
+#'       freq = 'month',
+#'       lag.ic = 'BIC',
+#'       lag.max = 4)
+#' 
+#' # impulse response functions
+#' var.irf = var_irf(var)
+#' 
+#' # forecast error variance decomposition
+#' var.fevd = var_fevd(var)
+#'
 #' }
 #'
 #' @export
@@ -168,10 +188,33 @@ var_fevd = function(
 #' @return list, each regime returns its own long-form data.frame
 #'
 #' @examples
-#' \dontrun{
-#' threshold_var_fevd(
-#'   threshold_var,
-#'   bootstraps.num = 10)
+#' \donttest{
+#'
+#'  # simple time series
+#'  AA = c(1:100) + rnorm(100)
+#'  BB = c(1:100) + rnorm(100)
+#'  CC = AA + BB + rnorm(100)
+#'  date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+#'  Data = data.frame(date = date, AA, BB, CC)
+#'  Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
+#'
+#'  # estimate VAR
+#'   rvar =
+#'     RVAR(
+#'       data = Data,
+#'       horizon = 10,
+#'       freq = 'month',
+#'       regime.method = 'rf',
+#'       regime.n = 2,
+#'       lag.ic = 'BIC',
+#'       lag.max = 4)
+#' 
+#' # impulse response functions
+#' rvar.irf = rvar_irf(rvar)
+#' 
+#' # forecast error variance decomposition
+#' rvar.fevd = rvar_fevd(rvar)
+#'
 #' }
 #'
 #' @export

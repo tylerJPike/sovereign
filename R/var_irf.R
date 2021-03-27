@@ -89,11 +89,30 @@ IRF = function (Phi, Sig, lag, orth = TRUE){
 #' @return list object with elements `irfs`, `ci.lower`, and `ci.upper`; all elements are long-form data.frames
 #'
 #' @examples
-#' \dontrun{
-#' var_irf(
-#'   var,
-#'   bootstraps.num = 10,
-#'   CI = c(0.05,0.95))
+#' \donttest{
+#'
+#'  # simple time series
+#'  AA = c(1:100) + rnorm(100)
+#'  BB = c(1:100) + rnorm(100)
+#'  CC = AA + BB + rnorm(100)
+#'  date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+#'  Data = data.frame(date = date, AA, BB, CC)
+#'
+#'  # estimate VAR
+#'   var =
+#'     VAR(
+#'       data = Data,
+#'       horizon = 10,
+#'       freq = 'month',
+#'       lag.ic = 'BIC',
+#'       lag.max = 4)
+#' 
+#' # impulse response functions
+#' var.irf = var_irf(var)
+#' 
+#' # forecast error variance decomposition
+#' var.fevd = var_fevd(var)
+#'
 #' }
 #'
 #' @export
@@ -283,11 +302,33 @@ var_irf = function(
 #' @return list of lists, each regime returns its own list with elements `irfs`, `ci.lower`, and `ci.upper`; all elements are long-form data.frames
 #'
 #' @examples
-#' \dontrun{
-#' rvar_irf(
-#'   rvar,
-#'   bootstraps.num = 10,
-#'   CI = c(0.05,0.95))
+#' \donttest{
+#'
+#'  # simple time series
+#'  AA = c(1:100) + rnorm(100)
+#'  BB = c(1:100) + rnorm(100)
+#'  CC = AA + BB + rnorm(100)
+#'  date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+#'  Data = data.frame(date = date, AA, BB, CC)
+#'  Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
+#'
+#'  # estimate VAR
+#'   rvar =
+#'     RVAR(
+#'       data = Data,
+#'       horizon = 10,
+#'       freq = 'month',
+#'       regime.method = 'rf',
+#'       regime.n = 2,
+#'       lag.ic = 'BIC',
+#'       lag.max = 4)
+#' 
+#' # impulse response functions
+#' rvar.irf = rvar_irf(rvar)
+#' 
+#' # forecast error variance decomposition
+#' rvar.fevd = rvar_fevd(rvar)
+#'
 #' }
 #'
 #' @export

@@ -200,14 +200,6 @@ VAR_estimation = function(
 #'  Data = data.frame(date = date, AA, BB, CC)
 #'
 #'  # estimate VAR
-#'  var =
-#'     VAR(
-#'       data = Data,
-#'       p = 1,
-#'       horizon = 10,
-#'       freq = 'month')
-#'
-#'   # or with automatic lag selection
 #'   var =
 #'     VAR(
 #'       data = Data,
@@ -215,6 +207,12 @@ VAR_estimation = function(
 #'       freq = 'month',
 #'       lag.ic = 'BIC',
 #'       lag.max = 4)
+#' 
+#' # impulse response functions
+#' var.irf = var_irf(var)
+#' 
+#' # forecast error variance decomposition
+#' var.fevd = var_fevd(var)
 #'
 #' }
 #'
@@ -578,15 +576,6 @@ RVAR_estimate = function(
 #'  Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
 #'
 #'  # estimate VAR
-#'  rvar =
-#'     RVAR(
-#'       data = Data,
-#'       p = 1,
-#'       regime = 'reg',
-#'       horizon = 10,
-#'       freq = 'month')
-#'
-#'   # or with automatic lag selection and regime detection
 #'   rvar =
 #'     RVAR(
 #'       data = Data,
@@ -596,6 +585,12 @@ RVAR_estimate = function(
 #'       regime.n = 2,
 #'       lag.ic = 'BIC',
 #'       lag.max = 4)
+#' 
+#' # impulse response functions
+#' rvar.irf = rvar_irf(rvar)
+#' 
+#' # forecast error variance decomposition
+#' rvar.fevd = rvar_fevd(rvar)
 #'
 #' }
 #'

@@ -127,7 +127,7 @@ lp_irf = function(
 #'   Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
 #'
 #'   # local projection forecasts
-#'   tlp =
+#'   rlp =
 #'     RLP(
 #'       data = Data,
 #'       regime = 'reg',
@@ -140,7 +140,7 @@ lp_irf = function(
 #'       NW_prewhite = FALSE)
 #'
 #'  # impulse response function
-#'  rirf = rlp_irf(tlp)
+#'  rirf = rlp_irf(rlp)
 #' }
 #'
 #' @export
