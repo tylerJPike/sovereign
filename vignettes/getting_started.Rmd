@@ -45,7 +45,7 @@ To create our small macro-system we need to first pull four variables from FRED 
 quantmod::getSymbols.FRED(c('GDPC1','GDPPOT','GDPDEF','FEDFUNDS'), env = globalenv())
 ```
 
-We then use these four variables to create the quarterly ouptut gap, inflation, and federal funds rate. 
+We then use these four variables to create the quarterly output gap, inflation, and federal funds rate. 
 
 ```{r, message=F}
 # real output gap and inflation
