@@ -37,7 +37,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">sovereign</a>
-        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased version">0.0.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.0</span>
       </span>
     </div>
 
@@ -121,7 +121,7 @@
 <code class="sourceCode R"><span class="co"># pull data from FRED </span>
 <span class="fu">quantmod</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/quantmod/man/getSymbols.FRED.html">getSymbols.FRED</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'GDPC1'</span>,<span class="st">'GDPPOT'</span>,<span class="st">'GDPDEF'</span>,<span class="st">'FEDFUNDS'</span><span class="op">)</span>, env <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/environment.html">globalenv</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <pre><code>## [1] "GDPC1"    "GDPPOT"   "GDPDEF"   "FEDFUNDS"</code></pre>
-<p>We then use these four variables to create the quarterly ouptut gap, inflation, and federal funds rate.</p>
+<p>We then use these four variables to create the quarterly output gap, inflation, and federal funds rate.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># real output gap and inflation</span>
 <span class="va">Y</span> <span class="op">=</span> 

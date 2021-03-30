@@ -14,7 +14,7 @@ regimes(data, method = "rf", regime.n = NULL)
 \item{regime.n}{int: number of regimes to estimate (applies to kmeans and EM)}
 }
 \value{
-\code{data} as a data.frame with a regime column assigning rows to mutually exclusive regimes.
+\code{data} as a data.frame with a regime column assigning rows to mutually exclusive regimes
 }
 \description{
 Regime assignment (clustering) methods available include the
