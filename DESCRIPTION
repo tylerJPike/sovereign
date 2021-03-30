@@ -6,9 +6,10 @@ Authors@R:
            family = "Pike",
            role = c("aut", "cre"),
            email = "tjpike7@gmail.com")  
-Description: A set of tools for state-dependant empirical analysis
-  through both VAR- and local projection-based state-dependant forecasts,
-  impulse response functions, and forecast error variance decomposition.   
+Description: A set of tools for state-dependant 
+  empirical analysis through both VAR- and local projection-based 
+  state-dependant forecasts, impulse response functions, 
+  and forecast error variance decomposition.   
 License: GPL-3
 URL: https://github.com/tylerJPike/sovereign,
      https://tylerjpike.github.io/sovereign/

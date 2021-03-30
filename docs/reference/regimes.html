@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Assign regimes via unsupervised machine learning methods — regimes • sovereign</title>
+<title>Identify regimes via unsupervised ML algorithms — regimes • sovereign</title>
 
 
 <!-- jquery -->
@@ -39,9 +39,12 @@
 
 
 
-<meta property="og:title" content="Assign regimes via unsupervised machine learning methods — regimes" />
-<meta property="og:description" content="Regime assignment (clustering) methods available include the unsupervised random forest, k-mean clustering,
-and EM via Fraley and Raftery Model-based clustering, Bai &amp;amp; Perron (2003) algorithm for simultaneous estimation of multiple breakpoints." />
+<meta property="og:title" content="Identify regimes via unsupervised ML algorithms — regimes" />
+<meta property="og:description" content="Regime assignment (clustering) methods available include the
+unsupervised random forest,
+k-mean clustering,
+Fraley and Raftery Model-based clustering EM algorithm,
+and the Bai &amp;amp; Perron (2003) method for simultaneous estimation of multiple breakpoints." />
 
 
 
@@ -130,17 +133,20 @@ and EM via Fraley and Raftery Model-based clustering, Bai &amp;amp; Perron (2003
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Assign regimes via unsupervised machine learning methods</h1>
+    <h1>Identify regimes via unsupervised ML algorithms</h1>
     <small class="dont-index">Source: <a href='https://github.com/tylerJPike/sovereign/blob/master/R/regimes.R'><code>R/regimes.R</code></a></small>
     <div class="hidden name"><code>regimes.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Regime assignment (clustering) methods available include the <a href='https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest'>unsupervised random forest</a>, <a href='https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/kmeans'>k-mean clustering</a>,
-and EM via <a href='https://www.rdocumentation.org/packages/mclust/versions/5.4.7/topics/Mclust'>Fraley and Raftery Model-based clustering</a>, <a href='https://www.rdocumentation.org/packages/strucchange/versions/1.5-2/topics/breakpoints'>Bai &amp; Perron (2003) algorithm</a> for simultaneous estimation of multiple breakpoints.</p>
+    <p>Regime assignment (clustering) methods available include the
+<a href='https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest'>unsupervised random forest</a>,
+<a href='https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/kmeans'>k-mean clustering</a>,
+Fraley and Raftery Model-based clustering <a href='https://www.rdocumentation.org/packages/mclust/versions/5.4.7/topics/Mclust'>EM algorithm</a>,
+and the <a href='https://www.rdocumentation.org/packages/strucchange/versions/1.5-2/topics/breakpoints'>Bai &amp; Perron (2003)</a> method for simultaneous estimation of multiple breakpoints.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>regimes</span><span class='op'>(</span><span class='va'>data</span>, regime.n <span class='op'>=</span> <span class='cn'>NULL</span>, engine <span class='op'>=</span> <span class='st'>"rf"</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>regimes</span><span class='op'>(</span><span class='va'>data</span>, method <span class='op'>=</span> <span class='st'>"rf"</span>, regime.n <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -150,12 +156,12 @@ and EM via <a href='https://www.rdocumentation.org/packages/mclust/versions/5.4.
       <td><p>data.frame, matrix, ts, xts, zoo: Endogenous regressors</p></td>
     </tr>
     <tr>
-      <th>regime.n</th>
-      <td><p>int: number of regimes to estimate (applies to kmeans and EM)</p></td>
+      <th>method</th>
+      <td><p>string: regime assignment technique ('rf', 'kmeans', 'EM', or 'BP)</p></td>
     </tr>
     <tr>
-      <th>engine</th>
-      <td><p>string: regime assignment technique ('rf', 'kmeans', and EM)</p></td>
+      <th>regime.n</th>
+      <td><p>int: number of regimes to estimate (applies to kmeans and EM)</p></td>
     </tr>
     </table>
 
@@ -175,10 +181,10 @@ and EM via <a href='https://www.rdocumentation.org/packages/mclust/versions/5.4.
 
  <span class='co'># estimate reigme</span>
  <span class='va'>regime</span> <span class='op'>=</span>
-  <span class='fu'>regimes</span><span class='op'>(</span>
+  <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'>regimes</span><span class='op'>(</span>
      data <span class='op'>=</span> <span class='va'>Data</span>,
-     regime.n <span class='op'>=</span> <span class='fl'>3</span>,
-     engine <span class='op'>=</span> <span class='st'>'kmeans'</span><span class='op'>)</span>
+     method <span class='op'>=</span> <span class='st'>'kmeans'</span>,
+     regime.n <span class='op'>=</span> <span class='fl'>3</span><span class='op'>)</span>
 <span class='co'># }</span>
 
 </div></pre>

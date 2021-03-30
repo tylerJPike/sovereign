@@ -92,13 +92,20 @@ fevd = function(Phi,  Sig, lag = 4)
 #--------------------------------------------------------
 # Wrapper function to estimate forecast error variance
 #--------------------------------------------------------
-#' Estimate single-regime forecast error variance decomposition
+#' Estimate forecast error variance decomposition
 #'
 #' @param var              VAR output
 #' @param horizon          int: number of periods
 #' @param scale            boolean: scale variable contribution as percent of total error
 #'
 #' @return long-form data.frame
+#'
+#' @seealso [VAR()]
+#' @seealso [var_irf()]
+#' @seealso [var_fevd()]
+#' @seealso [RVAR()]
+#' @seealso [rvar_irf()]
+#' @seealso [rvar_fevd()]
 #'
 #' @examples
 #' \donttest{
@@ -112,18 +119,18 @@ fevd = function(Phi,  Sig, lag = 4)
 #'
 #'  # estimate VAR
 #'   var =
-#'     VAR(
+#'     sovereign::VAR(
 #'       data = Data,
 #'       horizon = 10,
 #'       freq = 'month',
 #'       lag.ic = 'BIC',
 #'       lag.max = 4)
-#' 
+#'
 #' # impulse response functions
-#' var.irf = var_irf(var)
-#' 
+#' var.irf = sovereign::var_irf(var)
+#'
 #' # forecast error variance decomposition
-#' var.fevd = var_fevd(var)
+#' var.fevd = sovereign::var_fevd(var)
 #'
 #' }
 #'
@@ -179,13 +186,20 @@ var_fevd = function(
 
 }
 
-#' Estimate multi-regime forecast error variance decomposition
+#' Estimate regime-dependent forecast error variance decomposition
 #'
-#' @param rvar    threshold_var output
+#' @param rvar             RVAR output
 #' @param horizon          int: number of periods
 #' @param scale            boolean: scale variable contribution as percent of total error
 #'
 #' @return list, each regime returns its own long-form data.frame
+#'
+#' @seealso [VAR()]
+#' @seealso [var_irf()]
+#' @seealso [var_fevd()]
+#' @seealso [RVAR()]
+#' @seealso [rvar_irf()]
+#' @seealso [rvar_fevd()]
 #'
 #' @examples
 #' \donttest{
@@ -200,7 +214,7 @@ var_fevd = function(
 #'
 #'  # estimate VAR
 #'   rvar =
-#'     RVAR(
+#'     sovereign::RVAR(
 #'       data = Data,
 #'       horizon = 10,
 #'       freq = 'month',
@@ -208,12 +222,12 @@ var_fevd = function(
 #'       regime.n = 2,
 #'       lag.ic = 'BIC',
 #'       lag.max = 4)
-#' 
+#'
 #' # impulse response functions
-#' rvar.irf = rvar_irf(rvar)
-#' 
+#' rvar.irf = sovereign::rvar_irf(rvar)
+#'
 #' # forecast error variance decomposition
-#' rvar.fevd = rvar_fevd(rvar)
+#' rvar.fevd = sovereign::rvar_fevd(rvar)
 #'
 #' }
 #'

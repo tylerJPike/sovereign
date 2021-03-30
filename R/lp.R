@@ -7,8 +7,8 @@ LP_estimate = function(
   data,                   # data.frame, matrix, ts, xts, zoo: Endogenous regressors
   p = 1,                  # int: lags
   horizons = 1,           # int: forecast horizons, can be a numeric vector with multiple horizons
-  freq = 'month',         # string: frequency of data (day, week, month, quarter, year)
-  type = 'const',         # string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
+  freq = 'month',         # string: frequency of data ('day', 'week', 'month', 'quarter', or 'year')
+  type = 'const',         # string: type of deterministic terms to add ('none', 'const', 'trend', or'both')
   # OLS-based IRF parameters
   NW = FALSE,             # Newey-West correction on variance-covariance matrix
   NW_lags = NULL,         # number of lags to use in Newey-West correction
@@ -150,20 +150,25 @@ LP_estimate = function(
 
 }
 
-#' Estimate single-regime local projections
+#' Estimate local projections
 #'
 #' @param data         data.frame, matrix, ts, xts, zoo: Endogenous regressors
 #' @param horizons     int: forecast horizons
-#' @param freq         string: frequency of data (day, week, month, quarter, year)
-#' @param type         string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
+#' @param freq         string: frequency of data ('day', 'week', 'month', 'quarter', or 'year')
+#' @param type         string: type of deterministic terms to add ('none', 'const', 'trend', or 'both')
 #' @param p            int: lags
 #' @param lag.ic       string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
 #' @param lag.max      int: maximum number of lags to test in lag selection
 #' @param NW           boolean: Newey-West correction on variance-covariance matrix
 #' @param NW_lags      int: number of lags to use in Newey-West correction
-#' @param NW_prewhite  boolean: TRUE prewhite option for Newey-West correction (see sandwich::NeweyWest function)
+#' @param NW_prewhite  boolean: TRUE prewhite option for Newey-West correction (see sandwich::NeweyWest)
 #'
 #' @return list object with elements `data`, `model`, `forecasts`, `residuals`; if there is more than one forecast horizon estimated, then `model`, `forecasts`, `residuals` will each be a list where each element corresponds to a single horizon
+#'
+#' @seealso [LP()]
+#' @seealso [lp_irf()]
+#' @seealso [RLP()]
+#' @seealso [rlp_irf()]
 #'
 #' @examples
 #' \donttest{
@@ -177,7 +182,7 @@ LP_estimate = function(
 #'
 #'   # local projection forecasts
 #'   lp =
-#'     LP(
+#'     sovereign::LP(
 #'       data = Data,
 #'       horizon = c(1:10),
 #'       lag.ic = 'AIC',
@@ -186,7 +191,7 @@ LP_estimate = function(
 #'       freq = 'month')
 #'
 #'   # impulse response function
-#'   irf = lp_irf(lp)
+#'   irf = sovereign::lp_irf(lp)
 #'
 #' }
 #'
@@ -517,23 +522,28 @@ RLP_estimate = function(
 
 }
 
-#' Estimate multi-regime local projections
+#' Estimate regime-dependent local projections
 #'
 #' @param data         data.frame, matrix, ts, xts, zoo: Endogenous regressors
 #' @param horizons     int: forecast horizons
-#' @param freq         string: frequency of data (day, week, month, quarter, year)
-#' @param type         string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
+#' @param freq         string: frequency of data ('day', 'week', 'month', 'quarter', or 'year')
+#' @param type         string: type of deterministic terms to add ('none', 'const', 'trend', or 'both')
 #' @param p            int: lags
 #' @param lag.ic       string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
 #' @param lag.max      int: maximum number of lags to test in lag selection
 #' @param NW           boolean: Newey-West correction on variance-covariance matrix
 #' @param NW_lags      int: number of lags to use in Newey-West correction
-#' @param NW_prewhite  boolean: TRUE prewhite option for Newey-West correction (see sandwich::NeweyWest function)
+#' @param NW_prewhite  boolean: TRUE prewhite option for Newey-West correction (see sandwich::NeweyWest)
 #' @param regime        string: name or regime assignment vector in the design matrix (data)
 #' @param regime.method string: regime assignment technique ('rf', 'kmeans', 'EM', 'BP')
 #' @param regime.n      int: number of regimes to estimate (applies to kmeans and EM)
 #'
 #' @return list object with elements `data`, `model`, `forecasts`, `residuals`; if there is more than one forecast horizon estimated, then `model`, `forecasts`, `residuals` will each be a list where each element corresponds to a single horizon
+#'
+#' @seealso [LP()]
+#' @seealso [lp_irf()]
+#' @seealso [RLP()]
+#' @seealso [rlp_irf()]
 #'
 #' @examples
 #' \donttest{
@@ -549,7 +559,7 @@ RLP_estimate = function(
 #'
 #'   # local projection forecasts
 #'   rlp =
-#'     RLP(
+#'     sovereign::RLP(
 #'       data = Data,
 #'       regime = 'reg',
 #'       horizon = c(1:10),
@@ -561,7 +571,7 @@ RLP_estimate = function(
 #'       NW_prewhite = FALSE)
 #'
 #'  # impulse response function
-#'  rirf = rlp_irf(rlp)
+#'  rirf = sovereign::rlp_irf(rlp)
 #'
 #' }
 #'
@@ -621,7 +631,7 @@ RLP = function(
       regimes(
         data,
         regime.n = regime.n,
-        engine = regime.method)
+        method = regime.method)
 
     regime = 'regime'
 

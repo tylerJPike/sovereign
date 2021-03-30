@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Estimate multi-regime impulse response functions — rlp_irf • sovereign</title>
+<title>Estimate regime-dependent impulse response functions — rlp_irf • sovereign</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Estimate multi-regime impulse response functions — rlp_irf" />
-<meta property="og:description" content="Estimate multi-regime impulse response functions" />
+<meta property="og:title" content="Estimate regime-dependent impulse response functions — rlp_irf" />
+<meta property="og:description" content="Estimate regime-dependent impulse response functions" />
 
 
 
@@ -129,13 +129,13 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Estimate multi-regime impulse response functions</h1>
+    <h1>Estimate regime-dependent impulse response functions</h1>
     <small class="dont-index">Source: <a href='https://github.com/tylerJPike/sovereign/blob/master/R/lp_irf.R'><code>R/lp_irf.R</code></a></small>
     <div class="hidden name"><code>rlp_irf.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Estimate multi-regime impulse response functions</p>
+    <p>Estimate regime-dependent impulse response functions</p>
     </div>
 
     <pre class="usage"><span class='fu'>rlp_irf</span><span class='op'>(</span><span class='va'>rlp</span>, CI <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.1</span>, <span class='fl'>0.9</span><span class='op'>)</span><span class='op'>)</span></pre>
@@ -145,7 +145,7 @@
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>rlp</th>
-      <td><p>threshold_LP output</p></td>
+      <td><p>RLP output</p></td>
     </tr>
     <tr>
       <th>CI</th>
@@ -156,6 +156,12 @@
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>list of long-form data.frame with one row per target-shock-horizon identifier</p>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p><code><a href='LP.html'>LP()</a></code></p>
+<p><code><a href='lp_irf.html'>lp_irf()</a></code></p>
+<p><code><a href='RLP.html'>RLP()</a></code></p>
+<p><code>rlp_irf()</code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
@@ -170,8 +176,8 @@
   <span class='va'>Data</span> <span class='op'>=</span> <span class='fu'>dplyr</span><span class='fu'>::</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span><span class='va'>Data</span>, reg <span class='op'>=</span> <span class='fu'>dplyr</span><span class='fu'>::</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/if_else.html'>if_else</a></span><span class='op'>(</span><span class='va'>AA</span> <span class='op'>&gt;</span> <span class='fu'><a href='https://rdrr.io/r/stats/median.html'>median</a></span><span class='op'>(</span><span class='va'>AA</span><span class='op'>)</span>, <span class='fl'>1</span>, <span class='fl'>0</span><span class='op'>)</span><span class='op'>)</span>
 
   <span class='co'># local projection forecasts</span>
-  <span class='va'>tlp</span> <span class='op'>=</span>
-    <span class='fu'><a href='RLP.html'>RLP</a></span><span class='op'>(</span>
+  <span class='va'>rlp</span> <span class='op'>=</span>
+    <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='RLP.html'>RLP</a></span><span class='op'>(</span>
       data <span class='op'>=</span> <span class='va'>Data</span>,
       regime <span class='op'>=</span> <span class='st'>'reg'</span>,
       horizon <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>10</span><span class='op'>)</span>,
@@ -181,10 +187,10 @@
       NW <span class='op'>=</span> <span class='cn'>TRUE</span>,
       NW_lags <span class='op'>=</span> <span class='fl'>1</span>,
       NW_prewhite <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in RLP(data = Data, regime = "reg", horizon = c(1:10), freq = "month",     p = 1, , type = "const", NW = TRUE, NW_lags = 1, NW_prewhite = FALSE): could not find function "RLP"</span></div><div class='input'>
+
  <span class='co'># impulse response function</span>
- <span class='va'>rirf</span> <span class='op'>=</span> <span class='fu'>rlp_irf</span><span class='op'>(</span><span class='va'>tlp</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in rlp_irf(tlp): could not find function "rlp_irf"</span></div><div class='input'><span class='co'># }</span>
+ <span class='va'>rirf</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'>rlp_irf</span><span class='op'>(</span><span class='va'>rlp</span><span class='op'>)</span>
+<span class='co'># }</span>
 
 </div></pre>
   </div>

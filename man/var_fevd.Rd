@@ -2,7 +2,7 @@
 % Please edit documentation in R/var_fevd.R
 \name{var_fevd}
 \alias{var_fevd}
-\title{Estimate single-regime forecast error variance decomposition}
+\title{Estimate forecast error variance decomposition}
 \usage{
 var_fevd(var, horizon = 10, scale = TRUE)
 }
@@ -17,13 +17,46 @@ var_fevd(var, horizon = 10, scale = TRUE)
 long-form data.frame
 }
 \description{
-Estimate single-regime forecast error variance decomposition
+Estimate forecast error variance decomposition
 }
 \examples{
-\dontrun{
-var_fevd(
-  var,
-  bootstraps.num = 10)
+\donttest{
+
+ # simple time series
+ AA = c(1:100) + rnorm(100)
+ BB = c(1:100) + rnorm(100)
+ CC = AA + BB + rnorm(100)
+ date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+ Data = data.frame(date = date, AA, BB, CC)
+
+ # estimate VAR
+  var =
+    sovereign::VAR(
+      data = Data,
+      horizon = 10,
+      freq = 'month',
+      lag.ic = 'BIC',
+      lag.max = 4)
+
+# impulse response functions
+var.irf = sovereign::var_irf(var)
+
+# forecast error variance decomposition
+var.fevd = sovereign::var_fevd(var)
+
 }
 
+}
+\seealso{
+\code{\link[=VAR]{VAR()}}
+
+\code{\link[=var_irf]{var_irf()}}
+
+\code{\link[=var_fevd]{var_fevd()}}
+
+\code{\link[=RVAR]{RVAR()}}
+
+\code{\link[=rvar_irf]{rvar_irf()}}
+
+\code{\link[=rvar_fevd]{rvar_fevd()}}
 }

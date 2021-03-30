@@ -2,7 +2,7 @@
 % Please edit documentation in R/lp.R
 \name{LP}
 \alias{LP}
-\title{Estimate single-regime local projections}
+\title{Estimate local projections}
 \usage{
 LP(
   data,
@@ -22,9 +22,9 @@ LP(
 
 \item{horizons}{int: forecast horizons}
 
-\item{freq}{string: frequency of data (day, week, month, quarter, year)}
+\item{freq}{string: frequency of data ('day', 'week', 'month', 'quarter', or 'year')}
 
-\item{type}{string: type of deterministic terms to add ('none', 'const', 'trend', 'both')}
+\item{type}{string: type of deterministic terms to add ('none', 'const', 'trend', or 'both')}
 
 \item{p}{int: lags}
 
@@ -36,13 +36,13 @@ LP(
 
 \item{NW_lags}{int: number of lags to use in Newey-West correction}
 
-\item{NW_prewhite}{boolean: TRUE prewhite option for Newey-West correction (see sandwich::NeweyWest function)}
+\item{NW_prewhite}{boolean: TRUE prewhite option for Newey-West correction (see sandwich::NeweyWest)}
 }
 \value{
 list object with elements \code{data}, \code{model}, \code{forecasts}, \code{residuals}; if there is more than one forecast horizon estimated, then \code{model}, \code{forecasts}, \code{residuals} will each be a list where each element corresponds to a single horizon
 }
 \description{
-Estimate single-regime local projections
+Estimate local projections
 }
 \examples{
 \donttest{
@@ -56,7 +56,7 @@ Estimate single-regime local projections
 
   # local projection forecasts
   lp =
-    LP(
+    sovereign::LP(
       data = Data,
       horizon = c(1:10),
       lag.ic = 'AIC',
@@ -65,8 +65,17 @@ Estimate single-regime local projections
       freq = 'month')
 
   # impulse response function
-  irf = lp_irf(lp)
+  irf = sovereign::lp_irf(lp)
 
 }
 
+}
+\seealso{
+\code{\link[=LP]{LP()}}
+
+\code{\link[=lp_irf]{lp_irf()}}
+
+\code{\link[=RLP]{RLP()}}
+
+\code{\link[=rlp_irf]{rlp_irf()}}
 }

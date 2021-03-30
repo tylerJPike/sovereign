@@ -12,25 +12,25 @@ test_that("Regime learning functions", {
  regimes.rf =
   regimes(
     data = Data,
-    engine = 'rf'
+    method = 'rf'
   )
 
  regime.kmeans =
    regimes(
      data = Data,
-     engine = 'kmeans'
+     method = 'kmeans'
    )
 
  regime.em =
    regimes(
      data = Data,
-     engine = 'EM'
+     method = 'EM'
    )
 
  regime.bp =
    regimes(
      data = Data[, c(1,2)],
-     engine = 'BP'
+     method = 'BP'
    )
 
  expect_true(is.data.frame(regimes.rf))

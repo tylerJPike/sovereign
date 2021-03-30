@@ -2,7 +2,7 @@
 % Please edit documentation in R/var.R
 \name{RVAR}
 \alias{RVAR}
-\title{Estimate multi-regime VAR}
+\title{Estimate regime-dependent VAR}
 \usage{
 RVAR(
   data,
@@ -22,9 +22,9 @@ RVAR(
 
 \item{horizon}{int: forecast horizons}
 
-\item{freq}{string: frequency of data (day, week, month, quarter, year)}
+\item{freq}{string: frequency of data ('day', 'week', 'month', 'quarter', or 'year')}
 
-\item{type}{string: type of deterministic terms to add ('none', 'const', 'trend', 'both')}
+\item{type}{string: type of deterministic terms to add ('none', 'const', 'trend', or 'both')}
 
 \item{p}{int: lags}
 
@@ -34,7 +34,7 @@ RVAR(
 
 \item{regime}{string: name or regime assignment vector in the design matrix (data)}
 
-\item{regime.method}{string: regime assignment technique ('rf', 'kmeans', 'EM', 'BP')}
+\item{regime.method}{string: regime assignment technique ('rf', 'kmeans', 'EM', or 'BP')}
 
 \item{regime.n}{int: number of regimes to estimate (applies to kmeans and EM)}
 }
@@ -42,7 +42,7 @@ RVAR(
 list of lists, each regime returns its own list with elements \code{data}, \code{model}, \code{forecasts}, \code{residuals}
 }
 \description{
-Estimate multi-regime VAR
+Estimate regime-dependent VAR
 }
 \examples{
 \donttest{
@@ -56,17 +56,8 @@ Estimate multi-regime VAR
  Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
 
  # estimate VAR
- rvar =
-    RVAR(
-      data = Data,
-      p = 1,
-      regime = 'reg',
-      horizon = 10,
-      freq = 'month')
-
-  # or with automatic lag selection and regime detection
   rvar =
-    RVAR(
+    sovereign::RVAR(
       data = Data,
       horizon = 10,
       freq = 'month',
@@ -75,6 +66,25 @@ Estimate multi-regime VAR
       lag.ic = 'BIC',
       lag.max = 4)
 
+# impulse response functions
+rvar.irf = sovereign::rvar_irf(rvar)
+
+# forecast error variance decomposition
+rvar.fevd = sovereign::rvar_fevd(rvar)
+
 }
 
+}
+\seealso{
+\code{\link[=VAR]{VAR()}}
+
+\code{\link[=var_irf]{var_irf()}}
+
+\code{\link[=var_fevd]{var_fevd()}}
+
+\code{\link[=RVAR]{RVAR()}}
+
+\code{\link[=rvar_irf]{rvar_irf()}}
+
+\code{\link[=rvar_fevd]{rvar_fevd()}}
 }

@@ -2,23 +2,26 @@
 % Please edit documentation in R/regimes.R
 \name{regimes}
 \alias{regimes}
-\title{Assign regimes via unsupervised machine learning methods}
+\title{Identify regimes via unsupervised ML algorithms}
 \usage{
-regimes(data, regime.n = NULL, engine = "rf")
+regimes(data, method = "rf", regime.n = NULL)
 }
 \arguments{
 \item{data}{data.frame, matrix, ts, xts, zoo: Endogenous regressors}
 
-\item{regime.n}{int: number of regimes to estimate (applies to kmeans and EM)}
+\item{method}{string: regime assignment technique ('rf', 'kmeans', 'EM', or 'BP)}
 
-\item{engine}{string: regime assignment technique ('rf', 'kmeans', and EM)}
+\item{regime.n}{int: number of regimes to estimate (applies to kmeans and EM)}
 }
 \value{
 \code{data} as a data.frame with a regime column assigning rows to mutually exclusive regimes.
 }
 \description{
-Regime assignment (clustering) methods available include the \href{https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest}{unsupervised random forest}, \href{https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/kmeans}{k-mean clustering},
-and EM via \href{https://www.rdocumentation.org/packages/mclust/versions/5.4.7/topics/Mclust}{Fraley and Raftery Model-based clustering}, \href{https://www.rdocumentation.org/packages/strucchange/versions/1.5-2/topics/breakpoints}{Bai & Perron (2003) algorithm} for simultaneous estimation of multiple breakpoints.
+Regime assignment (clustering) methods available include the
+\href{https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest}{unsupervised random forest},
+\href{https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/kmeans}{k-mean clustering},
+Fraley and Raftery Model-based clustering \href{https://www.rdocumentation.org/packages/mclust/versions/5.4.7/topics/Mclust}{EM algorithm},
+and the \href{https://www.rdocumentation.org/packages/strucchange/versions/1.5-2/topics/breakpoints}{Bai & Perron (2003)} method for simultaneous estimation of multiple breakpoints.
 }
 \examples{
 \donttest{
@@ -32,10 +35,10 @@ and EM via \href{https://www.rdocumentation.org/packages/mclust/versions/5.4.7/t
 
  # estimate reigme
  regime =
-  regimes(
+  sovereign::regimes(
      data = Data,
-     regime.n = 3,
-     engine = 'kmeans')
+     method = 'kmeans',
+     regime.n = 3)
 }
 
 }

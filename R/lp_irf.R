@@ -1,13 +1,18 @@
 #------------------------------------------
 # Function to estimate impulse responses
 #------------------------------------------
-#' Estimate single-regime impulse response functions
+#' Estimate impulse response functions
 #'
 #' @param lp               LP output
 #' @param CI               numeric vector: c(lower ci bound, upper ci bound)
 #' @param regime           string: indicates regime index column of data
 #'
 #' @return long-form data.frame with one row per target-shock-horizon identifier
+#'
+#' @seealso [LP()]
+#' @seealso [lp_irf()]
+#' @seealso [RLP()]
+#' @seealso [rlp_irf()]
 #'
 #' @examples
 #' \donttest{
@@ -21,7 +26,7 @@
 #'
 #'   # local projection forecasts
 #'   lp =
-#'     LP(
+#'     sovereign::LP(
 #'       data = Data,
 #'       horizon = c(1:10),
 #'       lag.ic = 'AIC',
@@ -30,7 +35,7 @@
 #'       freq = 'month')
 #'
 #'   # impulse response function
-#'   irf = lp_irf(lp)
+#'   irf = sovereign::lp_irf(lp)
 #'
 #' }
 #'
@@ -107,12 +112,17 @@ lp_irf = function(
 #------------------------------------------
 # Function to estimate impulse responses
 #------------------------------------------
-#' Estimate multi-regime impulse response functions
+#' Estimate regime-dependent impulse response functions
 #'
-#' @param rlp     threshold_LP output
-#' @param CI               numeric vector: c(lower ci bound, upper ci bound)
+#' @param rlp     RLP output
+#' @param CI      numeric vector: c(lower ci bound, upper ci bound)
 #'
 #' @return list of long-form data.frame with one row per target-shock-horizon identifier
+#'
+#' @seealso [LP()]
+#' @seealso [lp_irf()]
+#' @seealso [RLP()]
+#' @seealso [rlp_irf()]
 #'
 #' @examples
 #' \donttest{
@@ -128,7 +138,7 @@ lp_irf = function(
 #'
 #'   # local projection forecasts
 #'   rlp =
-#'     RLP(
+#'     sovereign::RLP(
 #'       data = Data,
 #'       regime = 'reg',
 #'       horizon = c(1:10),
@@ -140,7 +150,7 @@ lp_irf = function(
 #'       NW_prewhite = FALSE)
 #'
 #'  # impulse response function
-#'  rirf = rlp_irf(rlp)
+#'  rirf = sovereign::rlp_irf(rlp)
 #' }
 #'
 #' @export

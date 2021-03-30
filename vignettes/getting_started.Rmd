@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(error = FALSE)
 ```
 
-It is well understood that almost every economic system - and more broadly, any system inherently driven by humans - is state-dependent. The sovereign package introduces a set of tools for conducting state-dependent empirical analysis, namely state-dependent forecasting, impulse response analysis, and forecast error variance decomposition. This introduction will walk through an analysis of a small macroeconomic system, including US inflation, output gap, and monetary policy. While considering two state-dependent regimes, the first based on NBER recessions, the second based on the sovereign package's own estimation.
+It is well understood that almost every economic system - and more broadly, any system inherently driven by humans - is state-dependent. The sovereign package introduces a set of tools for conducting state-dependent (i.e. regime-dependent) empirical analysis, namely state-dependent forecasting, impulse response analysis, and forecast error variance decomposition. This introduction will walk through an analysis of a small macroeconomic system, including US inflation, output gap, and monetary policy. While considering two state-dependent regimes, the first based on NBER recessions, the second based on the sovereign package's own estimation.
 
 The vignette will proceed by 1) preparing the data, both covariates and regimes, 2) estimating forecasts, impulse responses, and forecast error variance decomposition via a VAR and a threshold VAR (that is, a state-dependent VAR), 3)  estimating forecasts and impulse responses via local projections and threshold local projections, and 4) concluding. 
 
@@ -33,6 +33,7 @@ First, we need to download and prepare the data. We are going to study a three v
 ### 1.1 VAR Covariates
 
 To create our small macro-system we need to first pull four variables from FRED using the quantmod package:    
+
   1.[Real Gross Domestic Product](https://fred.stlouisfed.org/series/GDPC1)  
   2.[Real Potential Gross Domestic Product](https://fred.stlouisfed.org/series/GDPOT)  
   3.[Gross Domestic Product: Implicit Price Deflator](https://fred.stlouisfed.org/series/GDPDEF)  
@@ -114,7 +115,7 @@ Data.kmeans =
   sovereign::regimes(
     data = Data,
     regime.n = 2,
-    engine = 'kmeans')
+    method = 'kmeans')
 
 head(Data.kmeans)
 

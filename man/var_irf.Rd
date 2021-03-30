@@ -2,7 +2,7 @@
 % Please edit documentation in R/var_irf.R
 \name{var_irf}
 \alias{var_irf}
-\title{Estimate single-regime impulse response functions}
+\title{Estimate impulse response functions}
 \usage{
 var_irf(var, horizon = 10, bootstraps.num = 100, CI = c(0.1, 0.9))
 }
@@ -19,14 +19,46 @@ var_irf(var, horizon = 10, bootstraps.num = 100, CI = c(0.1, 0.9))
 list object with elements \code{irfs}, \code{ci.lower}, and \code{ci.upper}; all elements are long-form data.frames
 }
 \description{
-Estimate single-regime impulse response functions
+Estimate impulse response functions
 }
 \examples{
-\dontrun{
-var_irf(
-  var,
-  bootstraps.num = 10,
-  CI = c(0.05,0.95))
+\donttest{
+
+ # simple time series
+ AA = c(1:100) + rnorm(100)
+ BB = c(1:100) + rnorm(100)
+ CC = AA + BB + rnorm(100)
+ date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+ Data = data.frame(date = date, AA, BB, CC)
+
+ # estimate VAR
+  var =
+    sovereign::VAR(
+      data = Data,
+      horizon = 10,
+      freq = 'month',
+      lag.ic = 'BIC',
+      lag.max = 4)
+
+# impulse response functions
+var.irf = sovereign::var_irf(var)
+
+# forecast error variance decomposition
+var.fevd = sovereign::var_fevd(var)
+
 }
 
+}
+\seealso{
+\code{\link[=VAR]{VAR()}}
+
+\code{\link[=var_irf]{var_irf()}}
+
+\code{\link[=var_fevd]{var_fevd()}}
+
+\code{\link[=RVAR]{RVAR()}}
+
+\code{\link[=rvar_irf]{rvar_irf()}}
+
+\code{\link[=rvar_fevd]{rvar_fevd()}}
 }

@@ -14,14 +14,14 @@ reference:
     contents:
       - '`regimes`'
   - title: Model Estimation
-    desc: Functions used to estimate models
+    desc: Functions to estimate models and forecasts
     contents:
       - '`VAR`'
       - '`RVAR`'
       - '`LP`'
       - '`RLP`'
-  - title: Model Analysis
-    desc: Functions to anlayze forecasting dynamics
+  - title: Model and Forecast Analysis
+    desc: Functions to anlayze model and forecasting dynamics
     contents:
       - '`var_irf`'
       - '`rvar_irf`'
@@ -30,7 +30,7 @@ reference:
       - '`lp_irf`'
       - '`rlp_irf`'
   - title: Plots
-    desc: Functions to plot forecast analysis
+    desc: Functions to plot model and forecast analysis
     contents:
       - '`plot_forecast`'
       - '`plot_error`'

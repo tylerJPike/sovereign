@@ -177,17 +177,24 @@ VAR_estimation = function(
   )
 }
 
-#' Estimate single-regime VAR
+#' Estimate VAR
 #'
 #' @param data      data.frame, matrix, ts, xts, zoo: Endogenous regressors
 #' @param horizon   int: forecast horizons
-#' @param freq      string: frequency of data (day, week, month, quarter, year)
-#' @param type      string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
+#' @param freq      string: frequency of data ('day', 'week', 'month', 'quarter', or 'year')
+#' @param type      string: type of deterministic terms to add ('none', 'const', 'trend', or 'both')
 #' @param p         int: lags
 #' @param lag.ic    string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
 #' @param lag.max   int: maximum number of lags to test in lag selection
 #'
 #' @return list object with elements `data`, `model`, `forecasts`, `residuals`
+#'
+#' @seealso [VAR()]
+#' @seealso [var_irf()]
+#' @seealso [var_fevd()]
+#' @seealso [RVAR()]
+#' @seealso [rvar_irf()]
+#' @seealso [rvar_fevd()]
 #'
 #' @examples
 #' \donttest{
@@ -201,18 +208,18 @@ VAR_estimation = function(
 #'
 #'  # estimate VAR
 #'   var =
-#'     VAR(
+#'     sovereign::VAR(
 #'       data = Data,
 #'       horizon = 10,
 #'       freq = 'month',
 #'       lag.ic = 'BIC',
 #'       lag.max = 4)
-#' 
+#'
 #' # impulse response functions
-#' var.irf = var_irf(var)
-#' 
+#' var.irf = sovereign::var_irf(var)
+#'
 #' # forecast error variance decomposition
-#' var.fevd = var_fevd(var)
+#' var.fevd = sovereign::var_fevd(var)
 #'
 #' }
 #'
@@ -549,22 +556,29 @@ RVAR_estimate = function(
   )
 }
 
-#' Estimate multi-regime VAR
+#' Estimate regime-dependent VAR
 #'
 #' @param data          data.frame, matrix, ts, xts, zoo: Endogenous regressors
 #' @param horizon       int: forecast horizons
-#' @param freq          string: frequency of data (day, week, month, quarter, year)
-#' @param type          string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
+#' @param freq          string: frequency of data ('day', 'week', 'month', 'quarter', or 'year')
+#' @param type          string: type of deterministic terms to add ('none', 'const', 'trend', or 'both')
 #' @param p             int: lags
 #' @param lag.ic        string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
 #' @param lag.max       int: maximum number of lags to test in lag selection
 #' @param regime        string: name or regime assignment vector in the design matrix (data)
-#' @param regime.method string: regime assignment technique ('rf', 'kmeans', 'EM', 'BP')
+#' @param regime.method string: regime assignment technique ('rf', 'kmeans', 'EM', or 'BP')
 #' @param regime.n      int: number of regimes to estimate (applies to kmeans and EM)
 #'
 #' @return list of lists, each regime returns its own list with elements `data`, `model`, `forecasts`, `residuals`
 #'
-##' @examples
+#' @seealso [VAR()]
+#' @seealso [var_irf()]
+#' @seealso [var_fevd()]
+#' @seealso [RVAR()]
+#' @seealso [rvar_irf()]
+#' @seealso [rvar_fevd()]
+#'
+#' @examples
 #' \donttest{
 #'
 #'  # simple time series
@@ -577,7 +591,7 @@ RVAR_estimate = function(
 #'
 #'  # estimate VAR
 #'   rvar =
-#'     RVAR(
+#'     sovereign::RVAR(
 #'       data = Data,
 #'       horizon = 10,
 #'       freq = 'month',
@@ -585,12 +599,12 @@ RVAR_estimate = function(
 #'       regime.n = 2,
 #'       lag.ic = 'BIC',
 #'       lag.max = 4)
-#' 
+#'
 #' # impulse response functions
-#' rvar.irf = rvar_irf(rvar)
-#' 
+#' rvar.irf = sovereign::rvar_irf(rvar)
+#'
 #' # forecast error variance decomposition
-#' rvar.fevd = rvar_fevd(rvar)
+#' rvar.fevd = sovereign::rvar_fevd(rvar)
 #'
 #' }
 #'
@@ -632,7 +646,7 @@ RVAR = function(
       regimes(
         data,
         regime.n = regime.n,
-        engine = regime.method)
+        method = regime.method)
 
     regime = 'regime'
 

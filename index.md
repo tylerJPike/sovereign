@@ -11,13 +11,13 @@
 Take the general forecasting problem to be:
 
 <p style="text-align: center;">
-*Y<sub>t</sub> = E[Y<sub>t-1</sub> | X_<sub>t-1</sub>]*
+*Y<sub>t+h</sub> = E[Y<sub>t-1</sub> | X_<sub>t-1</sub>]*
 </p>
 
 where *Y* is the predicted outcome of interest, *E* is the expectation operator, *X* is the information set, and *t* is the time index. Then, let the process be state-dependent:
 
 <p style="text-align: center;">
-*Y<sub>t</sub> = E[Y<sub>t-1</sub> | X<sub>t-1</sub>, s<sub>t-1</sub>]*
+*Y<sub>t+h</sub> = E[Y<sub>t-1</sub> | X<sub>t-1</sub>, s<sub>t-1</sub>]*
 </p>
 
 where *s* is a discrete, that is, mutually exclusive, state of the world. For example, in an economic context, one may consider expansions and recessions as two different states of the world, and in the US, these labels are formally declared by the NBER.  

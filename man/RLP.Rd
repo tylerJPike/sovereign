@@ -2,7 +2,7 @@
 % Please edit documentation in R/lp.R
 \name{RLP}
 \alias{RLP}
-\title{Estimate multi-regime local projections}
+\title{Estimate regime-dependent local projections}
 \usage{
 RLP(
   data,
@@ -25,9 +25,9 @@ RLP(
 
 \item{horizons}{int: forecast horizons}
 
-\item{freq}{string: frequency of data (day, week, month, quarter, year)}
+\item{freq}{string: frequency of data ('day', 'week', 'month', 'quarter', or 'year')}
 
-\item{type}{string: type of deterministic terms to add ('none', 'const', 'trend', 'both')}
+\item{type}{string: type of deterministic terms to add ('none', 'const', 'trend', or 'both')}
 
 \item{p}{int: lags}
 
@@ -39,7 +39,7 @@ RLP(
 
 \item{NW_lags}{int: number of lags to use in Newey-West correction}
 
-\item{NW_prewhite}{boolean: TRUE prewhite option for Newey-West correction (see sandwich::NeweyWest function)}
+\item{NW_prewhite}{boolean: TRUE prewhite option for Newey-West correction (see sandwich::NeweyWest)}
 
 \item{regime}{string: name or regime assignment vector in the design matrix (data)}
 
@@ -51,7 +51,7 @@ RLP(
 list object with elements \code{data}, \code{model}, \code{forecasts}, \code{residuals}; if there is more than one forecast horizon estimated, then \code{model}, \code{forecasts}, \code{residuals} will each be a list where each element corresponds to a single horizon
 }
 \description{
-Estimate multi-regime local projections
+Estimate regime-dependent local projections
 }
 \examples{
 \donttest{
@@ -67,7 +67,7 @@ Estimate multi-regime local projections
 
   # local projection forecasts
   rlp =
-    RLP(
+    sovereign::RLP(
       data = Data,
       regime = 'reg',
       horizon = c(1:10),
@@ -79,8 +79,17 @@ Estimate multi-regime local projections
       NW_prewhite = FALSE)
 
  # impulse response function
- rirf = rlp_irf(rlp)
+ rirf = sovereign::rlp_irf(rlp)
 
 }
 
+}
+\seealso{
+\code{\link[=LP]{LP()}}
+
+\code{\link[=lp_irf]{lp_irf()}}
+
+\code{\link[=RLP]{RLP()}}
+
+\code{\link[=rlp_irf]{rlp_irf()}}
 }

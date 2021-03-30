@@ -2,7 +2,7 @@
 % Please edit documentation in R/var.R
 \name{VAR}
 \alias{VAR}
-\title{Estimate single-regime VAR}
+\title{Estimate VAR}
 \usage{
 VAR(
   data,
@@ -19,9 +19,9 @@ VAR(
 
 \item{horizon}{int: forecast horizons}
 
-\item{freq}{string: frequency of data (day, week, month, quarter, year)}
+\item{freq}{string: frequency of data ('day', 'week', 'month', 'quarter', or 'year')}
 
-\item{type}{string: type of deterministic terms to add ('none', 'const', 'trend', 'both')}
+\item{type}{string: type of deterministic terms to add ('none', 'const', 'trend', or 'both')}
 
 \item{p}{int: lags}
 
@@ -33,7 +33,7 @@ VAR(
 list object with elements \code{data}, \code{model}, \code{forecasts}, \code{residuals}
 }
 \description{
-Estimate single-regime VAR
+Estimate VAR
 }
 \examples{
 \donttest{
@@ -46,22 +46,33 @@ Estimate single-regime VAR
  Data = data.frame(date = date, AA, BB, CC)
 
  # estimate VAR
- var =
-    VAR(
-      data = Data,
-      p = 1,
-      horizon = 10,
-      freq = 'month')
-
-  # or with automatic lag selection
   var =
-    VAR(
+    sovereign::VAR(
       data = Data,
       horizon = 10,
       freq = 'month',
       lag.ic = 'BIC',
       lag.max = 4)
 
+# impulse response functions
+var.irf = sovereign::var_irf(var)
+
+# forecast error variance decomposition
+var.fevd = sovereign::var_fevd(var)
+
 }
 
+}
+\seealso{
+\code{\link[=VAR]{VAR()}}
+
+\code{\link[=var_irf]{var_irf()}}
+
+\code{\link[=var_fevd]{var_fevd()}}
+
+\code{\link[=RVAR]{RVAR()}}
+
+\code{\link[=rvar_irf]{rvar_irf()}}
+
+\code{\link[=rvar_fevd]{rvar_fevd()}}
 }

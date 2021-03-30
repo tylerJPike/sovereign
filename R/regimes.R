@@ -2,16 +2,19 @@
 # Function to assign regimes via
 #   unsupervised machine learning
 #------------------------------------------
-#' Assign regimes via unsupervised machine learning methods
+#' Identify regimes via unsupervised ML algorithms
 #'
-#' Regime assignment (clustering) methods available include the [unsupervised random forest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest), [k-mean clustering](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/kmeans),
-#' and EM via [Fraley and Raftery Model-based clustering](https://www.rdocumentation.org/packages/mclust/versions/5.4.7/topics/Mclust), [Bai & Perron (2003) algorithm](https://www.rdocumentation.org/packages/strucchange/versions/1.5-2/topics/breakpoints) for simultaneous estimation of multiple breakpoints.
+#' Regime assignment (clustering) methods available include the
+#' [unsupervised random forest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest),
+#' [k-mean clustering](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/kmeans),
+#' Fraley and Raftery Model-based clustering [EM algorithm](https://www.rdocumentation.org/packages/mclust/versions/5.4.7/topics/Mclust),
+#' and the [Bai & Perron (2003)](https://www.rdocumentation.org/packages/strucchange/versions/1.5-2/topics/breakpoints) method for simultaneous estimation of multiple breakpoints.
 #'
 #' @param data                  data.frame, matrix, ts, xts, zoo: Endogenous regressors
+#' @param method                string: regime assignment technique ('rf', 'kmeans', 'EM', or 'BP)
 #' @param regime.n              int: number of regimes to estimate (applies to kmeans and EM)
-#' @param engine                string: regime assignment technique ('rf', 'kmeans', and EM)
 #'
-#' @return `data` as a data.frame with a regime column assigning rows to mutually exclusive regimes.
+#' @return `data` as a data.frame with a regime column assigning rows to mutually exclusive regimes
 #'
 #' @examples
 #' \donttest{
@@ -25,18 +28,18 @@
 #'
 #'  # estimate reigme
 #'  regime =
-#'   regimes(
+#'   sovereign::regimes(
 #'      data = Data,
-#'      regime.n = 3,
-#'      engine = 'kmeans')
+#'      method = 'kmeans',
+#'      regime.n = 3)
 #' }
 #'
 #' @export
 
 regimes = function(
   data,                        # data.frame, matrix, ts, xts, zoo: Endogenous regressors
-  regime.n = NULL,             # int: number of regimes to estimate (applies to kmeans and EM)
-  engine = 'rf'                # string: regime assignment technique ('rf', 'kmeans', 'EM', 'BP')
+  method = 'rf',               # string: regime assignment technique ('rf', 'kmeans', 'EM', 'BP')
+  regime.n = NULL              # int: number of regimes to estimate (applies to kmeans and EM)
 ){
 
   # function warnings
@@ -53,7 +56,7 @@ regimes = function(
   }
 
   # check for BP method
-  if(engine == 'bp' & ncol(dplyr::select(data, -date)) > 1){
+  if(method == 'bp' & ncol(dplyr::select(data, -date)) > 1){
     errorCondition("The 'BP' method can only use univariate time series to determine regimes.")
   }
 
@@ -62,7 +65,7 @@ regimes = function(
   X.date = data$date
 
   # assign regimes
-  if(engine == 'rf'){
+  if(method == 'rf'){
 
     model = randomForest::randomForest(X)
     regime = data.frame(model$votes)
@@ -70,19 +73,19 @@ regimes = function(
     regime = apply(X = regime, MARGIN = 1, which.max)
     regime = data.frame(date = X.date, X, regime)
 
-  }else if(engine == 'kmeans'){
+  }else if(method == 'kmeans'){
 
     if(is.null(regime.n)){regime.n = 2}
     model = stats::kmeans(X, centers = regime.n)
     regime = data.frame(date = X.date, X, regime = model$cluster)
 
-  }else if(engine == 'EM'){
+  }else if(method == 'EM'){
 
     mclustBIC = mclust::mclustBIC
     model = mclust::Mclust(X, G = regime.n)
     regime = data.frame(date = X.date, X, regime = model$classification)
 
-  }else if(engine == 'BP'){
+  }else if(method == 'BP'){
 
     colnames(X) = 'x'
     breakpoints = strucchange::breakpoints(x ~ lag(x), data = X)

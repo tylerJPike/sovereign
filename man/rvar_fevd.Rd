@@ -2,12 +2,12 @@
 % Please edit documentation in R/var_fevd.R
 \name{rvar_fevd}
 \alias{rvar_fevd}
-\title{Estimate multi-regime forecast error variance decomposition}
+\title{Estimate regime-dependent forecast error variance decomposition}
 \usage{
 rvar_fevd(rvar, horizon = 10, scale = TRUE)
 }
 \arguments{
-\item{rvar}{threshold_var output}
+\item{rvar}{RVAR output}
 
 \item{horizon}{int: number of periods}
 
@@ -17,13 +17,49 @@ rvar_fevd(rvar, horizon = 10, scale = TRUE)
 list, each regime returns its own long-form data.frame
 }
 \description{
-Estimate multi-regime forecast error variance decomposition
+Estimate regime-dependent forecast error variance decomposition
 }
 \examples{
-\dontrun{
-threshold_var_fevd(
-  threshold_var,
-  bootstraps.num = 10)
+\donttest{
+
+ # simple time series
+ AA = c(1:100) + rnorm(100)
+ BB = c(1:100) + rnorm(100)
+ CC = AA + BB + rnorm(100)
+ date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+ Data = data.frame(date = date, AA, BB, CC)
+ Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
+
+ # estimate VAR
+  rvar =
+    sovereign::RVAR(
+      data = Data,
+      horizon = 10,
+      freq = 'month',
+      regime.method = 'rf',
+      regime.n = 2,
+      lag.ic = 'BIC',
+      lag.max = 4)
+
+# impulse response functions
+rvar.irf = sovereign::rvar_irf(rvar)
+
+# forecast error variance decomposition
+rvar.fevd = sovereign::rvar_fevd(rvar)
+
 }
 
+}
+\seealso{
+\code{\link[=VAR]{VAR()}}
+
+\code{\link[=var_irf]{var_irf()}}
+
+\code{\link[=var_fevd]{var_fevd()}}
+
+\code{\link[=RVAR]{RVAR()}}
+
+\code{\link[=rvar_irf]{rvar_irf()}}
+
+\code{\link[=rvar_fevd]{rvar_fevd()}}
 }

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Estimate multi-regime VAR — RVAR • sovereign</title>
+<title>Estimate regime-dependent VAR — RVAR • sovereign</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Estimate multi-regime VAR — RVAR" />
-<meta property="og:description" content="Estimate multi-regime VAR" />
+<meta property="og:title" content="Estimate regime-dependent VAR — RVAR" />
+<meta property="og:description" content="Estimate regime-dependent VAR" />
 
 
 
@@ -129,13 +129,13 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Estimate multi-regime VAR</h1>
+    <h1>Estimate regime-dependent VAR</h1>
     <small class="dont-index">Source: <a href='https://github.com/tylerJPike/sovereign/blob/master/R/var.R'><code>R/var.R</code></a></small>
     <div class="hidden name"><code>RVAR.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Estimate multi-regime VAR</p>
+    <p>Estimate regime-dependent VAR</p>
     </div>
 
     <pre class="usage"><span class='fu'>RVAR</span><span class='op'>(</span>
@@ -164,11 +164,11 @@
     </tr>
     <tr>
       <th>freq</th>
-      <td><p>string: frequency of data (day, week, month, quarter, year)</p></td>
+      <td><p>string: frequency of data ('day', 'week', 'month', 'quarter', or 'year')</p></td>
     </tr>
     <tr>
       <th>type</th>
-      <td><p>string: type of deterministic terms to add ('none', 'const', 'trend', 'both')</p></td>
+      <td><p>string: type of deterministic terms to add ('none', 'const', 'trend', or 'both')</p></td>
     </tr>
     <tr>
       <th>p</th>
@@ -188,7 +188,7 @@
     </tr>
     <tr>
       <th>regime.method</th>
-      <td><p>string: regime assignment technique ('rf', 'kmeans', 'EM', 'BP')</p></td>
+      <td><p>string: regime assignment technique ('rf', 'kmeans', 'EM', or 'BP')</p></td>
     </tr>
     <tr>
       <th>regime.n</th>
@@ -199,6 +199,14 @@
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>list of lists, each regime returns its own list with elements <code>data</code>, <code>model</code>, <code>forecasts</code>, <code>residuals</code></p>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p><code><a href='VAR.html'>VAR()</a></code></p>
+<p><code><a href='var_irf.html'>var_irf()</a></code></p>
+<p><code><a href='var_fevd.html'>var_fevd()</a></code></p>
+<p><code>RVAR()</code></p>
+<p><code><a href='rvar_irf.html'>rvar_irf()</a></code></p>
+<p><code><a href='rvar_fevd.html'>rvar_fevd()</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
@@ -212,17 +220,8 @@
  <span class='va'>Data</span> <span class='op'>=</span> <span class='fu'>dplyr</span><span class='fu'>::</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span><span class='va'>Data</span>, reg <span class='op'>=</span> <span class='fu'>dplyr</span><span class='fu'>::</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/if_else.html'>if_else</a></span><span class='op'>(</span><span class='va'>AA</span> <span class='op'>&gt;</span> <span class='fu'><a href='https://rdrr.io/r/stats/median.html'>median</a></span><span class='op'>(</span><span class='va'>AA</span><span class='op'>)</span>, <span class='fl'>1</span>, <span class='fl'>0</span><span class='op'>)</span><span class='op'>)</span>
 
  <span class='co'># estimate VAR</span>
- <span class='va'>rvar</span> <span class='op'>=</span>
-    <span class='fu'>RVAR</span><span class='op'>(</span>
-      data <span class='op'>=</span> <span class='va'>Data</span>,
-      p <span class='op'>=</span> <span class='fl'>1</span>,
-      regime <span class='op'>=</span> <span class='st'>'reg'</span>,
-      horizon <span class='op'>=</span> <span class='fl'>10</span>,
-      freq <span class='op'>=</span> <span class='st'>'month'</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in RVAR(data = Data, p = 1, regime = "reg", horizon = 10, freq = "month"): could not find function "RVAR"</span></div><div class='input'>
-  <span class='co'># or with automatic lag selection and regime detection</span>
   <span class='va'>rvar</span> <span class='op'>=</span>
-    <span class='fu'>RVAR</span><span class='op'>(</span>
+    <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'>RVAR</span><span class='op'>(</span>
       data <span class='op'>=</span> <span class='va'>Data</span>,
       horizon <span class='op'>=</span> <span class='fl'>10</span>,
       freq <span class='op'>=</span> <span class='st'>'month'</span>,
@@ -230,7 +229,13 @@
       regime.n <span class='op'>=</span> <span class='fl'>2</span>,
       lag.ic <span class='op'>=</span> <span class='st'>'BIC'</span>,
       lag.max <span class='op'>=</span> <span class='fl'>4</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in RVAR(data = Data, horizon = 10, freq = "month", regime.method = "rf",     regime.n = 2, lag.ic = "BIC", lag.max = 4): could not find function "RVAR"</span></div><div class='input'>
+</div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='input'>
+<span class='co'># impulse response functions</span>
+<span class='va'>rvar.irf</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='rvar_irf.html'>rvar_irf</a></span><span class='op'>(</span><span class='va'>rvar</span><span class='op'>)</span>
+
+<span class='co'># forecast error variance decomposition</span>
+<span class='va'>rvar.fevd</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='rvar_fevd.html'>rvar_fevd</a></span><span class='op'>(</span><span class='va'>rvar</span><span class='op'>)</span>
+
 <span class='co'># }</span>
 
 </div></pre>

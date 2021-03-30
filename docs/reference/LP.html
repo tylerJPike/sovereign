@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Estimate single-regime local projections — LP • sovereign</title>
+<title>Estimate local projections — LP • sovereign</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Estimate single-regime local projections — LP" />
-<meta property="og:description" content="Estimate single-regime local projections" />
+<meta property="og:title" content="Estimate local projections — LP" />
+<meta property="og:description" content="Estimate local projections" />
 
 
 
@@ -129,13 +129,13 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Estimate single-regime local projections</h1>
+    <h1>Estimate local projections</h1>
     <small class="dont-index">Source: <a href='https://github.com/tylerJPike/sovereign/blob/master/R/lp.R'><code>R/lp.R</code></a></small>
     <div class="hidden name"><code>LP.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Estimate single-regime local projections</p>
+    <p>Estimate local projections</p>
     </div>
 
     <pre class="usage"><span class='fu'>LP</span><span class='op'>(</span>
@@ -164,11 +164,11 @@
     </tr>
     <tr>
       <th>freq</th>
-      <td><p>string: frequency of data (day, week, month, quarter, year)</p></td>
+      <td><p>string: frequency of data ('day', 'week', 'month', 'quarter', or 'year')</p></td>
     </tr>
     <tr>
       <th>type</th>
-      <td><p>string: type of deterministic terms to add ('none', 'const', 'trend', 'both')</p></td>
+      <td><p>string: type of deterministic terms to add ('none', 'const', 'trend', or 'both')</p></td>
     </tr>
     <tr>
       <th>p</th>
@@ -192,13 +192,19 @@
     </tr>
     <tr>
       <th>NW_prewhite</th>
-      <td><p>boolean: TRUE prewhite option for Newey-West correction (see sandwich::NeweyWest function)</p></td>
+      <td><p>boolean: TRUE prewhite option for Newey-West correction (see sandwich::NeweyWest)</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>list object with elements <code>data</code>, <code>model</code>, <code>forecasts</code>, <code>residuals</code>; if there is more than one forecast horizon estimated, then <code>model</code>, <code>forecasts</code>, <code>residuals</code> will each be a list where each element corresponds to a single horizon</p>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p><code>LP()</code></p>
+<p><code><a href='lp_irf.html'>lp_irf()</a></code></p>
+<p><code><a href='RLP.html'>RLP()</a></code></p>
+<p><code><a href='rlp_irf.html'>rlp_irf()</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
@@ -212,7 +218,7 @@
 
   <span class='co'># local projection forecasts</span>
   <span class='va'>lp</span> <span class='op'>=</span>
-    <span class='fu'>LP</span><span class='op'>(</span>
+    <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'>LP</span><span class='op'>(</span>
       data <span class='op'>=</span> <span class='va'>Data</span>,
       horizon <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>10</span><span class='op'>)</span>,
       lag.ic <span class='op'>=</span> <span class='st'>'AIC'</span>,
@@ -221,7 +227,7 @@
       freq <span class='op'>=</span> <span class='st'>'month'</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='input'>
   <span class='co'># impulse response function</span>
-  <span class='va'>irf</span> <span class='op'>=</span> <span class='fu'><a href='lp_irf.html'>lp_irf</a></span><span class='op'>(</span><span class='va'>lp</span><span class='op'>)</span>
+  <span class='va'>irf</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='lp_irf.html'>lp_irf</a></span><span class='op'>(</span><span class='va'>lp</span><span class='op'>)</span>
 
 <span class='co'># }</span>
 

@@ -2,12 +2,12 @@
 % Please edit documentation in R/lp_irf.R
 \name{rlp_irf}
 \alias{rlp_irf}
-\title{Estimate multi-regime impulse response functions}
+\title{Estimate regime-dependent impulse response functions}
 \usage{
 rlp_irf(rlp, CI = c(0.1, 0.9))
 }
 \arguments{
-\item{rlp}{threshold_LP output}
+\item{rlp}{RLP output}
 
 \item{CI}{numeric vector: c(lower ci bound, upper ci bound)}
 }
@@ -15,7 +15,7 @@ rlp_irf(rlp, CI = c(0.1, 0.9))
 list of long-form data.frame with one row per target-shock-horizon identifier
 }
 \description{
-Estimate multi-regime impulse response functions
+Estimate regime-dependent impulse response functions
 }
 \examples{
 \donttest{
@@ -30,8 +30,8 @@ Estimate multi-regime impulse response functions
   Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
 
   # local projection forecasts
-  tlp =
-    RLP(
+  rlp =
+    sovereign::RLP(
       data = Data,
       regime = 'reg',
       horizon = c(1:10),
@@ -43,7 +43,16 @@ Estimate multi-regime impulse response functions
       NW_prewhite = FALSE)
 
  # impulse response function
- rirf = rlp_irf(tlp)
+ rirf = sovereign::rlp_irf(rlp)
 }
 
+}
+\seealso{
+\code{\link[=LP]{LP()}}
+
+\code{\link[=lp_irf]{lp_irf()}}
+
+\code{\link[=RLP]{RLP()}}
+
+\code{\link[=rlp_irf]{rlp_irf()}}
 }

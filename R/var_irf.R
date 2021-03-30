@@ -79,7 +79,7 @@ IRF = function (Phi, Sig, lag, orth = TRUE){
 
 }
 
-#' Estimate single-regime impulse response functions
+#' Estimate impulse response functions
 #'
 #' @param var              VAR output
 #' @param horizon          int: number of periods
@@ -87,6 +87,13 @@ IRF = function (Phi, Sig, lag, orth = TRUE){
 #' @param CI               numeric vector: c(lower ci bound, upper ci bound)
 #'
 #' @return list object with elements `irfs`, `ci.lower`, and `ci.upper`; all elements are long-form data.frames
+#'
+#' @seealso [VAR()]
+#' @seealso [var_irf()]
+#' @seealso [var_fevd()]
+#' @seealso [RVAR()]
+#' @seealso [rvar_irf()]
+#' @seealso [rvar_fevd()]
 #'
 #' @examples
 #' \donttest{
@@ -100,18 +107,18 @@ IRF = function (Phi, Sig, lag, orth = TRUE){
 #'
 #'  # estimate VAR
 #'   var =
-#'     VAR(
+#'     sovereign::VAR(
 #'       data = Data,
 #'       horizon = 10,
 #'       freq = 'month',
 #'       lag.ic = 'BIC',
 #'       lag.max = 4)
-#' 
+#'
 #' # impulse response functions
-#' var.irf = var_irf(var)
-#' 
+#' var.irf = sovereign::var_irf(var)
+#'
 #' # forecast error variance decomposition
-#' var.fevd = var_fevd(var)
+#' var.fevd = sovereign::var_fevd(var)
 #'
 #' }
 #'
@@ -292,14 +299,21 @@ var_irf = function(
   return(irf)
 }
 
-#' Estimate multi-regime impulse response functions
+#' Estimate regime-dependent impulse response functions
 #'
-#' @param rvar    rvar output
+#' @param rvar             RVAR output
 #' @param horizon          int: number of periods
 #' @param bootstraps.num   int: number of bootstraps
 #' @param CI               numeric vector: c(lower ci bound, upper ci bound)
 #'
 #' @return list of lists, each regime returns its own list with elements `irfs`, `ci.lower`, and `ci.upper`; all elements are long-form data.frames
+#'
+#' @seealso [VAR()]
+#' @seealso [var_irf()]
+#' @seealso [var_fevd()]
+#' @seealso [RVAR()]
+#' @seealso [rvar_irf()]
+#' @seealso [rvar_fevd()]
 #'
 #' @examples
 #' \donttest{
@@ -314,7 +328,7 @@ var_irf = function(
 #'
 #'  # estimate VAR
 #'   rvar =
-#'     RVAR(
+#'     sovereign::RVAR(
 #'       data = Data,
 #'       horizon = 10,
 #'       freq = 'month',
@@ -322,12 +336,12 @@ var_irf = function(
 #'       regime.n = 2,
 #'       lag.ic = 'BIC',
 #'       lag.max = 4)
-#' 
+#'
 #' # impulse response functions
-#' rvar.irf = rvar_irf(rvar)
-#' 
+#' rvar.irf = sovereign::rvar_irf(rvar)
+#'
 #' # forecast error variance decomposition
-#' rvar.fevd = rvar_fevd(rvar)
+#' rvar.fevd = sovereign::rvar_fevd(rvar)
 #'
 #' }
 #'

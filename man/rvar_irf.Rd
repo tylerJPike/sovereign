@@ -2,12 +2,12 @@
 % Please edit documentation in R/var_irf.R
 \name{rvar_irf}
 \alias{rvar_irf}
-\title{Estimate multi-regime impulse response functions}
+\title{Estimate regime-dependent impulse response functions}
 \usage{
 rvar_irf(rvar, horizon = 10, bootstraps.num = 100, CI = c(0.1, 0.9))
 }
 \arguments{
-\item{rvar}{rvar output}
+\item{rvar}{RVAR output}
 
 \item{horizon}{int: number of periods}
 
@@ -19,14 +19,49 @@ rvar_irf(rvar, horizon = 10, bootstraps.num = 100, CI = c(0.1, 0.9))
 list of lists, each regime returns its own list with elements \code{irfs}, \code{ci.lower}, and \code{ci.upper}; all elements are long-form data.frames
 }
 \description{
-Estimate multi-regime impulse response functions
+Estimate regime-dependent impulse response functions
 }
 \examples{
-\dontrun{
-rvar_irf(
-  rvar,
-  bootstraps.num = 10,
-  CI = c(0.05,0.95))
+\donttest{
+
+ # simple time series
+ AA = c(1:100) + rnorm(100)
+ BB = c(1:100) + rnorm(100)
+ CC = AA + BB + rnorm(100)
+ date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+ Data = data.frame(date = date, AA, BB, CC)
+ Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
+
+ # estimate VAR
+  rvar =
+    sovereign::RVAR(
+      data = Data,
+      horizon = 10,
+      freq = 'month',
+      regime.method = 'rf',
+      regime.n = 2,
+      lag.ic = 'BIC',
+      lag.max = 4)
+
+# impulse response functions
+rvar.irf = sovereign::rvar_irf(rvar)
+
+# forecast error variance decomposition
+rvar.fevd = sovereign::rvar_fevd(rvar)
+
 }
 
+}
+\seealso{
+\code{\link[=VAR]{VAR()}}
+
+\code{\link[=var_irf]{var_irf()}}
+
+\code{\link[=var_fevd]{var_fevd()}}
+
+\code{\link[=RVAR]{RVAR()}}
+
+\code{\link[=rvar_irf]{rvar_irf()}}
+
+\code{\link[=rvar_fevd]{rvar_fevd()}}
 }

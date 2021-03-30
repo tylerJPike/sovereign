@@ -2,7 +2,7 @@
 % Please edit documentation in R/lp_irf.R
 \name{lp_irf}
 \alias{lp_irf}
-\title{Estimate single-regime impulse response functions}
+\title{Estimate impulse response functions}
 \usage{
 lp_irf(lp, CI = c(0.1, 0.9), regime = NULL)
 }
@@ -17,7 +17,7 @@ lp_irf(lp, CI = c(0.1, 0.9), regime = NULL)
 long-form data.frame with one row per target-shock-horizon identifier
 }
 \description{
-Estimate single-regime impulse response functions
+Estimate impulse response functions
 }
 \examples{
 \donttest{
@@ -31,7 +31,7 @@ Estimate single-regime impulse response functions
 
   # local projection forecasts
   lp =
-    LP(
+    sovereign::LP(
       data = Data,
       horizon = c(1:10),
       lag.ic = 'AIC',
@@ -40,8 +40,17 @@ Estimate single-regime impulse response functions
       freq = 'month')
 
   # impulse response function
-  irf = lp_irf(lp)
+  irf = sovereign::lp_irf(lp)
 
 }
 
+}
+\seealso{
+\code{\link[=LP]{LP()}}
+
+\code{\link[=lp_irf]{lp_irf()}}
+
+\code{\link[=RLP]{RLP()}}
+
+\code{\link[=rlp_irf]{rlp_irf()}}
 }
