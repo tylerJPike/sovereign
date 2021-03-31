@@ -35,7 +35,7 @@ First, we need to download and prepare the data. We are going to study a three v
 To create our small macro-system we need to first pull four variables from FRED using the quantmod package:    
 
   1.[Real Gross Domestic Product](https://fred.stlouisfed.org/series/GDPC1)  
-  2.[Real Potential Gross Domestic Product](https://fred.stlouisfed.org/series/GDPOT)  
+  2.[Real Potential Gross Domestic Product](https://fred.stlouisfed.org/series/GDPPOT)  
   3.[Gross Domestic Product: Implicit Price Deflator](https://fred.stlouisfed.org/series/GDPDEF)  
   4.[Effective Federal Funds Rate](https://fred.stlouisfed.org/series/GDPDEF)  
 
