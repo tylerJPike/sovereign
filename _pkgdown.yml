@@ -2,11 +2,14 @@ template:
   params:
     bootswatch: flatly
     ganalytics: G-7Z8WPQX0E6
+    docsearch:
+      api_key:  '4a0d0a15b437a7d39695290aace8b645'
+      index_name: 'sovereign'
 
 development:
   mode: auto
 
-url: https://tylerjpike.github.io/soveriegn/
+url: https://tylerjpike.github.io/sovereign/
 
 reference:
   - title: Regimes

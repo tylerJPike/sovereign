@@ -2,6 +2,7 @@
 
 <!-- badges: start -->
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
+[![CRAN status](https://www.r-pkg.org/badges/version/sovereign)](https://CRAN.R-project.org/package=sovereign)
 [![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html)
 [![codecov](https://codecov.io/gh/tylerJPike/sovereign/branch/main/graph/badge.svg?token=WXLWR6H93B)](https://codecov.io/gh/tylerJPike/sovereign)
 [![Build Status](https://travis-ci.org/tylerJPike/sovereign.svg?branch=main)](https://travis-ci.org/tylerJPike/sovereign)  
@@ -10,6 +11,18 @@
 The sovereign package introduces a set of tools for state-dependent empirical analysis through both VAR- and local projection-based state-dependent forecasts, impulse response functions, and forecast error variance decomposition. 
 
 See the sovereign package [website](https://tylerjpike.github.io/sovereign/) for examples and documentation. 
+
+----
+
+## Installation 
+
+One may install `sovereign` through the package’s [GitHub](https://github.com/tylerJPike/sovereign) page with
+
+    devtools::install_github('tylerJPike/sovereign')
+
+or through [CRAN](https://cloud.r-project.org/web/packages/sovereign/index.html) via
+
+    install.packages("sovereign")
 
 ----
 
