@@ -86,7 +86,7 @@ VAR_estimation = function(
     tidyr::pivot_wider(values_from = std.error, names_from = term)
 
   # package for return
-  model = list(coef = coef, se = se, p = p, freq = freq, horizon = horizon)
+  model = list(coef = coef, se = se, p = p, freq = freq, horizon = horizon, type = type)
 
   ### estimate forecasts -----------------------
   forecasts = list()
