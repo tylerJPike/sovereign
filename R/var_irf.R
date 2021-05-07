@@ -80,6 +80,9 @@ IRF = function (Phi, Sig, lag, orth = TRUE){
 }
 
 #' Estimate impulse response functions
+#' 
+#' Estimate impulse responses with contemporaneous impact restictions via Cholesky decomposition - 
+#' taking the variable ordering present in the VAR object.   
 #'
 #' @param var              VAR output
 #' @param horizon          int: number of periods
@@ -300,7 +303,11 @@ var_irf = function(
 }
 
 #' Estimate regime-dependent impulse response functions
-#'
+#' 
+#' Estimate impulse responses with contemporaneous impact restictions via Cholesky decomposition - 
+#' taking the variable ordering present in the VAR object. Estimate one response function per unique 
+#' state defined by the regime-dependent VAR.   
+#' 
 #' @param rvar             RVAR output
 #' @param horizon          int: number of periods
 #' @param bootstraps.num   int: number of bootstraps
