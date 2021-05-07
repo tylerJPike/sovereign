@@ -75,4 +75,13 @@ test_that("VAR workflow", {
 
   expect_true(is.list(plot.fevd))
 
+  # test covid correction
+  var.corrected = covid_volatility_correction(var)
+
+  expect_true(is.list(var))
+  expect_true(is.list(var$model))
+  expect_true(is.list(var$forecasts))
+  expect_true(is.list(var$residuals))
+  expect_true(is.vector(var$correction.factors))
+
 })
