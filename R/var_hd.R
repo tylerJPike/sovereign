@@ -4,6 +4,8 @@
 
 var_hd = function(var){
 
+  p = var$model$p
+
   # recover model dynamics -----------------------------
   # (for now, only use cholesky decomposition)
 
@@ -39,19 +41,11 @@ var_hd = function(var){
       eps.lags = data.frame(eps) %>%
         mutate(date = seq.Date(from = as.Date('2000-01-01'), length.out = nrow(eps), by = 'month'))  %>%
         n.lag(lags = p) %>%
-        select(contains('.l'))
+        select(dplyr::contains('.l'))
 
-      contribution.lags = matrix(ncol = ncol(eps), nrow = nrow(eps))
+      AA = A[colnames(eps)[i] == A$y ,colnames(eps.lags)]
 
-      for(j in 1:ncol(eps)){
-
-        contribution.lags[,j] =
-          rowSums(
-            as.matrix(select(eps.lags, contains(colnames(eps)[j]))) %*%
-              as.matrix(diag(select(A, contains(colnames(eps)[j]))[i,]))
-          )
-
-      }
+      contribution.lags = as.matrix(eps.lags) %*% diag(AA)
 
       # initial value
       contribution.initial = rep(var$data[(2*p+1),i], nrow(eps))
@@ -73,9 +67,13 @@ var_hd = function(var){
       # combine results
       contribution = contribution.impact + contribution.lags
       colnames(contribution) = colnames(eps)
+      contribution[(p+1):nrow(contribution),] = cumsum(contribution[(p+1):nrow(contribution),])
+
       contribution = data.frame(contribution, contribution.deterministic)
       contribution$initial = contribution.initial
+
       contribution$estimated_y = rowSums(contribution)
+
       contribution$date = var$data$date[(p+1):nrow(var$data)]
       contribution$target = colnames(eps)[i]
 
@@ -94,27 +92,46 @@ var_hd = function(var){
 # Function to plot historical decomposition of shocks
 #-------------------------------------------------------
 
-plot_individual_hd = function(hd, target.var, title, ylab){
+plot_individual_hd = function(hd, target.var, title){
 
 
-  # filter for one shock and one target
+  # filter for one shock and one target and prepare for plotting
   plotdata = hd %>%
+    dplyr::mutate(estimated_y = estimated_y - initial)
+
+  if('const' %in% colnames(hd)){
+
+    plotdata = plotdata %>%
+      dplyr::mutate(estimated_y = estimated_y - const)
+
+  }
+
+  if('trend' %in% colnames(hd)){
+
+    plotdata = plotdata %>%
+      dplyr::mutate(estimated_y = estimated_y - trend)
+
+  }
+
+  plotdata = plotdata %>%
     dplyr::filter(target == target.var) %>%
     dplyr::select(-initial, -contains('const'), -contains('trend')) %>%
     tidyr::pivot_longer(!c(date,target,estimated_y), values_to = 'value', names_to = 'Shocks')
 
   # plot
   hd.plot = ggplot2::ggplot() +
-    ggplot2::geom_bar(ggplot2::aes(y = value, x = date, fill = Shocks), data = plotdata, stat="identity")
+    ggplot2::geom_bar(ggplot2::aes(y = value, x = date, fill = Shocks), data = plotdata, stat="identity") +
+    ggplot2::geom_line(ggplot2::aes(y = estimated_y, x = date), data = plotdata, size = 1, color = 'black')
 
   hd.plot = hd.plot +
     ggplot2::theme_light() +
     ggplot2::ggtitle(title)+
-    ggplot2::ylab(ylab)+
+    ggplot2::ylab("")+
     ggplot2::xlab("") +
     ggplot2::theme(plot.title = ggplot2::element_text(size = 11, hjust=0.5),
                    axis.title.y = ggplot2::element_text(size=11))
 
+  # print plot
   hd.plot
 
 }
@@ -136,8 +153,7 @@ plot_hd = function(
         plot_individual_hd(
           hd,
           target.var = x,
-          title = x,
-          ylab = '')
+          title = x)
 
       return(chart)
 

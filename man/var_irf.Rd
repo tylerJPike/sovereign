@@ -19,7 +19,8 @@ var_irf(var, horizon = 10, bootstraps.num = 100, CI = c(0.1, 0.9))
 list object with elements \code{irfs}, \code{ci.lower}, and \code{ci.upper}; all elements are long-form data.frames
 }
 \description{
-Estimate impulse response functions
+Estimate impulse responses with contemporaneous impact restictions via Cholesky decomposition -
+taking the variable ordering present in the VAR object.
 }
 \examples{
 \donttest{
