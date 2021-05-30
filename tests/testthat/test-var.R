@@ -75,6 +75,17 @@ test_that("VAR workflow", {
 
   expect_true(is.list(plot.fevd))
 
+  # estimate hd
+  hd =
+    var_hd(var)
+
+  expect_true(is.data.frame(hd))
+
+  # plot hd
+  plot.hd = plot_hd(hd)
+
+  expect_true(is.list(plot.hd))
+
   # test covid correction
   var.corrected = covid_volatility_correction(var)
 

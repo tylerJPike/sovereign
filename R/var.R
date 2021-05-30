@@ -14,16 +14,16 @@ VAR_estimation = function(
 
   # function warnings
   if(!is.matrix(data) & !is.data.frame(data)){
-    errorCondition('data must be a matrix or data.frame')
+    stop('data must be a matrix or data.frame')
   }
   if(!is.numeric(p) | p %% 1 != 0){
-    errorCondition('p must be an integer')
+    stop('p must be an integer')
   }
   if(!is.numeric(horizon) | horizon %% 1 != 0 | horizon <= 0){
-    errorCondition('horizon must be a positive integer')
+    stop('horizon must be a positive integer')
   }
   if(!freq %in% c('day','week','month','quarter','year')){
-    errorCondition("freq must be one of the following strings: 'day','week','month','quarter','year'")
+    stop("freq must be one of the following strings: 'day','week','month','quarter','year'")
   }
 
   # cast as data frame if ts, xts, or zoo object
@@ -164,8 +164,6 @@ VAR_estimation = function(
 
     })
 
-
-
   ### return output --------------
   return(
     list(
@@ -192,9 +190,11 @@ VAR_estimation = function(
 #' @seealso [VAR()]
 #' @seealso [var_irf()]
 #' @seealso [var_fevd()]
+#' @seealso [var_hd()]
 #' @seealso [RVAR()]
 #' @seealso [rvar_irf()]
 #' @seealso [rvar_fevd()]
+#' @seealso [rvar_hd()]
 #'
 #' @examples
 #' \donttest{
@@ -221,6 +221,9 @@ VAR_estimation = function(
 #' # forecast error variance decomposition
 #' var.fevd = sovereign::var_fevd(var)
 #'
+#' # historical shock decomposition
+#' var.hd = sovereign::var_hd(var)
+#'
 #' }
 #'
 #' @export
@@ -238,16 +241,16 @@ VAR = function(
 
   # function warnings
   if(!is.numeric(p) | p %% 1 != 0){
-    errorCondition('p must be an integer')
+    stop('p must be an integer')
   }
   if(!is.null(lag.ic)){
     if(!lag.ic %in% c('BIC','AIC')){
-      errorCondition("lag.ic must be either 'BIC', 'AIC', or NULL")
+      stop("lag.ic must be either 'BIC', 'AIC', or NULL")
     }
   }
   if(!is.null(lag.max)){
     if(lag.max %% 1 != 0){
-      errorCondition('lag.max must be an integer if IC-based lag selection is used')
+      stop('lag.max must be an integer if IC-based lag selection is used')
     }
   }
 
@@ -287,18 +290,24 @@ VAR = function(
     # return IC minimizing VAR
     min.ic = which.min(ic.scores)
     model = models[[min.ic]]
+
+    class(model) = 'VAR'
     return(model)
 
   }else{
-    return(
+
+    model =
       VAR_estimation(
-        data = data,
-        p = p,
-        horizon = horizon,
-        freq = freq,
-        type = type
-      )
-    )
+          data = data,
+          p = p,
+          horizon = horizon,
+          freq = freq,
+          type = type
+        )
+
+    class(model) = 'VAR'
+    return(model)
+
   }
 
 }
@@ -320,19 +329,19 @@ RVAR_estimate = function(
 
   # function warnings
   if(!is.matrix(data) & !is.data.frame(data)){
-    errorCondition('data must be a matrix or data.frame')
+    stop('data must be a matrix or data.frame')
   }
   if(!is.numeric(p) | p %% 1 != 0){
-    errorCondition('p must be an integer')
+    stop('p must be an integer')
   }
   if(!is.numeric(horizon) | horizon %% 1 != 0 | horizon <= 0){
-    errorCondition('horizon must be a positive integer')
+    stop('horizon must be a positive integer')
   }
   if(!freq %in% c('day','week','month','quarter','year')){
-    errorCondition("freq must be one of the following strings: 'day','week','month','quarter','year'")
+    stop("freq must be one of the following strings: 'day','week','month','quarter','year'")
   }
   if(!regime %in% colnames(data)){
-    errorCondition('regime must be the name of a column in data')
+    stop('regime must be the name of a column in data')
   }
 
   # cast as data frame if ts, xts, or zoo object
@@ -574,9 +583,11 @@ RVAR_estimate = function(
 #' @seealso [VAR()]
 #' @seealso [var_irf()]
 #' @seealso [var_fevd()]
+#' @seealso [var_hd()]
 #' @seealso [RVAR()]
 #' @seealso [rvar_irf()]
 #' @seealso [rvar_fevd()]
+#' @seealso [rvar_hd()]
 #'
 #' @examples
 #' \donttest{
@@ -606,6 +617,9 @@ RVAR_estimate = function(
 #' # forecast error variance decomposition
 #' rvar.fevd = sovereign::rvar_fevd(rvar)
 #'
+#' # historical shock decomposition
+#' rvar.hd = sovereign::rvar_hd(rvar)
+#'
 #' }
 #'
 #' @export
@@ -626,16 +640,16 @@ RVAR = function(
 
   # function warnings
   if(!is.numeric(p) | p %% 1 != 0){
-    errorCondition('p must be an integer')
+    stop('p must be an integer')
   }
   if(!is.null(lag.ic)){
     if(!lag.ic %in% c('BIC','AIC')){
-      errorCondition("lag.ic must be either 'BIC', 'AIC', or NULL")
+      stop("lag.ic must be either 'BIC', 'AIC', or NULL")
     }
   }
   if(!is.null(lag.max)){
     if(lag.max %% 1 != 0){
-      errorCondition('lag.max must be an integer if IC-based lag selection is used')
+      stop('lag.max must be an integer if IC-based lag selection is used')
     }
   }
 
@@ -690,10 +704,13 @@ RVAR = function(
     # return IC minimizing VAR
     min.ic = which.min(ic.scores)
     model = models[[min.ic]]
+
+    class(model) = 'RVAR'
     return(model)
 
   }else{
-    return(
+
+    model =
       RVAR_estimate(
         data = data,
         p = p,
@@ -702,7 +719,10 @@ RVAR = function(
         freq = freq,
         type = type
       )
-    )
+
+    class(model) = 'RVAR'
+    return(model)
+
   }
 
 

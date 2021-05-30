@@ -60,6 +60,9 @@ var.irf = sovereign::var_irf(var)
 # forecast error variance decomposition
 var.fevd = sovereign::var_fevd(var)
 
+# historical shock decomposition
+var.hd = sovereign::var_hd(var)
+
 }
 
 }
@@ -70,9 +73,13 @@ var.fevd = sovereign::var_fevd(var)
 
 \code{\link[=var_fevd]{var_fevd()}}
 
+\code{\link[=var_hd]{var_hd()}}
+
 \code{\link[=RVAR]{RVAR()}}
 
 \code{\link[=rvar_irf]{rvar_irf()}}
 
 \code{\link[=rvar_fevd]{rvar_fevd()}}
+
+\code{\link[=rvar_hd]{rvar_hd()}}
 }

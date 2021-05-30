@@ -19,7 +19,7 @@ rvar_irf(rvar, horizon = 10, bootstraps.num = 100, CI = c(0.1, 0.9))
 list of lists, each regime returns its own list with elements \code{irfs}, \code{ci.lower}, and \code{ci.upper}; all elements are long-form data.frames
 }
 \description{
-Estimate impulse responses with contemporaneous impact restictions via Cholesky decomposition -
+Estimate impulse responses with contemporaneous impact restrictions via Cholesky decomposition -
 taking the variable ordering present in the VAR object. Estimate one response function per unique
 state defined by the regime-dependent VAR.
 }
@@ -50,6 +50,9 @@ rvar.irf = sovereign::rvar_irf(rvar)
 
 # forecast error variance decomposition
 rvar.fevd = sovereign::rvar_fevd(rvar)
+
+# historical shock decomposition
+rvar.hd = sovereign::rvar_hd(rvar)
 
 }
 

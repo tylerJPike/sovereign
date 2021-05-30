@@ -23,12 +23,12 @@ cvc_likelihood = function(theta_hat, Y.pre, Y.post, p, N){
   # create lags
   Y.corrected = n.lag(Y.corrected, lags = p)
   Y.corrected$s = Y[,'s']
-  Y.corrected = na.omit(Y.corrected)
+  Y.corrected = stats::na.omit(Y.corrected)
 
   # set data
   TT = nrow(Y.corrected)
-  Y = dplyr::select(Y.corrected, -date, -contains('.l')) %>% as.matrix()
-  X = dplyr::select(Y.corrected, contains('.l')) %>% as.matrix()
+  Y = dplyr::select(Y.corrected, -date, -dplyr::contains('.l')) %>% as.matrix()
+  X = dplyr::select(Y.corrected, dplyr::contains('.l')) %>% as.matrix()
   S = Y.corrected$s
 
   # calculate beta and sigma
@@ -47,14 +47,15 @@ cvc_likelihood = function(theta_hat, Y.pre, Y.post, p, N){
 #' Implement the deterministic volatility correction method of Lenza, Michele
 #' and Giorgio Primiceri "How to Estimate a VAR after March 2020" (2020) [[NBER Working Paper](https://www.nber.org/papers/w27771)].
 #'
-#' @param var       VAR output
-#' @theta_initial   double: four element vector with scaling parameters, theta in Lenza and Primiceri (2020)
+#' @param var       VAR object
+#' @param theta_initial   double: four element vector with scaling parameters, theta in Lenza and Primiceri (2020)
 #'
 #' @return var object
 #'
 #' @seealso [VAR()]
 #' @seealso [var_irf()]
 #' @seealso [var_fevd()]
+#' @seealso [var_hd()]
 #'
 #' @examples
 #' \donttest{
@@ -63,7 +64,7 @@ cvc_likelihood = function(theta_hat, Y.pre, Y.post, p, N){
 #'  AA = c(1:100) + rnorm(100)
 #'  BB = c(1:100) + rnorm(100)
 #'  CC = AA + BB + rnorm(100)
-#'  date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+#'  date = seq.Date(from = as.Date('2018-01-01'), by = 'month', length.out = 100)
 #'  Data = data.frame(date = date, AA, BB, CC)
 #'
 #'  # estimate VAR
@@ -76,20 +77,23 @@ cvc_likelihood = function(theta_hat, Y.pre, Y.post, p, N){
 #'      lag.max = 4)
 #'
 #' # correct VAR for COVID shock
-#' var = covid_volatility_correction(var)
+#' var = sovereign::covid_volatility_correction(var)
 #'
 #' # impulse response functions
 #' var.irf = sovereign::var_irf(var)
 #'
 #' # forecast error variance decomposition
 #' var.fevd = sovereign::var_fevd(var)
+#' 
+#' # historical shock decomposition
+#' var.hd = sovereign::var_hd(var)
 #'
 #' }
 #'
 #' @export
 
 covid_volatility_correction = function(
-  var,                                        # VAR output
+  var,                                        # VAR object
   theta_initial = c(5, 2, 1.5, 0.8)           # double: four element vector with scaling parameters, theta in Lenza and Primiceri (2020)
 ){
 
@@ -117,19 +121,20 @@ covid_volatility_correction = function(
 
     Y.post = dplyr::filter(Y, lubridate::year(date) >= 2020 & lubridate::month(date) > 2)
 
-    if(nrow(Y.post) < 4){errorCondition('The COVID shock correction update requires four months starting 2020:M3.')}
+    if(nrow(Y.post) < 4){stop('The COVID shock correction update requires four months starting 2020:M3.')}
+
 
   }else if(freq == 'quarter'){
 
     Y.post = dplyr::filter(Y, lubridate::year(date) >= 2020)
 
-    if(nrow(Y.post) < 4){errorCondition('The COVID shock correction update requires four quarters starting 2020:Q1.')}
+    if(nrow(Y.post) < 4){stop('The COVID shock correction update requires four quarters starting 2020:Q1.')}
 
   }
 
   # estimate volatility scalars -----------------
   theta =
-    optim(
+    stats::optim(
       par = theta_initial,
       fn = cvc_likelihood,
       Y.pre = Y.pre,

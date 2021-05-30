@@ -80,9 +80,9 @@ IRF = function (Phi, Sig, lag, orth = TRUE){
 }
 
 #' Estimate impulse response functions
-#' 
-#' Estimate impulse responses with contemporaneous impact restictions via Cholesky decomposition - 
-#' taking the variable ordering present in the VAR object.   
+#'
+#' Estimate impulse responses with contemporaneous impact restrictions via Cholesky decomposition -
+#' taking the variable ordering present in the VAR object.
 #'
 #' @param var              VAR output
 #' @param horizon          int: number of periods
@@ -94,9 +94,11 @@ IRF = function (Phi, Sig, lag, orth = TRUE){
 #' @seealso [VAR()]
 #' @seealso [var_irf()]
 #' @seealso [var_fevd()]
+#' @seealso [var_hd()]
 #' @seealso [RVAR()]
 #' @seealso [rvar_irf()]
 #' @seealso [rvar_fevd()]
+#' @seealso [rvar_hd()]
 #'
 #' @examples
 #' \donttest{
@@ -122,7 +124,10 @@ IRF = function (Phi, Sig, lag, orth = TRUE){
 #'
 #' # forecast error variance decomposition
 #' var.fevd = sovereign::var_fevd(var)
-#'
+#' 
+#' # historical shock decomposition
+#' var.hd = sovereign::var_hd(var)
+#' 
 #' }
 #'
 #' @export
@@ -136,13 +141,13 @@ var_irf = function(
 
   # function warnings
   if(!is.numeric(bootstraps.num) | bootstraps.num %% 1 != 0){
-    errorCondition('bootstraps.num must be an integer')
+    stop('bootstraps.num must be an integer')
   }
   if(!is.numeric(CI) | length(CI) != 2 | min(CI) < 0 | max(CI) > 1 | is.na(sum(CI))){
-    errorCondition('CI must be a two element numeric vector bound [0,1]')
+    stop('CI must be a two element numeric vector bound [0,1]')
   }
   if(!is.numeric(horizon) | horizon %% 1 != 0 | horizon <= 0){
-    errorCondition('horizon must be a positive integer')
+    stop('horizon must be a positive integer')
   }
 
   # function variables
@@ -303,11 +308,11 @@ var_irf = function(
 }
 
 #' Estimate regime-dependent impulse response functions
-#' 
-#' Estimate impulse responses with contemporaneous impact restictions via Cholesky decomposition - 
-#' taking the variable ordering present in the VAR object. Estimate one response function per unique 
-#' state defined by the regime-dependent VAR.   
-#' 
+#'
+#' Estimate impulse responses with contemporaneous impact restrictions via Cholesky decomposition -
+#' taking the variable ordering present in the VAR object. Estimate one response function per unique
+#' state defined by the regime-dependent VAR.
+#'
 #' @param rvar             RVAR output
 #' @param horizon          int: number of periods
 #' @param bootstraps.num   int: number of bootstraps
@@ -349,7 +354,10 @@ var_irf = function(
 #'
 #' # forecast error variance decomposition
 #' rvar.fevd = sovereign::rvar_fevd(rvar)
-#'
+#' 
+#' # historical shock decomposition
+#' rvar.hd = sovereign::rvar_hd(rvar)
+#' 
 #' }
 #'
 #' @export
@@ -363,13 +371,13 @@ rvar_irf = function(
 
   # function warnings
   if(!is.numeric(bootstraps.num) | bootstraps.num %% 1 != 0){
-    errorCondition('bootstraps.num must be an integer')
+    stop('bootstraps.num must be an integer')
   }
   if(!is.numeric(CI) | length(CI) != 2 | min(CI) < 0 | max(CI) > 1 | is.na(sum(CI))){
-    errorCondition('CI must be a two element numeric vector bound [0,1]')
+    stop('CI must be a two element numeric vector bound [0,1]')
   }
   if(!is.numeric(horizon) | horizon %% 1 != 0 | horizon <= 0){
-    errorCondition('horizon must be a positive integer')
+    stop('horizon must be a positive integer')
   }
 
   # function variables

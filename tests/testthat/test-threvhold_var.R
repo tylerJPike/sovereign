@@ -62,4 +62,15 @@ test_that("threshold VAR workflow", {
   expect_true(is.list(plot.fevd.1))
   expect_true(is.list(plot.fevd.1))
 
+  # estimate hd
+  hd = rvar_hd(rvar)
+
+  expect_true(is.data.frame(hd))
+
+  # plot hd
+  plot.hd = plot_hd(hd)
+
+  expect_true(is.list(plot.hd))
+
+
 })

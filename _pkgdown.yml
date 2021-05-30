@@ -23,6 +23,7 @@ reference:
       - '`RVAR`'
       - '`LP`'
       - '`RLP`'
+      - '`covid_volatility_correction`'
   - title: Model and Forecast Analysis
     desc: Functions to anlayze model and forecasting dynamics
     contents:
@@ -30,6 +31,8 @@ reference:
       - '`rvar_irf`'
       - '`var_fevd`'
       - '`rvar_fevd`'
+      - '`var_hd`'
+      - '`rvar_hd`'
       - '`lp_irf`'
       - '`rlp_irf`'
   - title: Plots
@@ -39,6 +42,7 @@ reference:
       - '`plot_error`'
       - '`plot_fevd`'
       - '`plot_irf`'
+      - '`plot_hd`'
 
 navbar:
   title: "sovereign"
@@ -52,6 +56,3 @@ navbar:
     - icon: fa-cogs
       text: Workflow
       href: ./articles/getting_started.html
-  right:
-    - icon: fa-github fa-lg
-      href: https://github.com/tylerJPike/sovereign

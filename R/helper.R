@@ -1,6 +1,5 @@
 #------------------------------------------
 # Data helper functions
-#  (copied from OOS package)
 #------------------------------------------
 # create n lags
 n.lag = function(
@@ -9,8 +8,18 @@ n.lag = function(
   variables = NULL            # string: vector of variable names to lag, default is all non-date variables
 ){
 
+  # function variables
+  date = NULL
+
   if(is.null(variables)){
     variables = names(dplyr::select(Data, -dplyr::contains('date')))
+  }
+
+  if(!'date' %in% colnames(Data)){
+    no.date = TRUE
+    Data$date = c(1:nrow(Data))
+  }else{
+    no.date = FALSE
   }
 
   Data = c(0:lags) %>%
@@ -29,6 +38,9 @@ n.lag = function(
     ) %>%
     purrr::reduce(dplyr::full_join, by = 'date')
 
+  if(no.date == TRUE){
+    Data = dplyr::select(Data, -date)
+  }
 
   return(Data)
 }

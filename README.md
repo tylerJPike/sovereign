@@ -8,7 +8,7 @@
 [![Build Status](https://travis-ci.org/tylerJPike/sovereign.svg?branch=main)](https://travis-ci.org/tylerJPike/sovereign)  
 <!-- badges: end -->
 
-The sovereign package introduces a set of tools for state-dependent empirical analysis through both VAR- and local projection-based state-dependent forecasts, impulse response functions, and forecast error variance decomposition. 
+The sovereign package introduces a set of tools for state-dependent empirical analysis through both VAR- and local projection-based state-dependent forecasts, impulse response functions, forecast error variance decomposition, and historical error variance decomposition.    
 
 See the sovereign package [website](https://tylerjpike.github.io/sovereign/) for examples and documentation. 
 
@@ -35,15 +35,15 @@ Unsupervised Regime Assignment
 4. Bai & Perron (2003)  
 
 Local Projections (LP)
-1. direct projection forecasting*  
-1. impulse responses*
+1. direct projection forecasting  
+1. impulse responses
 
 Vector Auto-Regression (VAR)
-1. recursive forecasting*
-2. forecast error variance decomposition*
-3. impulse responses*
+1. recursive forecasting
+2. impulse responses
+3. forecast error variance decomposition
+4. historical error decomposition
 
-*charting functions available   
 
 ----
 
@@ -64,7 +64,8 @@ Vector Auto-Regression (VAR)
     Data = cbind(UNRATE, INDPRO, GS10)
 
     Data = data.frame(Data, date = zoo::index(Data)) %>%
-        filter(lubridate::year(date) >= 1990) %>% 
+        filter(lubridate::year(date) >= 1990,
+               lubridate::year(date) <  2020) %>% 
         na.omit()
 
     # create a regime explicitly   
@@ -86,7 +87,7 @@ Vector Auto-Regression (VAR)
     # single-regime var
     #------------------------------------------
     # estimate VAR
-    # (using IC lag selection0
+    # (using IC lag selection)
     var =
         VAR(
             data = Data,
@@ -94,6 +95,12 @@ Vector Auto-Regression (VAR)
             freq = 'month',
             lag.ic = 'BIC',
             lag.max = 4)
+
+    # if impacts of the COVID shock are present,
+    #  in the user's data, then the user can 
+    #  implement the Lenza-Primiceri COVID volatility
+    #  correction for VARs: 
+    # var = covid_volatility_correction(var)
 
     # plot forecasts
     plot_forecast(var$forecasts[[1]])

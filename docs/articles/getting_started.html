@@ -11,7 +11,9 @@
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="Sovereign, getting started">
+<script src="../pkgdown.js"></script><!-- docsearch --><script src="../docsearch.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/docsearch.js/2.6.3/docsearch.min.css" integrity="sha256-QOSRU/ra9ActyXkIBbiIB144aDBdtvXBcNc3OTNuX/Q=" crossorigin="anonymous">
+<link href="../docsearch.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script><meta property="og:title" content="Sovereign, getting started">
 <meta property="og:description" content="sovereign">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -37,7 +39,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">sovereign</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1</span>
       </span>
     </div>
 
@@ -45,20 +47,20 @@
       <ul class="nav navbar-nav">
 <li>
   <a href=".././index.html">
-    <span class="fa fa-home"></span>
+    <span class="fas fa-home"></span>
      
   </a>
 </li>
 <li>
   <a href=".././reference/index.html">
-    <span class="fa fa-cog"></span>
+    <span class="fas fa-cog"></span>
      
     Tools
   </a>
 </li>
 <li>
   <a href=".././articles/getting_started.html">
-    <span class="fa fa-cogs"></span>
+    <span class="fas fa-cogs"></span>
      
     Workflow
   </a>
@@ -66,13 +68,19 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/tylerJPike/sovereign">
-    <span class="fa fa-github fa-lg"></span>
+  <a href="https://github.com/tylerJPike/sovereign/">
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
       </ul>
+<form class="navbar-form navbar-right hidden-xs hidden-sm" role="search">
+        <div class="form-group">
+          <input type="search" class="form-control" name="search-input" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off">
 </div>
+      </form>
+      
+    </div>
 <!--/.nav-collapse -->
   </div>
 <!--/.container -->
@@ -81,8 +89,7 @@
 
       
 
-      </header><script src="getting_started_files/header-attrs-2.5/header-attrs.js"></script><link href="getting_started_files/anchor-sections-1.0/anchor-sections.css" rel="stylesheet">
-<script src="getting_started_files/anchor-sections-1.0/anchor-sections.js"></script><div class="row">
+      </header><script src="getting_started_files/header-attrs-2.7/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Sovereign, getting started</h1>
@@ -96,8 +103,8 @@
 
     
     
-<p>It is well understood that almost every economic system - and more broadly, any system inherently driven by humans - is state-dependent. The sovereign package introduces a set of tools for conducting state-dependent (i.e. regime-dependent) empirical analysis, namely state-dependent forecasting, impulse response analysis, and forecast error variance decomposition. This introduction will walk through an analysis of a small macroeconomic system, including US inflation, output gap, and monetary policy. While considering two state-dependent regimes, the first based on NBER recessions, the second based on the sovereign package’s own estimation.</p>
-<p>The vignette will proceed by 1) preparing the data, both covariates and regimes, 2) estimating forecasts, impulse responses, and forecast error variance decomposition via a VAR and a threshold VAR (that is, a state-dependent VAR), 3) estimating forecasts and impulse responses via local projections and threshold local projections, and 4) concluding.</p>
+<p>It is well understood that almost every economic system - and more broadly, any system inherently driven by humans - is state-dependent. The sovereign package introduces a set of tools for conducting state-dependent (i.e. regime-dependent) empirical analysis, namely state-dependent forecasting, impulse response analysis, forecast error and historical variance decomposition. This introduction will walk through an analysis of a small macroeconomic system, including US inflation, output gap, and monetary policy. While considering two state-dependent regimes, the first based on NBER recessions, the second based on the sovereign package’s own estimation.</p>
+<p>The vignette will proceed by 1) preparing the data, both covariates and regimes, 2) estimating forecasts, impulse responses, forecast error and historical variance decomposition via a VAR and a regime-dependent VAR, 3) estimating forecasts and impulse responses via local projections and regime-dependent local projections, and 4) concluding.</p>
 <div id="environment" class="section level2">
 <h2 class="hasAnchor">
 <a href="#environment" class="anchor"></a>0. Environment</h2>
@@ -114,7 +121,7 @@
 <a href="#var-covariates" class="anchor"></a>1.1 VAR Covariates</h3>
 <p>To create our small macro-system we need to first pull four variables from FRED using the quantmod package:</p>
 <p>1.<a href="https://fred.stlouisfed.org/series/GDPC1">Real Gross Domestic Product</a><br>
-2.<a href="https://fred.stlouisfed.org/series/GDPOT">Real Potential Gross Domestic Product</a><br>
+2.<a href="https://fred.stlouisfed.org/series/GDPPOT">Real Potential Gross Domestic Product</a><br>
 3.<a href="https://fred.stlouisfed.org/series/GDPDEF">Gross Domestic Product: Implicit Price Deflator</a><br>
 4.<a href="https://fred.stlouisfed.org/series/GDPDEF">Effective Federal Funds Rate</a></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -152,6 +159,7 @@
 <span class="va">Data</span> <span class="op">=</span> 
   <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html">inner_join</a></span><span class="op">(</span><span class="va">Y</span>, <span class="va">I</span>, by <span class="op">=</span> <span class="st">'date'</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="fu">lubridate</span><span class="fu">::</span><span class="fu"><a href="http://lubridate.tidyverse.org/reference/year.html">year</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span> <span class="op">&lt;</span> <span class="fl">2020</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="https://rdrr.io/r/stats/na.fail.html">na.omit</a></span><span class="op">(</span><span class="op">)</span>
 
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">Data</span><span class="op">)</span></code></pre></div>
@@ -202,12 +210,12 @@
 
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">Data.kmeans</span><span class="op">)</span></code></pre></div>
 <pre><code>##         date          y         p        ff regime
-## 1 1954-07-01 -1.4139012 0.5221215 1.0300000      1
-## 2 1954-10-01 -0.1175714 1.0977702 0.9866667      1
-## 3 1955-01-01  2.1123368 1.8611016 1.3433333      1
-## 4 1955-04-01  3.1059483 1.6617857 1.5000000      1
-## 5 1955-07-01  3.8394130 2.7943570 1.9400000      1
-## 6 1955-10-01  3.7837596 3.9873375 2.3566667      1</code></pre>
+## 1 1954-07-01 -1.4139012 0.5221215 1.0300000      2
+## 2 1954-10-01 -0.1175714 1.0977702 0.9866667      2
+## 3 1955-01-01  2.1123368 1.8611016 1.3433333      2
+## 4 1955-04-01  3.1059483 1.6617857 1.5000000      2
+## 5 1955-07-01  3.8394130 2.7943570 1.9400000      2
+## 6 1955-10-01  3.7837596 3.9873375 2.3566667      2</code></pre>
 <p>Here we have used sovereign to classify each observation by using the k-means clustering algorithm. One will note that the output of the <code>regime</code> function is the input matrix, Data, concatenated with a new <em>regime</em> column with two unique numeric values (i.e. two mutually exclusive regimes).</p>
 <p>We now have our small set of macroeconomic variables, as well as two different sets of economic regimes to introduce state-dependence.</p>
 </div>
@@ -238,33 +246,41 @@
 <p>Second we estimate the associate impulse response functions, bootstrapped confidence intervals, and plot them. Additionally, here we will note that all sovereign plots are based on ggplot2, and the underlying plot objects are the return values for any sovereign plotting function.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># estimate IRF</span>
-<span class="va">irf</span> <span class="op">=</span>
+<span class="va">var.irf</span> <span class="op">=</span>
     <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/var_irf.html">var_irf</a></span><span class="op">(</span>
         <span class="va">var</span>,
         bootstraps.num <span class="op">=</span> <span class="fl">10</span>,
         CI <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.05</span>,<span class="fl">0.95</span><span class="op">)</span><span class="op">)</span>
 
 <span class="co"># plot IRF</span>
-<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_irf.html">plot_irf</a></span><span class="op">(</span><span class="va">irf</span><span class="op">)</span></code></pre></div>
+<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_irf.html">plot_irf</a></span><span class="op">(</span><span class="va">var.irf</span><span class="op">)</span></code></pre></div>
 <p><img src="getting_started_files/figure-html/unnamed-chunk-7-1.png" width="700" style="display: block; margin: auto;"></p>
-<p>Lastly, we estimate the forecast error variance decomposition and plot the system of decomposition.</p>
+<p>Second, we estimate the forecast error variance decomposition and plot the system of decomposition.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># estimate forecast error variance decomposition</span>
-<span class="va">fevd</span> <span class="op">=</span>
+<span class="va">var.fevd</span> <span class="op">=</span>
     <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/var_fevd.html">var_fevd</a></span><span class="op">(</span>
         <span class="va">var</span>,
         horizon <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>
 
 <span class="co"># plot FEVD</span>
-<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_fevd.html">plot_fevd</a></span><span class="op">(</span><span class="va">fevd</span><span class="op">)</span></code></pre></div>
+<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_fevd.html">plot_fevd</a></span><span class="op">(</span><span class="va">var.fevd</span><span class="op">)</span></code></pre></div>
 <p><img src="getting_started_files/figure-html/unnamed-chunk-8-1.png" width="700" style="display: block; margin: auto;"></p>
+<p>Lastly, we visualize the error variance through time with the historical decomposition.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># estimate historical decomposition</span>
+<span class="va">var.hd</span> <span class="op">=</span> <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/var_hd.html">var_hd</a></span><span class="op">(</span><span class="va">var</span><span class="op">)</span>
+
+<span class="co"># plot HD</span>
+<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_hd.html">plot_hd</a></span><span class="op">(</span><span class="va">var.hd</span><span class="op">)</span></code></pre></div>
+<p><img src="getting_started_files/figure-html/unnamed-chunk-9-1.png" width="700" style="display: block; margin: auto;"></p>
 </div>
 <div id="multi-regime-var" class="section level3">
 <h3 class="hasAnchor">
-<a href="#multi-regime-var" class="anchor"></a>2.1 Multi-regime VAR</h3>
+<a href="#multi-regime-var" class="anchor"></a>2.2 Multi-regime VAR</h3>
 <p>We next mirror the analysis conducted with the single-regime VAR, but acknowledging the two different phases to the business cycle: expansions and recessions.</p>
-<p>First we estimate the threshold VAR, resulting in an expectation function with different parameters based on the conditioning state. That is, we will estimate one VAR per regime, and package these discrete models as one <code>threshold_VAR</code> object (list, not a true S3 object).</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<p>First we estimate the regime-dependent VAR, resulting in an expectation function with different parameters based on the conditioning state. That is, we will estimate one VAR per regime, and package these discrete models as one <code>RVAR</code> object - taking the type of a list.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># estimate multi-regime VAR</span>
 <span class="va">rvar</span> <span class="op">=</span>
     <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/RVAR.html">RVAR</a></span><span class="op">(</span>
@@ -279,8 +295,9 @@
 <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_forecast.html">plot_forecast</a></span><span class="op">(</span><span class="va">rvar</span><span class="op">$</span><span class="va">forecasts</span><span class="op">[[</span><span class="st">'H_1'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
 <span class="co"># plot residuals (left panel)</span>
 <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_error.html">plot_error</a></span><span class="op">(</span><span class="va">rvar</span><span class="op">$</span><span class="va">residuals</span><span class="op">[[</span><span class="st">'H_1'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></code></pre></div>
-<p><img src="getting_started_files/figure-html/unnamed-chunk-9-1.png" width="50%"><img src="getting_started_files/figure-html/unnamed-chunk-9-2.png" width="50%"> We then estimate impulse response functions to describe the dynamics of the system within each economic state.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<p><img src="getting_started_files/figure-html/unnamed-chunk-10-1.png" width="50%"><img src="getting_started_files/figure-html/unnamed-chunk-10-2.png" width="50%"></p>
+<p>We then estimate impulse response functions to describe the dynamics of the system within each economic state,</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># estimate IRF</span>
 <span class="va">rvar.irf</span> <span class="op">=</span>
     <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/rvar_irf.html">rvar_irf</a></span><span class="op">(</span>
@@ -294,9 +311,9 @@
 <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_irf.html">plot_irf</a></span><span class="op">(</span><span class="va">rvar.irf</span><span class="op">[[</span><span class="st">'regime_expansion'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
 <span class="co"># regime 2: recession (left panel)</span>
 <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_irf.html">plot_irf</a></span><span class="op">(</span><span class="va">rvar.irf</span><span class="op">[[</span><span class="st">'regime_recession'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></code></pre></div>
-<p><img src="getting_started_files/figure-html/unnamed-chunk-10-1.png" width="50%"><img src="getting_started_files/figure-html/unnamed-chunk-10-2.png" width="50%"></p>
-<p>And lastly we estimate and visualize the forecast error variance decomposition by state.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<p><img src="getting_started_files/figure-html/unnamed-chunk-11-1.png" width="50%"><img src="getting_started_files/figure-html/unnamed-chunk-11-2.png" width="50%"></p>
+<p>estimate and visualize the forecast error variance decomposition by state,</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># estimate forecast error variance decomposition</span>
 <span class="va">rvar.fevd</span> <span class="op">=</span>
     <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/rvar_fevd.html">rvar_fevd</a></span><span class="op">(</span>
@@ -308,7 +325,16 @@
 <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_fevd.html">plot_fevd</a></span><span class="op">(</span><span class="va">rvar.fevd</span><span class="op">[[</span><span class="st">'regime_expansion'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
 <span class="co"># regime 2: recession rates (left panel)</span>
 <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_fevd.html">plot_fevd</a></span><span class="op">(</span><span class="va">rvar.fevd</span><span class="op">[[</span><span class="st">'regime_recession'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></code></pre></div>
-<p><img src="getting_started_files/figure-html/unnamed-chunk-11-1.png" width="50%"><img src="getting_started_files/figure-html/unnamed-chunk-11-2.png" width="50%"> Then, upon inspection of both the impulse response functions and forecast error variance decomposition, it is clear that the macroeconomic system behaves differently based on economic state. We will next extend the analysis to assess if there is state-dependent differences in the system, when using local projections.</p>
+<p><img src="getting_started_files/figure-html/unnamed-chunk-12-1.png" width="50%"><img src="getting_started_files/figure-html/unnamed-chunk-12-2.png" width="50%"></p>
+<p>and analyze the historical decomposition of the regime-dependent model.</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># estimate historical decomposition</span>
+<span class="va">rvar.hd</span> <span class="op">=</span> <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/rvar_hd.html">rvar_hd</a></span><span class="op">(</span><span class="va">rvar</span><span class="op">)</span>
+
+<span class="co"># plot hd</span>
+<span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_hd.html">plot_hd</a></span><span class="op">(</span><span class="va">rvar.hd</span><span class="op">)</span></code></pre></div>
+<p><img src="getting_started_files/figure-html/unnamed-chunk-13-1.png" width="700"></p>
+<p>Then, upon inspection of both the impulse response functions and forecast error variance decomposition, it is clear that the macroeconomic system behaves differently based on economic state. We will next extend the analysis to assess if there is state-dependent differences in the system, when using local projections.</p>
 </div>
 </div>
 <div id="local-projection-analysis" class="section level2">
@@ -318,7 +344,7 @@
 <div id="single-regime-local-projection" class="section level3">
 <h3 class="hasAnchor">
 <a href="#single-regime-local-projection" class="anchor"></a>3.1 Single-Regime Local Projection</h3>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># estimate single-regime forecasts </span>
 <span class="co">#  (one or multiple horizons may be estimated)</span>
 <span class="va">lp</span> <span class="op">=</span> 
@@ -333,21 +359,21 @@
 <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_forecast.html">plot_forecast</a></span><span class="op">(</span><span class="va">lp</span><span class="op">$</span><span class="va">forecasts</span><span class="op">[[</span><span class="st">'H_1'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
 <span class="co"># plot residuals (left panel)</span>
 <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_error.html">plot_error</a></span><span class="op">(</span><span class="va">lp</span><span class="op">$</span><span class="va">residuals</span><span class="op">[[</span><span class="st">'H_1'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></code></pre></div>
-<p><img src="getting_started_files/figure-html/unnamed-chunk-12-1.png" width="50%"><img src="getting_started_files/figure-html/unnamed-chunk-12-2.png" width="50%"></p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<p><img src="getting_started_files/figure-html/unnamed-chunk-14-1.png" width="50%"><img src="getting_started_files/figure-html/unnamed-chunk-14-2.png" width="50%"></p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># estimate single-regime IRF</span>
 <span class="va">lp.irf</span> <span class="op">=</span> <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/lp_irf.html">lp_irf</a></span><span class="op">(</span><span class="va">lp</span><span class="op">)</span>
 
 <span class="co"># plot IRF</span>
 <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_irf.html">plot_irf</a></span><span class="op">(</span><span class="va">lp.irf</span><span class="op">)</span></code></pre></div>
-<p><img src="getting_started_files/figure-html/unnamed-chunk-13-1.png" width="700" style="display: block; margin: auto;"></p>
+<p><img src="getting_started_files/figure-html/unnamed-chunk-15-1.png" width="700" style="display: block; margin: auto;"></p>
 </div>
 <div id="multi-regime-local-projection" class="section level3">
 <h3 class="hasAnchor">
 <a href="#multi-regime-local-projection" class="anchor"></a>3.2 Multi-Regime Local Projection</h3>
 <p>We next turn to estimating state-dependent local projections. However, unlike our VAR experiment, we will here use sovereign’s own regime classifications, attained with the k-means clustering algorithm.</p>
 <p>Again, we first estimate and visualize the one-period-ahead forecasts and errors.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># estimate multi-regime IRF</span>
 <span class="va">rlp</span> <span class="op">=</span> 
     <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/RLP.html">RLP</a></span><span class="op">(</span>
@@ -362,9 +388,9 @@
 <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_forecast.html">plot_forecast</a></span><span class="op">(</span><span class="va">rlp</span><span class="op">$</span><span class="va">forecasts</span><span class="op">[[</span><span class="st">'H_1'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
 <span class="co"># plot residuals (left panel)</span>
 <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_error.html">plot_error</a></span><span class="op">(</span><span class="va">rlp</span><span class="op">$</span><span class="va">residuals</span><span class="op">[[</span><span class="st">'H_1'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></code></pre></div>
-<p><img src="getting_started_files/figure-html/unnamed-chunk-14-1.png" width="50%"><img src="getting_started_files/figure-html/unnamed-chunk-14-2.png" width="50%"></p>
+<p><img src="getting_started_files/figure-html/unnamed-chunk-16-1.png" width="50%"><img src="getting_started_files/figure-html/unnamed-chunk-16-2.png" width="50%"></p>
 <p>And in our last step, we will create the state-dependent impulse response functions.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># estimate multi-regime IRF</span>
 <span class="va">rlp.irf</span> <span class="op">=</span> 
   <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/rlp_irf.html">rlp_irf</a></span><span class="op">(</span><span class="va">rlp</span><span class="op">)</span>
@@ -374,7 +400,7 @@
 <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_irf.html">plot_irf</a></span><span class="op">(</span><span class="va">rlp.irf</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
 <span class="co"># regime 2: k-means cluster 1 (left panel)</span>
 <span class="fu">sovereign</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_irf.html">plot_irf</a></span><span class="op">(</span><span class="va">rlp.irf</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></code></pre></div>
-<p><img src="getting_started_files/figure-html/unnamed-chunk-15-1.png" width="50%"><img src="getting_started_files/figure-html/unnamed-chunk-15-2.png" width="50%"></p>
+<p><img src="getting_started_files/figure-html/unnamed-chunk-17-1.png" width="50%"><img src="getting_started_files/figure-html/unnamed-chunk-17-2.png" width="50%"></p>
 <p>Similar to our VAR analysis, we find that our small macro-system displays different behavior within different states. That is, we have successfully modeled a small-scale macroeconomy across multiple regimes and have identified a clear state-dependence within the system.</p>
 </div>
 </div>
@@ -413,7 +439,20 @@
 </div>
 
   
-
-
-  </body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docsearch.js/2.6.1/docsearch.min.js" integrity="sha256-GKvGqXDznoRYHCwKXGnuchvKSwmx9SRMrZOTh2g4Sb0=" crossorigin="anonymous"></script><script>
+  docsearch({
+    
+    
+    apiKey: '4a0d0a15b437a7d39695290aace8b645',
+    indexName: 'sovereign',
+    inputSelector: 'input#search-input.form-control',
+    transformData: function(hits) {
+      return hits.map(function (hit) {
+        hit.url = updateHitURL(hit);
+        return hit;
+      });
+    }
+  });
+</script>
+</body>
 </html>

@@ -23,7 +23,7 @@ where *Y* is the predicted outcome of interest, *E* is the expectation operator,
 
 where *s* is a discrete, that is, mutually exclusive, state of the world. For example, in an economic context, one may consider expansions and recessions as two different states of the world, and in the US, these labels are formally declared by the NBER.  
 
-The `sovereign` package provides the tools and methods to solves this state-dependent forecasting problem. First, using either parametric or non-parametric machine learning techniques, users may sort, identify and classify discrete states of the world. Second, using vector auto-regressions or direct projections, a user can create both single- and multi-state time series forecasts. Finally, users may analyze their resulting models and forecasts through impulse response functions and forecast error variance decomposition.  
+The `sovereign` package provides the tools and methods to solves this state-dependent forecasting problem. First, using either parametric or non-parametric machine learning techniques, users may sort, identify, and classify discrete states of the world. Second, using vector auto-regressions or direct projections, a user can create both single- and multi-state time series forecasting models. Third, users may analyze their models and forecasts through impulse response functions, forecast error variance decompositions, and historical error deccompositions.  
 
 Available tools and techniques may be reviewed under the **Tools** tab. While vignettes and other extended documentation of the sovereign package’s capabilities may be found under the **Workflow** tab.
 

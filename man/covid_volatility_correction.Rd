@@ -7,7 +7,9 @@
 covid_volatility_correction(var, theta_initial = c(5, 2, 1.5, 0.8))
 }
 \arguments{
-\item{var}{VAR output}
+\item{var}{VAR object}
+
+\item{theta_initial}{double: four element vector with scaling parameters, theta in Lenza and Primiceri (2020)}
 }
 \value{
 var object
@@ -23,7 +25,7 @@ and Giorgio Primiceri "How to Estimate a VAR after March 2020" (2020) [\href{htt
  AA = c(1:100) + rnorm(100)
  BB = c(1:100) + rnorm(100)
  CC = AA + BB + rnorm(100)
- date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+ date = seq.Date(from = as.Date('2018-01-01'), by = 'month', length.out = 100)
  Data = data.frame(date = date, AA, BB, CC)
 
  # estimate VAR
@@ -36,13 +38,16 @@ and Giorgio Primiceri "How to Estimate a VAR after March 2020" (2020) [\href{htt
      lag.max = 4)
 
 # correct VAR for COVID shock
-var = covid_volatility_correction(var)
+var = sovereign::covid_volatility_correction(var)
 
 # impulse response functions
 var.irf = sovereign::var_irf(var)
 
 # forecast error variance decomposition
 var.fevd = sovereign::var_fevd(var)
+
+# historical shock decomposition
+var.hd = sovereign::var_hd(var)
 
 }
 
@@ -53,4 +58,6 @@ var.fevd = sovereign::var_fevd(var)
 \code{\link[=var_irf]{var_irf()}}
 
 \code{\link[=var_fevd]{var_fevd()}}
+
+\code{\link[=var_hd]{var_hd()}}
 }
