@@ -42,7 +42,16 @@ RVAR(
 list of lists, each regime returns its own list with elements \code{data}, \code{model}, \code{forecasts}, \code{residuals}
 }
 \description{
-Estimate regime-dependent VAR
+Estimate a regime-dependent VAR (i.e. a state-dependent VAR), with an exogenous state indicator, of the specification:
+\deqn{Y_t = X \beta_s + \epsilon_t}
+where t is the time index, Y is the set of outcome vectors, X the design matrix (of p lagged values of Y), and
+s is a mutually exclusive state of the world observed at time t-1. When the regime vector is not supplied by the user, then a two-state
+regime series is estimated via random forest.
+}
+\details{
+The regime-dependent VAR is a generalization of the popular threshold VAR - which trades off estimating a threshold value for an
+endogenous variable for accepting an exogenous regime that can be based on information from inside or outside of the system, with or without parametric
+assumptions, and with or without timing restrictions.
 }
 \examples{
 \donttest{
@@ -55,7 +64,7 @@ Estimate regime-dependent VAR
  Data = data.frame(date = date, AA, BB, CC)
  Data = dplyr::mutate(Data, reg = dplyr::if_else(AA > median(AA), 1, 0))
 
- # estimate VAR
+ # estimate regime-dependent VAR
   rvar =
     sovereign::RVAR(
       data = Data,

@@ -47,7 +47,8 @@
 
 <meta property="og:title" content="Lenza-Primiceri Covid Shock Correction — covid_volatility_correction" />
 <meta property="og:description" content="Implement the deterministic volatility correction method of Lenza, Michele
-and Giorgio Primiceri &quot;How to Estimate a VAR after March 2020&quot; (2020) [NBER Working Paper]." />
+and Giorgio Primiceri &quot;How to Estimate a VAR after March 2020&quot; (2020) [NBER Working Paper].
+Correction factors are estimated via maximum likelihood." />
 
 
 
@@ -149,7 +150,8 @@ and Giorgio Primiceri &quot;How to Estimate a VAR after March 2020&quot; (2020) 
 
     <div class="ref-description">
     <p>Implement the deterministic volatility correction method of Lenza, Michele
-and Giorgio Primiceri "How to Estimate a VAR after March 2020" (2020) [<a href='https://www.nber.org/papers/w27771'>NBER Working Paper</a>].</p>
+and Giorgio Primiceri "How to Estimate a VAR after March 2020" (2020) [<a href='https://www.nber.org/papers/w27771'>NBER Working Paper</a>].
+Correction factors are estimated via maximum likelihood.</p>
     </div>
 
     <pre class="usage"><span class='fu'>covid_volatility_correction</span><span class='op'>(</span><span class='va'>var</span>, theta_initial <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>5</span>, <span class='fl'>2</span>, <span class='fl'>1.5</span>, <span class='fl'>0.8</span><span class='op'>)</span><span class='op'>)</span></pre>
@@ -198,7 +200,7 @@ and Giorgio Primiceri "How to Estimate a VAR after March 2020" (2020) [<a href='
 </div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='input'>
 <span class='co'># correct VAR for COVID shock</span>
 <span class='va'>var</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'>covid_volatility_correction</span><span class='op'>(</span><span class='va'>var</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='warning'>Warning: NaNs produced</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NaNs produced</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NaNs produced</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NaNs produced</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NaNs produced</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NaNs produced</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NaNs produced</span></div><div class='input'>
+
 <span class='co'># impulse response functions</span>
 <span class='va'>var.irf</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='var_irf.html'>var_irf</a></span><span class='op'>(</span><span class='va'>var</span><span class='op'>)</span>
 

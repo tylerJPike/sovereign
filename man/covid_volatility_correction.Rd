@@ -17,6 +17,7 @@ var object
 \description{
 Implement the deterministic volatility correction method of Lenza, Michele
 and Giorgio Primiceri "How to Estimate a VAR after March 2020" (2020) [\href{https://www.nber.org/papers/w27771}{NBER Working Paper}].
+Correction factors are estimated via maximum likelihood.
 }
 \examples{
 \donttest{

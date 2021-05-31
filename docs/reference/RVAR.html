@@ -46,7 +46,11 @@
 
 
 <meta property="og:title" content="Estimate regime-dependent VAR — RVAR" />
-<meta property="og:description" content="Estimate regime-dependent VAR" />
+<meta property="og:description" content="Estimate a regime-dependent VAR (i.e. a state-dependent VAR), with an exogenous state indicator, of the specification:
+$$Y_t = X \beta_s + \epsilon_t$$
+where t is the time index, Y is the set of outcome vectors, X the design matrix (of p lagged values of Y), and
+s is a mutually exclusive state of the world observed at time t-1. When the regime vector is not supplied by the user, then a two-state
+regime series is estimated via random forest." />
 
 
 
@@ -147,7 +151,11 @@
     </div>
 
     <div class="ref-description">
-    <p>Estimate regime-dependent VAR</p>
+    <p>Estimate a regime-dependent VAR (i.e. a state-dependent VAR), with an exogenous state indicator, of the specification:
+$$Y_t = X \beta_s + \epsilon_t$$
+where t is the time index, Y is the set of outcome vectors, X the design matrix (of p lagged values of Y), and
+s is a mutually exclusive state of the world observed at time t-1. When the regime vector is not supplied by the user, then a two-state
+regime series is estimated via random forest.</p>
     </div>
 
     <pre class="usage"><span class='fu'>RVAR</span><span class='op'>(</span>
@@ -211,6 +219,11 @@
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>list of lists, each regime returns its own list with elements <code>data</code>, <code>model</code>, <code>forecasts</code>, <code>residuals</code></p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>The regime-dependent VAR is a generalization of the popular threshold VAR - which trades off estimating a threshold value for an
+endogenous variable for accepting an exogenous regime that can be based on information from inside or outside of the system, with or without parametric
+assumptions, and with or without timing restrictions.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='VAR.html'>VAR()</a></code></p>
@@ -233,7 +246,7 @@
  <span class='va'>Data</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span>date <span class='op'>=</span> <span class='va'>date</span>, <span class='va'>AA</span>, <span class='va'>BB</span>, <span class='va'>CC</span><span class='op'>)</span>
  <span class='va'>Data</span> <span class='op'>=</span> <span class='fu'>dplyr</span><span class='fu'>::</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span><span class='va'>Data</span>, reg <span class='op'>=</span> <span class='fu'>dplyr</span><span class='fu'>::</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/if_else.html'>if_else</a></span><span class='op'>(</span><span class='va'>AA</span> <span class='op'>&gt;</span> <span class='fu'><a href='https://rdrr.io/r/stats/median.html'>median</a></span><span class='op'>(</span><span class='va'>AA</span><span class='op'>)</span>, <span class='fl'>1</span>, <span class='fl'>0</span><span class='op'>)</span><span class='op'>)</span>
 
- <span class='co'># estimate VAR</span>
+ <span class='co'># estimate regime-dependent VAR</span>
   <span class='va'>rvar</span> <span class='op'>=</span>
     <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'>RVAR</span><span class='op'>(</span>
       data <span class='op'>=</span> <span class='va'>Data</span>,
