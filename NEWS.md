@@ -1,6 +1,7 @@
 # Sovereign: State-Dependent Empirical Analysis  
 
 ## Version 1.1.0   
+(2021-06-01)
 
 - Major updates
     - Include COVID shock correction a la Lenza and Primiceri (2020)
