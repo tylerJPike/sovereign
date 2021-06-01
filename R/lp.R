@@ -213,32 +213,32 @@ LP = function(
 
   # function warnings
   if(!is.numeric(p) | p %% 1 != 0){
-    errorCondition('p must be an integer')
+    stop('p must be an integer')
   }
   if(!is.null(lag.ic)){
     if(!lag.ic %in% c('BIC','AIC')){
-      errorCondition("lag.ic must be either 'BIC', 'AIC', or NULL")
+      stop("lag.ic must be either 'BIC', 'AIC', or NULL")
     }
   }
   if(!is.null(lag.max)){
     if(lag.max %% 1 != 0){
-      errorCondition('lag.max must be an integer if IC-based lag selection is used')
+      stop('lag.max must be an integer if IC-based lag selection is used')
     }
   }
   if(!type %in% c('none', 'const', 'trend', 'both')){
-    errorCondition('type must be one of the following strings: "none", "const", "trend", "both"')
+    stop('type must be one of the following strings: "none", "const", "trend", "both"')
   }
   if(!is.matrix(data) & !is.data.frame(data)){
-    errorCondition('data must be a matrix or data.frame')
+    stop('data must be a matrix or data.frame')
   }
   if(!is.numeric(p) | p %% 1 != 0){
-    errorCondition('p must be an integer')
+    stop('p must be an integer')
   }
   if(!freq %in% c('day','week','month','quarter','year')){
-    errorCondition("freq must be one of the following strings: 'day','week','month','quarter','year'")
+    stop("freq must be one of the following strings: 'day','week','month','quarter','year'")
   }
 
- # estimate LP
+  # estimate LP
   if(!is.null(lag.ic)){
 
     ic.scores = vector(length = lag.max+1)
@@ -288,10 +288,13 @@ LP = function(
     # return IC minimizing VAR
     min.ic = which.min(ic.scores)
     model = models[[min.ic]]
+
+    class(model) = 'LP'
     return(model)
 
   }else{
-    return(
+
+    model =
       LP_estimate(
         data,
         p = p,
@@ -302,7 +305,10 @@ LP = function(
         NW_lags = NW_lags,
         NW_prewhite = NW_prewhite
       )
-    )
+
+    class(model) = 'LP'
+    return(model)
+
   }
 
 }
@@ -598,29 +604,29 @@ RLP = function(
 
   # function warnings
   if(!is.numeric(p) | p %% 1 != 0){
-    errorCondition('p must be an integer')
+    stop('p must be an integer')
   }
   if(!is.null(lag.ic)){
     if(!lag.ic %in% c('BIC','AIC')){
-      errorCondition("lag.ic must be either 'BIC', 'AIC', or NULL")
+      stop("lag.ic must be either 'BIC', 'AIC', or NULL")
     }
   }
   if(!is.null(lag.max)){
     if(lag.max %% 1 != 0){
-      errorCondition('lag.max must be an integer if IC-based lag selection is used')
+      stop('lag.max must be an integer if IC-based lag selection is used')
     }
   }
   if(!is.matrix(data) & !is.data.frame(data)){
-    errorCondition('data must be a matrix or data.frame')
+    stop('data must be a matrix or data.frame')
   }
   if(!is.numeric(p) | p %% 1 != 0){
-    errorCondition('p must be an integer')
+    stop('p must be an integer')
   }
   if(!freq %in% c('day','week','month','quarter','year')){
-    errorCondition("freq must be one of the following strings: 'day','week','month','quarter','year'")
+    stop("freq must be one of the following strings: 'day','week','month','quarter','year'")
   }
   if(!type %in% c('none', 'const', 'trend', 'both')){
-    errorCondition('type must be one of the following strings: "none", "const", "trend", "both"')
+    stop('type must be one of the following strings: "none", "const", "trend", "both"')
   }
 
 
@@ -688,10 +694,13 @@ RLP = function(
     # return IC minimizing VAR
     min.ic = which.min(ic.scores)
     model = models[[min.ic]]
+
+    class(model) = 'RLP'
     return(model)
 
   }else{
-    return(
+
+    model =
       RLP_estimate(
         data,
         p = p,
@@ -703,7 +712,10 @@ RLP = function(
         NW_lags = NW_lags,
         NW_prewhite = NW_prewhite
       )
-    )
+
+    class(model) = 'RLP'
+
+    return(model)
   }
 
 }

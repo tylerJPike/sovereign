@@ -44,10 +44,10 @@ regimes = function(
 
   # function warnings
   if(!is.matrix(data) & !is.data.frame(data)){
-    errorCondition('data must be a matrix or data.frame')
+    stop('data must be a matrix or data.frame')
   }
   if(!is.null(regime.n) & !is.numeric(regime.n)){
-    errorCondition('regime.n must be a positive integer or NULL')
+    stop('regime.n must be a positive integer or NULL')
   }
 
   # cast as data frame if ts, xts, or zoo object
@@ -57,7 +57,7 @@ regimes = function(
 
   # check for BP method
   if(method == 'bp' & ncol(dplyr::select(data, -date)) > 1){
-    errorCondition("The 'BP' method can only use univariate time series to determine regimes.")
+    stop("The 'BP' method can only use univariate time series to determine regimes.")
   }
 
   # clean data

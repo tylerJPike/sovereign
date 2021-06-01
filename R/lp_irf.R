@@ -49,10 +49,10 @@ lp_irf = function(
 
   # function warnings
   if(!is.numeric(CI) | length(CI) != 2 | min(CI) < 0 | max(CI) > 1 | is.na(sum(CI))){
-    errorCondition('CI must be a two element numeric vector bound [0,1]')
+    stop('CI must be a two element numeric vector bound [0,1]')
   }
   if(!'H_1' %in% names(lp$model)){
-    errorCondition('The Lp object must have more than one horizon to generate impulse responses')
+    stop('The Lp object must have more than one horizon to generate impulse responses')
   }
 
   # function variables
@@ -162,7 +162,7 @@ rlp_irf = function(
 
   # function warnings
   if(!is.numeric(CI) | length(CI) != 2 | min(CI) < 0 | max(CI) > 1 | is.na(sum(CI))){
-    errorCondition('CI must be a two element numeric vector bound [0,1]')
+    stop('CI must be a two element numeric vector bound [0,1]')
   }
 
   # set regime values

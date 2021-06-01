@@ -13,9 +13,9 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(error = FALSE)
 ```
 
-It is well understood that almost every economic system - and more broadly, any system inherently driven by humans - is state-dependent. The sovereign package introduces a set of tools for conducting state-dependent (i.e. regime-dependent) empirical analysis, namely state-dependent forecasting, impulse response analysis, and forecast error variance decomposition. This introduction will walk through an analysis of a small macroeconomic system, including US inflation, output gap, and monetary policy. While considering two state-dependent regimes, the first based on NBER recessions, the second based on the sovereign package's own estimation.
+It is well understood that almost every economic system - and more broadly, any system inherently driven by humans - is state-dependent. The sovereign package introduces a set of tools for conducting state-dependent (i.e. regime-dependent) empirical analysis, namely state-dependent forecasting, impulse response analysis, forecast error and historical variance decomposition. This introduction will walk through an analysis of a small macroeconomic system, including US inflation, output gap, and monetary policy. While considering two state-dependent regimes, the first based on NBER recessions, the second based on the sovereign package's own estimation.
 
-The vignette will proceed by 1) preparing the data, both covariates and regimes, 2) estimating forecasts, impulse responses, and forecast error variance decomposition via a VAR and a threshold VAR (that is, a state-dependent VAR), 3)  estimating forecasts and impulse responses via local projections and threshold local projections, and 4) concluding. 
+The vignette will proceed by 1) preparing the data, both covariates and regimes, 2) estimating forecasts, impulse responses, forecast error and historical variance decomposition via a VAR and a regime-dependent VAR, 3)  estimating forecasts and impulse responses via local projections and regime-dependent local projections, and 4) concluding. 
 
 ## 0. Environment
 
@@ -77,6 +77,7 @@ I = data.frame(FEDFUNDS, date = zoo::index(FEDFUNDS)) %>%
 Data = 
   dplyr::inner_join(Y, I, by = 'date') %>%
   dplyr::arrange(date) %>%
+  dplyr::filter(lubridate::year(date) < 2020) %>%
   na.omit()
 
 head(Data)
@@ -110,6 +111,7 @@ While a user may name their regime column anything they would like, for expositi
 Second, we will assign two regimes via the k-means clustering algorithm. 
 
 ```{r, message = F}
+
 # let sovereign determine economic states via k-means clustering
 Data.kmeans = 
   sovereign::regimes(
@@ -134,6 +136,7 @@ The first set of analysis we will conduct is a standard single regime VAR, follo
 First we estimate the standard VAR over our macro-system and then visualize the resulting one-step ahead forecasts (left panel) and errors (right panel). 
 
 ```{r, message=F, warning=F, fig.show="hold", out.width="50%"}
+
 # estimate VAR
 var =
     sovereign::VAR(
@@ -152,35 +155,48 @@ sovereign::plot_error(var$residuals[['H_1']])
 Second we estimate the associate impulse response functions, bootstrapped confidence intervals, and plot them. Additionally, here we will note that all sovereign plots are based on ggplot2, and the underlying plot objects are the return values for any sovereign plotting function.  
 
 ```{r, message = F, warning=F, fig.align='center'}
+
 # estimate IRF
-irf =
+var.irf =
     sovereign::var_irf(
         var,
         bootstraps.num = 10,
         CI = c(0.05,0.95))
 
 # plot IRF
-sovereign::plot_irf(irf)
+sovereign::plot_irf(var.irf)
 ```
 
-Lastly, we estimate the forecast error variance decomposition and plot the system of decomposition.  
+Second, we estimate the forecast error variance decomposition and plot the system of decomposition.  
 
 ```{r, message = F, warning=F, fig.align='center'}
+
 # estimate forecast error variance decomposition
-fevd =
+var.fevd =
     sovereign::var_fevd(
         var,
         horizon = 10)
 
 # plot FEVD
-sovereign::plot_fevd(fevd)
+sovereign::plot_fevd(var.fevd)
 ```
 
-### 2.1 Multi-regime VAR
+Lastly, we visualize the error variance through time with the historical decomposition. 
+
+```{r, message = F, warning=F, fig.align='center'}
+
+# estimate historical decomposition
+var.hd = sovereign::var_hd(var)
+
+# plot HD
+sovereign::plot_hd(var.hd)
+```
+
+### 2.2 Multi-regime VAR
 
 We next mirror the analysis conducted with the single-regime VAR, but acknowledging the two different phases to the business cycle: expansions and recessions. 
 
-First we estimate the threshold VAR, resulting in an expectation function with different parameters based on the conditioning state. That is, we will estimate one VAR per regime, and package these discrete models as one `threshold_VAR` object (list, not a true S3 object).
+First we estimate the regime-dependent VAR, resulting in an expectation function with different parameters based on the conditioning state. That is, we will estimate one VAR per regime, and package these discrete models as one `RVAR` object - taking the type of a list.
 
 ```{r, message=F, warning=F, fig.show="hold", out.width="50%"}
 
@@ -199,7 +215,8 @@ sovereign::plot_forecast(rvar$forecasts[['H_1']])
 # plot residuals (left panel)
 sovereign::plot_error(rvar$residuals[['H_1']])
 ```
-We then estimate impulse response functions to describe the dynamics of the system within each economic state. 
+
+We then estimate impulse response functions to describe the dynamics of the system within each economic state, 
 
 ```{r, message=F, warning=F, fig.show="hold", out.width="50%"}
 
@@ -219,7 +236,7 @@ sovereign::plot_irf(rvar.irf[['regime_recession']])
 
 ```
 
-And lastly we estimate and visualize the forecast error variance decomposition by state. 
+estimate and visualize the forecast error variance decomposition by state, 
 
 ```{r, message=F, warning=F, fig.show="hold", out.width="50%"}
 
@@ -236,6 +253,19 @@ sovereign::plot_fevd(rvar.fevd[['regime_expansion']])
 sovereign::plot_fevd(rvar.fevd[['regime_recession']])
 
 ```
+
+and analyze the historical decomposition of the regime-dependent model.
+
+```{r, message=F, warning=F}
+
+# estimate historical decomposition
+rvar.hd = sovereign::rvar_hd(rvar)
+
+# plot hd
+sovereign::plot_hd(rvar.hd)
+
+```
+
 Then, upon inspection of both the impulse response functions and forecast error variance decomposition, it is clear that the macroeconomic system behaves differently based on economic state. We will next extend the analysis to assess if there is state-dependent differences in the system, when using local projections. 
 
 ## 3. Local Projection analysis 

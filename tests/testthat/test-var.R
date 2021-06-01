@@ -4,7 +4,7 @@ test_that("VAR workflow", {
   AA = c(1:100) + rnorm(100)
   BB = c(1:100) + rnorm(100)
   CC = AA + BB + rnorm(100)
-  date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+  date = seq.Date(from = as.Date('2015-01-01'), by = 'month', length.out = 100)
   Data = data.frame(date = date, AA, BB, CC)
 
 
@@ -74,5 +74,25 @@ test_that("VAR workflow", {
   plot.fevd = plot_fevd(fevd)
 
   expect_true(is.list(plot.fevd))
+
+  # estimate hd
+  hd =
+    var_hd(var)
+
+  expect_true(is.data.frame(hd))
+
+  # plot hd
+  plot.hd = plot_hd(hd)
+
+  expect_true(is.list(plot.hd))
+
+  # test covid correction
+  var.corrected = covid_volatility_correction(var)
+
+  expect_true(is.list(var.corrected))
+  expect_true(is.list(var.corrected$model))
+  expect_true(is.list(var.corrected$forecasts))
+  expect_true(is.list(var.corrected$residuals))
+  expect_true(is.vector(var.corrected$correction.factors))
 
 })

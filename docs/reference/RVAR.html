@@ -37,10 +37,20 @@
 <script src="../pkgdown.js"></script>
 
 
+<!-- docsearch -->
+<script src="../docsearch.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/docsearch.js/2.6.3/docsearch.min.css" integrity="sha256-QOSRU/ra9ActyXkIBbiIB144aDBdtvXBcNc3OTNuX/Q=" crossorigin="anonymous" />
+<link href="../docsearch.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+
 
 
 <meta property="og:title" content="Estimate regime-dependent VAR — RVAR" />
-<meta property="og:description" content="Estimate regime-dependent VAR" />
+<meta property="og:description" content="Estimate a regime-dependent VAR (i.e. a state-dependent VAR), with an exogenous state indicator, of the specification:
+$$Y_t = X \beta_s + \epsilon_t$$
+where t is the time index, Y is the set of outcome vectors, X the design matrix (of p lagged values of Y), and
+s is a mutually exclusive state of the world observed at time t-1. When the regime vector is not supplied by the user, then a two-state
+regime series is estimated via random forest." />
 
 
 
@@ -82,7 +92,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">sovereign</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1</span>
       </span>
     </div>
 
@@ -90,20 +100,20 @@
       <ul class="nav navbar-nav">
         <li>
   <a href=".././index.html">
-    <span class="fa fa-home"></span>
+    <span class="fas fa-home"></span>
      
   </a>
 </li>
 <li>
   <a href=".././reference/index.html">
-    <span class="fa fa-cog"></span>
+    <span class="fas fa-cog"></span>
      
     Tools
   </a>
 </li>
 <li>
   <a href=".././articles/getting_started.html">
-    <span class="fa fa-cogs"></span>
+    <span class="fas fa-cogs"></span>
      
     Workflow
   </a>
@@ -111,12 +121,18 @@
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="https://github.com/tylerJPike/sovereign">
-    <span class="fa fa-github fa-lg"></span>
+  <a href="https://github.com/tylerJPike/sovereign/">
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
       </ul>
+      
+      <form class="navbar-form navbar-right hidden-xs hidden-sm" role="search">
+        <div class="form-group">
+          <input type="search" class="form-control" name="search-input" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off">
+        </div>
+      </form>
       
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
@@ -135,7 +151,11 @@
     </div>
 
     <div class="ref-description">
-    <p>Estimate regime-dependent VAR</p>
+    <p>Estimate a regime-dependent VAR (i.e. a state-dependent VAR), with an exogenous state indicator, of the specification:
+$$Y_t = X \beta_s + \epsilon_t$$
+where t is the time index, Y is the set of outcome vectors, X the design matrix (of p lagged values of Y), and
+s is a mutually exclusive state of the world observed at time t-1. When the regime vector is not supplied by the user, then a two-state
+regime series is estimated via random forest.</p>
     </div>
 
     <pre class="usage"><span class='fu'>RVAR</span><span class='op'>(</span>
@@ -199,14 +219,21 @@
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>list of lists, each regime returns its own list with elements <code>data</code>, <code>model</code>, <code>forecasts</code>, <code>residuals</code></p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>The regime-dependent VAR is a generalization of the popular threshold VAR - which trades off estimating a threshold value for an
+endogenous variable for accepting an exogenous regime that can be based on information from inside or outside of the system, with or without parametric
+assumptions, and with or without timing restrictions.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='VAR.html'>VAR()</a></code></p>
 <p><code><a href='var_irf.html'>var_irf()</a></code></p>
 <p><code><a href='var_fevd.html'>var_fevd()</a></code></p>
+<p><code><a href='var_hd.html'>var_hd()</a></code></p>
 <p><code>RVAR()</code></p>
 <p><code><a href='rvar_irf.html'>rvar_irf()</a></code></p>
-<p><code><a href='rvar_fevd.html'>rvar_fevd()</a></code></p></div>
+<p><code><a href='rvar_fevd.html'>rvar_fevd()</a></code></p>
+<p><code><a href='rvar_hd.html'>rvar_hd()</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
@@ -219,7 +246,7 @@
  <span class='va'>Data</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span>date <span class='op'>=</span> <span class='va'>date</span>, <span class='va'>AA</span>, <span class='va'>BB</span>, <span class='va'>CC</span><span class='op'>)</span>
  <span class='va'>Data</span> <span class='op'>=</span> <span class='fu'>dplyr</span><span class='fu'>::</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span><span class='va'>Data</span>, reg <span class='op'>=</span> <span class='fu'>dplyr</span><span class='fu'>::</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/if_else.html'>if_else</a></span><span class='op'>(</span><span class='va'>AA</span> <span class='op'>&gt;</span> <span class='fu'><a href='https://rdrr.io/r/stats/median.html'>median</a></span><span class='op'>(</span><span class='va'>AA</span><span class='op'>)</span>, <span class='fl'>1</span>, <span class='fl'>0</span><span class='op'>)</span><span class='op'>)</span>
 
- <span class='co'># estimate VAR</span>
+ <span class='co'># estimate regime-dependent VAR</span>
   <span class='va'>rvar</span> <span class='op'>=</span>
     <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'>RVAR</span><span class='op'>(</span>
       data <span class='op'>=</span> <span class='va'>Data</span>,
@@ -235,6 +262,9 @@
 
 <span class='co'># forecast error variance decomposition</span>
 <span class='va'>rvar.fevd</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='rvar_fevd.html'>rvar_fevd</a></span><span class='op'>(</span><span class='va'>rvar</span><span class='op'>)</span>
+
+<span class='co'># historical shock decomposition</span>
+<span class='va'>rvar.hd</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='rvar_hd.html'>rvar_hd</a></span><span class='op'>(</span><span class='va'>rvar</span><span class='op'>)</span>
 
 <span class='co'># }</span>
 
@@ -261,6 +291,23 @@
    </div>
 
   
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docsearch.js/2.6.1/docsearch.min.js" integrity="sha256-GKvGqXDznoRYHCwKXGnuchvKSwmx9SRMrZOTh2g4Sb0=" crossorigin="anonymous"></script>
+<script>
+  docsearch({
+    
+    
+    apiKey: '4a0d0a15b437a7d39695290aace8b645',
+    indexName: 'sovereign',
+    inputSelector: 'input#search-input.form-control',
+    transformData: function(hits) {
+      return hits.map(function (hit) {
+        hit.url = updateHitURL(hit);
+        return hit;
+      });
+    }
+  });
+</script>
+
 
 
   </body>

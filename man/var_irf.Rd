@@ -19,7 +19,8 @@ var_irf(var, horizon = 10, bootstraps.num = 100, CI = c(0.1, 0.9))
 list object with elements \code{irfs}, \code{ci.lower}, and \code{ci.upper}; all elements are long-form data.frames
 }
 \description{
-Estimate impulse response functions
+Estimate impulse responses with contemporaneous impact restrictions via Cholesky decomposition -
+taking the variable ordering present in the VAR object.
 }
 \examples{
 \donttest{
@@ -46,6 +47,9 @@ var.irf = sovereign::var_irf(var)
 # forecast error variance decomposition
 var.fevd = sovereign::var_fevd(var)
 
+# historical shock decomposition
+var.hd = sovereign::var_hd(var)
+
 }
 
 }
@@ -56,9 +60,13 @@ var.fevd = sovereign::var_fevd(var)
 
 \code{\link[=var_fevd]{var_fevd()}}
 
+\code{\link[=var_hd]{var_hd()}}
+
 \code{\link[=RVAR]{RVAR()}}
 
 \code{\link[=rvar_irf]{rvar_irf()}}
 
 \code{\link[=rvar_fevd]{rvar_fevd()}}
+
+\code{\link[=rvar_hd]{rvar_hd()}}
 }

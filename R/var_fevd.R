@@ -103,9 +103,11 @@ fevd = function(Phi,  Sig, lag = 4)
 #' @seealso [VAR()]
 #' @seealso [var_irf()]
 #' @seealso [var_fevd()]
+#' @seealso [var_hd()]
 #' @seealso [RVAR()]
 #' @seealso [rvar_irf()]
 #' @seealso [rvar_fevd()]
+#' @seealso [rvar_hd()]
 #'
 #' @examples
 #' \donttest{
@@ -131,6 +133,9 @@ fevd = function(Phi,  Sig, lag = 4)
 #'
 #' # forecast error variance decomposition
 #' var.fevd = sovereign::var_fevd(var)
+#' 
+#' # historical shock decomposition
+#' var.hd = sovereign::var_hd(var)
 #'
 #' }
 #'
@@ -144,7 +149,7 @@ var_fevd = function(
 
   # function warnings
   if(!is.numeric(horizon) | horizon %% 1 != 0 | horizon <= 0){
-    errorCondition('horizon must be a positive integer')
+    stop('horizon must be a positive integer')
   }
 
   # function variables
@@ -197,9 +202,11 @@ var_fevd = function(
 #' @seealso [VAR()]
 #' @seealso [var_irf()]
 #' @seealso [var_fevd()]
+#' @seealso [var_hd()]
 #' @seealso [RVAR()]
 #' @seealso [rvar_irf()]
 #' @seealso [rvar_fevd()]
+#' @seealso [rvar_hd()]
 #'
 #' @examples
 #' \donttest{
@@ -228,6 +235,9 @@ var_fevd = function(
 #'
 #' # forecast error variance decomposition
 #' rvar.fevd = sovereign::rvar_fevd(rvar)
+#' 
+#' # historical shock decomposition
+#' rvar.hd = sovereign::rvar_hd(rvar)
 #'
 #' }
 #'
@@ -242,7 +252,7 @@ rvar_fevd = function(
 
   # function warnings
   if(!is.numeric(horizon) | horizon %% 1 != 0 | horizon <= 0){
-    errorCondition('horizon must be a positive integer')
+    stop('horizon must be a positive integer')
   }
 
   # function variables
