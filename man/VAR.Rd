@@ -11,7 +11,9 @@ VAR(
   type = "const",
   p = 1,
   lag.ic = NULL,
-  lag.max = NULL
+  lag.max = NULL,
+  structure = "short",
+  instrument = NULL
 )
 }
 \arguments{
@@ -28,9 +30,13 @@ VAR(
 \item{lag.ic}{string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')}
 
 \item{lag.max}{int: maximum number of lags to test in lag selection}
+
+\item{structure}{string: type of structural identification strategy to use in model analysis (NULL, 'short', or 'IV')}
+
+\item{instrument}{tring: name(s) of instrumental variable(s) contained in the data matrix}
 }
 \value{
-list object with elements \code{data}, \code{model}, \code{forecasts}, \code{residuals}
+list object with elements \code{data}, \code{model}, \code{forecasts}, \code{residuals}, \code{structure}, and \code{instrument}
 }
 \description{
 Estimate VAR

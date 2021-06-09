@@ -9,7 +9,9 @@ VAR_estimation = function(
   p = 1,               # int: lags
   horizon = 10,        # int: forecast horizons
   freq = 'month',      # string: frequency of data (day, week, month, quarter, year)
-  type = 'const'       # string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
+  type = 'const',      # string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
+  structure = 'short', # string: type of structural identification strategy to use in model analysis (NULL, 'short', or 'IV')
+  instrument = NULL    # string: name(s) of instrumental variable(s) contained in the data matrix
 ){
 
   # function warnings
@@ -29,6 +31,14 @@ VAR_estimation = function(
   # cast as data frame if ts, xts, or zoo object
   if(stats::is.ts(data) | xts::is.xts(data) | zoo::is.zoo(data)){
     data = data.frame(date = zoo::index(date), data)
+  }
+
+  # set aside instruments
+  if(!is.null(instrument)){
+    data.instrument = dplyr::select(data, date, instrument)
+    data = dplyr::select(data, -instrument)
+  }else{
+    data.instrument = NULL
   }
 
   # function variables
@@ -170,10 +180,13 @@ VAR_estimation = function(
       model = model,
       data = data,
       forecasts = forecasts,
-      residuals = residuals
+      residuals = residuals,
+      structure = structure,
+      instrument = data.instrument
     )
   )
 }
+
 
 #' Estimate VAR
 #'
@@ -184,8 +197,10 @@ VAR_estimation = function(
 #' @param p         int: lags
 #' @param lag.ic    string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
 #' @param lag.max   int: maximum number of lags to test in lag selection
+#' @param structure   string: type of structural identification strategy to use in model analysis (NULL, 'short', or 'IV')
+#' @param instrument  tring: name(s) of instrumental variable(s) contained in the data matrix
 #'
-#' @return list object with elements `data`, `model`, `forecasts`, `residuals`
+#' @return list object with elements `data`, `model`, `forecasts`, `residuals`, `structure`, and `instrument`
 #'
 #' @seealso [VAR()]
 #' @seealso [var_irf()]
@@ -236,7 +251,9 @@ VAR = function(
   type = 'const',      # string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
   p = 1,               # int: lags
   lag.ic = NULL,       # string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
-  lag.max = NULL       # int: maximum number of lags to test in lag selection
+  lag.max = NULL,      # int: maximum number of lags to test in lag selection
+  structure = 'short', # string: type of structural identification strategy to use in model analysis (NULL, 'short', or 'IV')
+  instrument = NULL    # string: name(s) of instrumental variable(s) contained in the data matrix
 ){
 
   # function warnings
@@ -254,6 +271,7 @@ VAR = function(
     }
   }
 
+  # VAR estimation
   if(!is.null(lag.ic)){
 
     ic.scores = vector(length = lag.max+1)
@@ -268,7 +286,9 @@ VAR = function(
             p = p,
             horizon = horizon,
             freq = freq,
-            type = type
+            type = type,
+            structure = structure,
+            instrument = instrument
           )
 
         # calculate IC
@@ -298,12 +318,14 @@ VAR = function(
 
     model =
       VAR_estimation(
-          data = data,
-          p = p,
-          horizon = horizon,
-          freq = freq,
-          type = type
-        )
+        data = data,
+        p = p,
+        horizon = horizon,
+        freq = freq,
+        type = type,
+        structure = structure,
+        instrument = instrument
+      )
 
     class(model) = 'VAR'
     return(model)
@@ -311,6 +333,7 @@ VAR = function(
   }
 
 }
+
 
 #-------------------------------------------------------------------
 # Function to estimate threshold VAR
