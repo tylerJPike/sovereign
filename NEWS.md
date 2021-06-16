@@ -3,10 +3,15 @@
 ## Version 1.2.0
 
 - Major updates
-    - Include ability to use cast VAR as Proxy SVAR (with multiple instruments)
+    - VARs may now be estimated as Proxy-SVARs (with multiple instruments)
+    - IRF functions now support
+      - The choice between standard and Wild bootstrapping techniques
+      - The choice between no structural restrictions, short-term restrictions (via Cholesky decomposition), or instrumental variable restrictions
+      - The choice run bootstrapping routines in parallel for greater computational efficiency  
    
 - Bug fixes
     - plot_irf() plots all targets by default 
+    - test-threvhold_var.R changed to test-threshold_var.R
 
 ## Version 1.1.0   
 (2021-06-01)
