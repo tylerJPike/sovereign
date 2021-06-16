@@ -14,40 +14,13 @@ VAR_estimation = function(
   instrument = NULL    # string: name(s) of instrumental variable(s) contained in the data matrix
 ){
 
-  # function warnings
-  if(!is.matrix(data) & !is.data.frame(data)){
-    stop('data must be a matrix or data.frame')
-  }
-  if(!is.numeric(p) | p %% 1 != 0){
-    stop('p must be an integer')
-  }
-  if(!is.numeric(horizon) | horizon %% 1 != 0 | horizon <= 0){
-    stop('horizon must be a positive integer')
-  }
-  if(!freq %in% c('day','week','month','quarter','year')){
-    stop("freq must be one of the following strings: 'day','week','month','quarter','year'")
-  }
-
-  # cast as data frame if ts, xts, or zoo object
-  if(stats::is.ts(data) | xts::is.xts(data) | zoo::is.zoo(data)){
-    data = data.frame(date = zoo::index(date), data)
-  }
-
-  # set aside instruments
-  if(!is.null(instrument)){
-    data.instrument = dplyr::select(data, date, instrument)
-    data = dplyr::select(data, -instrument)
-  }else{
-    data.instrument = NULL
-  }
-
   # function variables
   term = estimate = std.error = NULL
 
   # declare regressors
   regressors = colnames(dplyr::select(data, -date))
 
-  # create regressors
+  # create regressor lags
   Y = data.frame(data) %>%
     n.lag(lags = p)
 
@@ -65,7 +38,7 @@ VAR_estimation = function(
 
       X = Y %>%
         dplyr::select(
-          dplyr::contains('.l'), target = target,
+          dplyr::contains('.l'), target = dplyr::all_of(target),
           dplyr::contains('const'), dplyr::contains('trend'))
 
       # estimate OLS
@@ -180,12 +153,11 @@ VAR_estimation = function(
       model = model,
       data = data,
       forecasts = forecasts,
-      residuals = residuals,
-      structure = structure,
-      instrument = data.instrument
+      residuals = residuals
     )
   )
 }
+
 
 
 #' Estimate VAR
@@ -270,6 +242,31 @@ VAR = function(
       stop('lag.max must be an integer if IC-based lag selection is used')
     }
   }
+  if(!is.matrix(data) & !is.data.frame(data)){
+    stop('data must be a matrix or data.frame')
+  }
+  if(!is.numeric(p) | p %% 1 != 0){
+    stop('p must be an integer')
+  }
+  if(!is.numeric(horizon) | horizon %% 1 != 0 | horizon <= 0){
+    stop('horizon must be a positive integer')
+  }
+  if(!freq %in% c('day','week','month','quarter','year')){
+    stop("freq must be one of the following strings: 'day','week','month','quarter','year'")
+  }
+
+  # cast as data frame if ts, xts, or zoo object
+  if(stats::is.ts(data) | xts::is.xts(data) | zoo::is.zoo(data)){
+    data = data.frame(date = zoo::index(date), data)
+  }
+
+  # set aside instruments
+  if(!is.null(instrument)){
+    data.instrument = dplyr::select(data, date, dplyr::all_of(instrument))
+    data = dplyr::select(data, -dplyr::all_of(instrument))
+  }else{
+    data.instrument = NULL
+  }
 
   # VAR estimation
   if(!is.null(lag.ic)){
@@ -286,9 +283,7 @@ VAR = function(
             p = p,
             horizon = horizon,
             freq = freq,
-            type = type,
-            structure = structure,
-            instrument = instrument
+            type = type
           )
 
         # calculate IC
@@ -311,6 +306,10 @@ VAR = function(
     min.ic = which.min(ic.scores)
     model = models[[min.ic]]
 
+    # add structure
+    model$structure = structure
+    model$instrument = data.instrument
+
     class(model) = 'VAR'
     return(model)
 
@@ -322,10 +321,12 @@ VAR = function(
         p = p,
         horizon = horizon,
         freq = freq,
-        type = type,
-        structure = structure,
-        instrument = instrument
+        type = type
       )
+
+    # add structure
+    model$structure = structure
+    model$instrument = data.instrument
 
     class(model) = 'VAR'
     return(model)
