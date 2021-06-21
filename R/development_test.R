@@ -1,3 +1,104 @@
+
+TVAR = function(
+  data,                # data.frame, matrix, ts, xts, zoo: Endogenous regressors
+  threshold,           # string: variable to estimate threshold values
+  horizon = 10,        # int: forecast horizons
+  freq = 'month',      # string: frequency of data (day, week, month, quarter, year)
+  type = 'const',      # string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
+  p = 1,               # int: lags
+  lag.ic = NULL,       # string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
+  lag.max = NULL,      # int: maximum number of lags to test in lag selection
+  structure = 'short', # string: type of structural identification strategy to use in model analysis (NULL, 'short', or 'IV')
+  instrument = NULL,   # string: name of instrumental variable contained in the data matrix
+  instrumented = NULL  # string: name of variable to be instrumented in IV and IV-short procedure; default is the first non-date variable in data
+){
+
+  # function warnings
+  if(!is.numeric(p) | p %% 1 != 0){
+    stop('p must be an integer')
+  }
+  if(!is.null(lag.ic)){
+    if(!lag.ic %in% c('BIC','AIC')){
+      stop("lag.ic must be either 'BIC', 'AIC', or NULL")
+    }
+  }
+  if(!is.null(lag.max)){
+    if(lag.max %% 1 != 0){
+      stop('lag.max must be an integer if IC-based lag selection is used')
+    }
+  }
+  if(!is.matrix(data) & !is.data.frame(data)){
+    stop('data must be a matrix or data.frame')
+  }
+  if(!is.numeric(p) | p %% 1 != 0){
+    stop('p must be an integer')
+  }
+  if(!is.numeric(horizon) | horizon %% 1 != 0 | horizon <= 0){
+    stop('horizon must be a positive integer')
+  }
+  if(!freq %in% c('day','week','month','quarter','year')){
+    stop("freq must be one of the following strings: 'day','week','month','quarter','year'")
+  }
+  if(!structure %in% c('short', 'IV', 'IV-short') & !is.null(structure)){
+    stop("strucutre must be one of 'strucutre', 'IV', 'IV-short', or NULL.")
+  }
+  if(!is.null(instrument)){
+    if(!instrument %in% colnames(data)){
+      stop("instrument must be the name of a variable found in data.")
+    }
+  }
+  if(!is.null(instrumented)){
+    if(!instrumented %in% colnames(data)){
+      stop("instrumented must be the name of a variable found in data.")
+    }
+  }
+
+  # cast as data frame if ts, xts, or zoo object
+  if(stats::is.ts(data) | xts::is.xts(data) | zoo::is.zoo(data)){
+    data = data.frame(date = zoo::index(date), data)
+  }
+
+  # set aside instruments
+  if(!is.null(instrument)){
+    data.instrument = dplyr::select(data, date, dplyr::all_of(instrument))
+    data = dplyr::select(data, -dplyr::all_of(instrument))
+  }else{
+    data.instrument = NULL
+  }
+
+  # detect variable to be instrumented
+  if(is.null(instrumented)){
+    var_to_instrument = colnames(dplyr::select(data, -date))[1]
+  }else{
+    var_to_instrument = instrumented
+  }
+
+
+  for(t in unique(data[,c(threshold)])){
+
+    data.threshold = data %>%
+      mutate(t_regime = if_else(threshold >= t, 1, 0))
+
+    rvar =
+      RVAR(
+        data = data.threshold,
+        horizon = horizon,
+        freq = freq,
+        type = type,
+        p = p,
+        lag.ic = lag.ic,
+        lag.max = lag.max,
+        regime = t_regime,
+      )
+
+    rvar.ll = rvar$ll
+
+  }
+
+
+}
+
+
 VAR = function(
   data,                # data.frame, matrix, ts, xts, zoo: Endogenous regressors
   horizon = 10,        # int: forecast horizons
@@ -699,8 +800,4 @@ var =
 
 irf = var_irf(var, horizon = 20, bootstrap.type = 'wild', bootstrap.num = 10, bootstrap.parallel = TRUE)
 plot_irf(irf, shocks = 'PR')
-
-# var$structure = 'short'
-# irf = var_irf(var, horizon = 20, bootstrap.num = 100)
-# plot_irf(irf, shocks = 'PR')
 

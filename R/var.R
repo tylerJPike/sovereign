@@ -51,8 +51,10 @@ VAR_estimation = function(
       se = broom::tidy(model) %>% dplyr::select(term, std.error)
       se$y = target
 
+      ll = stats::logLik(model)
+
       # return results
-      return(list(coef = c, se = se))
+      return(list(coef = c, se = se, ll = ll))
     })
 
   # extract coefficients
@@ -62,14 +64,20 @@ VAR_estimation = function(
     tidyr::pivot_wider(values_from = coef, names_from = term)
 
 
-  # extract coefficients
+  # extract coefficients standard errors
   se =
     purrr::map(models, .f = function(X){return(X$se)}) %>%
     purrr::reduce(dplyr::bind_rows) %>%
     tidyr::pivot_wider(values_from = std.error, names_from = term)
 
+  # extract log likelihood
+  ll =
+    purrr::map(models, .f = function(X){return(X$ll)}) %>%
+    purrr::reduce(dplyr::bind_rows) %>%
+    sum()
+
   # package for return
-  model = list(coef = coef, se = se, p = p, freq = freq, horizon = horizon, type = type)
+  model = list(coef = coef, se = se, p = p, freq = freq, horizon = horizon, type = type, loglikelihood = ll)
 
   ### estimate forecasts -----------------------
   forecasts = list()
@@ -158,34 +166,36 @@ VAR_estimation = function(
   )
 }
 
-
-
-#' Estimate VAR
+#' Estimate VAR, SVAR, or Proxy-SVAR
 #'
-#' @param data      data.frame, matrix, ts, xts, zoo: Endogenous regressors
-#' @param horizon   int: forecast horizons
-#' @param freq      string: frequency of data ('day', 'week', 'month', 'quarter', or 'year')
-#' @param type      string: type of deterministic terms to add ('none', 'const', 'trend', or 'both')
-#' @param p         int: lags
-#' @param lag.ic    string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
-#' @param lag.max   int: maximum number of lags to test in lag selection
-#' @param structure   string: type of structural identification strategy to use in model analysis (NULL, 'short', or 'IV')
-#' @param instrument  tring: name(s) of instrumental variable(s) contained in the data matrix
 #'
-#' @return list object with elements `data`, `model`, `forecasts`, `residuals`, `structure`, and `instrument`
+#' @param data         data.frame, matrix, ts, xts, zoo: Endogenous regressors
+#' @param horizon      int: forecast horizons
+#' @param freq         string: frequency of data ('day', 'week', 'month', 'quarter', or 'year')
+#' @param type         string: type of deterministic terms to add ('none', 'const', 'trend', or 'both')
+#' @param p            int: lags
+#' @param lag.ic       string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
+#' @param lag.max      int: maximum number of lags to test in lag selection
+#' @param structure    string: type of structural identification strategy to use in model analysis (NULL, 'short', 'IV', or 'IV-short')
+#' @param instrument   string: name of instrumental variable contained in the data matrix
+#' @param instrumented string: name of variable to be instrumented in IV and IV-short procedure; default is the first non-date variable in data
+#'
+#' @return
+#' 1. data: data.frame with endogenous variables and 'date' column.
+#' 2. model: list with data.frame of model coefficients (in psuedo-companion form), data.frame of coefficient standard errors, integer of lags p, integer of horizons, string of frequency, string of type
+#' 3. forecasts: list of data.frames per horizon; data.frame with column for date (day the forecast was made), forecast.date (the date being forecasted), target (variable forecasted), and forecast
+#' 4. residuals: list of data.frames per horizon; data.frame of residuals
+#' 5. structure: string denoting which structural identification strategy will be used in analysis  (or NULL)
+#' 6. instrument: data.frame with 'date' column and 'instrument' column (or NULL)
+#' 7. instrumented: string denoting which column will be instrumted in 'IV' and 'IV-short' strategies (or NULL)
 #'
 #' @seealso [VAR()]
 #' @seealso [var_irf()]
 #' @seealso [var_fevd()]
 #' @seealso [var_hd()]
-#' @seealso [RVAR()]
-#' @seealso [rvar_irf()]
-#' @seealso [rvar_fevd()]
-#' @seealso [rvar_hd()]
 #'
 #' @examples
 #' \donttest{
-#'
 #'  # simple time series
 #'  AA = c(1:100) + rnorm(100)
 #'  BB = c(1:100) + rnorm(100)
@@ -202,16 +212,31 @@ VAR_estimation = function(
 #'       lag.ic = 'BIC',
 #'       lag.max = 4)
 #'
-#' # impulse response functions
-#' var.irf = sovereign::var_irf(var)
+#'   # impulse response functions
+#'   var.irf = sovereign::var_irf(var)
 #'
-#' # forecast error variance decomposition
-#' var.fevd = sovereign::var_fevd(var)
+#'   # forecast error variance decomposition
+#'   var.fevd = sovereign::var_fevd(var)
 #'
-#' # historical shock decomposition
-#' var.hd = sovereign::var_hd(var)
-#'
+#'   # historical shock decomposition
+#'   var.hd = sovereign::var_hd(var)
 #' }
+#'
+#' @details
+#' See Sims (1980) for details regarding the baseline vector-autoregression (VAR) model. The VAR may be augmented to become a structural VAR (SVAR) with one of three different structural identification strategies:
+#' 1) short-term impact restrictions via Cholesky decomposition, see Christiano et al (1999) for details **(structure = 'short')**
+#' 2) external instrument identification, i.e. a Proxy-SVAR strategy, see Mertens and Ravn (2013) for details **(structure = 'IV')**
+#' 3) or a combination of short-term and IV identification via Lunsford (2015) **(structure = 'IV-short')**
+#'
+#' Note that including structure does not change the estimation of model coefficients or forecasts, but does change impulse response functions, forecast error variance decomposition,
+#' and historical decompositions. Historical decompositions will not be available for models using the 'IV' structure. Additionally note that only one instrument may be used in this
+#' estimation routine.
+#'
+#' @references
+#' 1. Christiano, Lawrence, Martin Eichenbaum, and Charles Evans "[Monetary policy shocks: What have we learned and to what end?](https://www.sciencedirect.com/science/article/pii/S1574004899010058)" Handbook of Macroeconomics, Vol 1, Part A, 1999.
+#' 2. Lunsford, Kurt "[Identifying Structural VARs with a Proxy Variable and a Test for a Weak Proxy](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2699452#)" 2015.
+#' 3. Mertens, Karel and Morten Ravn "[The Dynamic Effects of Personal and Corporate Income Tax Changes in the United States](https://www.aeaweb.org/articles?id=10.1257/aer.103.4.1212)" 2013.
+#' 4. Sims, Christopher "[Macroeconomics and Reality](https://www.jstor.org/stable/1912017)" 1980.
 #'
 #' @export
 
@@ -225,7 +250,8 @@ VAR = function(
   lag.ic = NULL,       # string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
   lag.max = NULL,      # int: maximum number of lags to test in lag selection
   structure = 'short', # string: type of structural identification strategy to use in model analysis (NULL, 'short', or 'IV')
-  instrument = NULL    # string: name(s) of instrumental variable(s) contained in the data matrix
+  instrument = NULL,   # string: name of instrumental variable contained in the data matrix
+  instrumented = NULL  # string: name of variable to be instrumented in IV and IV-short procedure; default is the first non-date variable in data
 ){
 
   # function warnings
@@ -254,6 +280,19 @@ VAR = function(
   if(!freq %in% c('day','week','month','quarter','year')){
     stop("freq must be one of the following strings: 'day','week','month','quarter','year'")
   }
+  if(!structure %in% c('short', 'IV', 'IV-short') & !is.null(structure)){
+    stop("strucutre must be one of 'strucutre', 'IV', 'IV-short', or NULL.")
+  }
+  if(!is.null(instrument)){
+    if(!instrument %in% colnames(data)){
+      stop("instrument must be the name of a variable found in data.")
+    }
+  }
+  if(!is.null(instrumented)){
+    if(!instrumented %in% colnames(data)){
+      stop("instrumented must be the name of a variable found in data.")
+    }
+  }
 
   # cast as data frame if ts, xts, or zoo object
   if(stats::is.ts(data) | xts::is.xts(data) | zoo::is.zoo(data)){
@@ -266,6 +305,13 @@ VAR = function(
     data = dplyr::select(data, -dplyr::all_of(instrument))
   }else{
     data.instrument = NULL
+  }
+
+  # detect variable to be instrumented
+  if(is.null(instrumented)){
+    var_to_instrument = colnames(dplyr::select(data, -date))[1]
+  }else{
+    var_to_instrument = instrumented
   }
 
   # VAR estimation
@@ -306,13 +352,6 @@ VAR = function(
     min.ic = which.min(ic.scores)
     model = models[[min.ic]]
 
-    # add structure
-    model$structure = structure
-    model$instrument = data.instrument
-
-    class(model) = 'VAR'
-    return(model)
-
   }else{
 
     model =
@@ -324,17 +363,18 @@ VAR = function(
         type = type
       )
 
-    # add structure
-    model$structure = structure
-    model$instrument = data.instrument
-
-    class(model) = 'VAR'
-    return(model)
-
   }
 
-}
+  # add structure
+  model$structure = structure
+  model$instrument = data.instrument
+  model$instrumented = var_to_instrument
 
+  # assign class and return
+  class(model) = 'VAR'
+  return(model)
+
+}
 
 #-------------------------------------------------------------------
 # Function to estimate threshold VAR
