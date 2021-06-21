@@ -3,10 +3,16 @@
 ## Version 1.2.0
 
 - Major updates
-    - VARs may now be estimated as Proxy-SVARs (with multiple instruments)
+    - VARs may now be estimated as Proxy-SVARs
     - IRF functions now support
-      - The choice between standard and Wild bootstrapping techniques
-      - The choice between no structural restrictions, short-term restrictions (via Cholesky decomposition), or instrumental variable restrictions
+      - Choice of bootstrapping techniques 
+        - standard residual resampling
+        - Wild bootstrapping
+      - Choice of structural shocks 
+        - no structural restrictions, 
+        - short-term restrictions (via Cholesky decomposition), 
+        - instrumental variable estimation  
+        - combination of instrument variable and short-term restricions  
       - The choice run bootstrapping routines in parallel for greater computational efficiency  
    
 - Bug fixes
