@@ -91,7 +91,7 @@ state defined by the regime-dependent VAR." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">sovereign</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.1.0</span>
       </span>
     </div>
 
@@ -202,16 +202,16 @@ state defined by the regime-dependent VAR.</p>
       regime.n <span class='op'>=</span> <span class='fl'>2</span>,
       lag.ic <span class='op'>=</span> <span class='st'>'BIC'</span>,
       lag.max <span class='op'>=</span> <span class='fl'>4</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='input'>
+</div><div class='output co'>#&gt; <span class='error'>Error in n.lag(., lags = p): could not find function "n.lag"</span></div><div class='input'>
 <span class='co'># impulse response functions</span>
 <span class='va'>rvar.irf</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='rvar_irf.html'>rvar_irf</a></span><span class='op'>(</span><span class='va'>rvar</span><span class='op'>)</span>
-
+</div><div class='output co'>#&gt; <span class='error'>Error in sovereign::rvar_irf(rvar): object 'rvar' not found</span></div><div class='input'>
 <span class='co'># forecast error variance decomposition</span>
 <span class='va'>rvar.fevd</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='rvar_fevd.html'>rvar_fevd</a></span><span class='op'>(</span><span class='va'>rvar</span><span class='op'>)</span>
-
+</div><div class='output co'>#&gt; <span class='error'>Error in sovereign::rvar_fevd(rvar): object 'rvar' not found</span></div><div class='input'>
 <span class='co'># historical shock decomposition</span>
 <span class='va'>rvar.hd</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'>rvar_hd</span><span class='op'>(</span><span class='va'>rvar</span><span class='op'>)</span>
-
+</div><div class='output co'>#&gt; <span class='error'>Error in sovereign::rvar_hd(rvar): object 'rvar' not found</span></div><div class='input'>
 <span class='co'># }</span>
 
 </div></pre>

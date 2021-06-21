@@ -4,16 +4,24 @@
 \alias{var_irf}
 \title{Estimate impulse response functions}
 \usage{
-var_irf(var, horizon = 10, bootstraps.num = 100, CI = c(0.1, 0.9))
+var_irf(
+  var,
+  horizon = 10,
+  CI = c(0.1, 0.9),
+  bootstrap.type = "auto",
+  bootstrap.num = 100,
+  bootstrap.parallel = FALSE,
+  bootstrap.cores = -1
+)
 }
 \arguments{
 \item{var}{VAR output}
 
 \item{horizon}{int: number of periods}
 
-\item{bootstraps.num}{int: number of bootstraps}
-
 \item{CI}{numeric vector: c(lower ci bound, upper ci bound)}
+
+\item{bootstraps.num}{int: number of bootstraps}
 }
 \value{
 list object with elements \code{irfs}, \code{ci.lower}, and \code{ci.upper}; all elements are long-form data.frames

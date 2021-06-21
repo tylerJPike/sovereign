@@ -88,7 +88,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">sovereign</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.1.0</span>
       </span>
     </div>
 
@@ -201,16 +201,16 @@
       freq <span class='op'>=</span> <span class='st'>'month'</span>,
       lag.ic <span class='op'>=</span> <span class='st'>'BIC'</span>,
       lag.max <span class='op'>=</span> <span class='fl'>4</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='input'>
+</div><div class='output co'>#&gt; <span class='error'>Error in n.lag(., lags = p): could not find function "n.lag"</span></div><div class='input'>
 <span class='co'># impulse response functions</span>
 <span class='va'>var.irf</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='var_irf.html'>var_irf</a></span><span class='op'>(</span><span class='va'>var</span><span class='op'>)</span>
-
+</div><div class='output co'>#&gt; <span class='error'>Error: object of type 'closure' is not subsettable</span></div><div class='input'>
 <span class='co'># forecast error variance decomposition</span>
 <span class='va'>var.fevd</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'>var_fevd</span><span class='op'>(</span><span class='va'>var</span><span class='op'>)</span>
-
+</div><div class='output co'>#&gt; <span class='error'>Error: object of type 'closure' is not subsettable</span></div><div class='input'>
 <span class='co'># historical shock decomposition</span>
 <span class='va'>var.hd</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='var_hd.html'>var_hd</a></span><span class='op'>(</span><span class='va'>var</span><span class='op'>)</span>
-
+</div><div class='output co'>#&gt; <span class='error'>Error: object of type 'closure' is not subsettable</span></div><div class='input'>
 <span class='co'># }</span>
 
 </div></pre>
