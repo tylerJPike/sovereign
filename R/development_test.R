@@ -97,8 +97,252 @@ TVAR = function(
 
 
 }
+#####################################################################
+#####################################################################
+#####################################################################
+
+#------------------------------------------
+# Function to estimate VAR
+#------------------------------------------
+
+# var model, forecast, and error estimation function
+VAR_estimation = function(
+  data,                # data.frame, matrix, ts, xts, zoo: Endogenous regressors
+  p = 1,               # int: lags
+  horizon = 10,        # int: forecast horizons
+  freq = 'month',      # string: frequency of data (day, week, month, quarter, year)
+  type = 'const',      # string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
+  structure = 'short', # string: type of structural identification strategy to use in model analysis (NULL, 'short', or 'IV')
+  instrument = NULL    # string: name(s) of instrumental variable(s) contained in the data matrix
+){
+
+  # function variables
+  term = estimate = std.error = NULL
+
+  # declare regressors
+  regressors = colnames(dplyr::select(data, -date))
+
+  # create regressor lags
+  Y = data.frame(data) %>%
+    n.lag(lags = p)
+
+  # remove date
+  Y = Y %>% dplyr::select(-date)
+
+  # add deterministic components
+  if('const' %in% type |  'both' %in% type){Y$const = 1}
+  if('trend' %in% type |  'both' %in% type){Y$trend = c(1:nrow(Y))}
 
 
+  ### estimate coefficients ----------------------
+  models = as.list(regressors) %>%
+    purrr::map(.f = function(target){
+
+      X = Y %>%
+        dplyr::select(
+          dplyr::contains('.l'), target = dplyr::all_of(target),
+          dplyr::contains('const'), dplyr::contains('trend'))
+
+      # estimate OLS
+      model = stats::lm(target ~ . - 1, data = X)
+
+      # coefficients
+      c = broom::tidy(model) %>% dplyr::select(term, coef = estimate)
+      c$y = target
+
+      se = broom::tidy(model) %>% dplyr::select(term, std.error)
+      se$y = target
+
+      ll = stats::logLik(model)[1]
+
+      # return results
+      return(list(coef = c, se = se, ll = ll))
+    })
+
+  # extract coefficients
+  coef =
+    purrr::map(models, .f = function(X){return(X$coef)}) %>%
+    purrr::reduce(dplyr::bind_rows) %>%
+    tidyr::pivot_wider(values_from = coef, names_from = term)
+
+
+  # extract coefficients standard errors
+  se =
+    purrr::map(models, .f = function(X){return(X$se)}) %>%
+    purrr::reduce(dplyr::bind_rows) %>%
+    tidyr::pivot_wider(values_from = std.error, names_from = term)
+
+  # extract log likelihood
+  ll =
+    purrr::map(models, .f = function(X){return(X$ll)}) %>%
+    purrr::reduce(rbind) %>%
+    sum()
+
+  # package for return
+  model = list(coef = coef, se = se, p = p, freq = freq, horizon = horizon, type = type, loglikelihood = ll)
+
+  ### estimate forecasts -----------------------
+  forecasts = list()
+  for(i in 1:horizon){
+
+    # update X
+    if(i == 1){
+
+      X = Y %>%
+        dplyr::select(
+          dplyr::contains('.l'),
+          dplyr::contains('const'),
+          dplyr::contains('trend'))
+
+      X.date = data$date
+
+    }else{
+
+      X =
+        dplyr::bind_rows(
+          dplyr::select(data[1:i,], date, regressors),
+          dplyr::select(forecast_prev[i+1:nrow(forecast_prev),], date = forecast.date, regressors)) %>%
+        n.lag(lags = p)
+
+      X.date = X$date
+
+      X = X %>%
+        dplyr::filter(!is.na(date)) %>%
+        dplyr::select(dplyr::contains('.l'))
+
+      if('const' %in% type |  'both' %in% type){X$const = 1}
+      if('trend' %in% type |  'both' %in% type){X$trend = c(1:nrow(X)) + (i-1)}
+
+    }
+
+    # estimate i-step ahead forecast
+    forecast = as.matrix(X) %*% as.matrix(t(coef[,-1]))
+    colnames(forecast) = regressors
+
+    # set forecast date
+    if(i == 1){
+      forecast.date = stats::na.omit(X.date)
+    }else{
+      forecast.date =
+        forecast_date(
+          forecast.date = stats::na.omit(X.date),
+          horizon = i-1,
+          freq = freq
+        )
+    }
+
+    # add in dates
+    forecast =
+      data.frame(
+        date = data$date,
+        forecast.date = forecast.date,
+        forecast
+      )
+
+    # store forecasts
+    forecasts[[paste0('H_',i)]] = forecast
+    forecast_prev = forecast
+
+  }
+
+  ### calculate residuals -----------------------
+  residuals = forecasts %>%
+    # error by forecast horizon
+    purrr::map(.f = function(forecast){
+
+      error = data.frame(forecast)
+      error[,c(regressors)] = forecast[,c(regressors)] - data.frame(data)[, c(regressors)]
+
+      return(error)
+
+    })
+
+  ### return output --------------
+  return(
+    list(
+      model = model,
+      data = data,
+      forecasts = forecasts,
+      residuals = residuals
+    )
+  )
+}
+
+#' Estimate VAR, SVAR, or Proxy-SVAR
+#'
+#'
+#' @param data         data.frame, matrix, ts, xts, zoo: Endogenous regressors
+#' @param horizon      int: forecast horizons
+#' @param freq         string: frequency of data ('day', 'week', 'month', 'quarter', or 'year')
+#' @param type         string: type of deterministic terms to add ('none', 'const', 'trend', or 'both')
+#' @param p            int: lags
+#' @param lag.ic       string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
+#' @param lag.max      int: maximum number of lags to test in lag selection
+#' @param structure    string: type of structural identification strategy to use in model analysis (NULL, 'short', 'IV', or 'IV-short')
+#' @param instrument   string: name of instrumental variable contained in the data matrix
+#' @param instrumented string: name of variable to be instrumented in IV and IV-short procedure; default is the first non-date variable in data
+#'
+#' @return
+#' 1. data: data.frame with endogenous variables and 'date' column.
+#' 2. model: list with data.frame of model coefficients (in psuedo-companion form), data.frame of coefficient standard errors, integer of lags p, integer of horizons, string of frequency, string of deterministic term type, numeric of log-likelihood
+#' 3. forecasts: list of data.frames per horizon; data.frame with column for date (day the forecast was made), forecast.date (the date being forecasted), target (variable forecasted), and forecast
+#' 4. residuals: list of data.frames per horizon; data.frame of residuals
+#' 5. structure: string denoting which structural identification strategy will be used in analysis  (or NULL)
+#' 6. instrument: data.frame with 'date' column and 'instrument' column (or NULL)
+#' 7. instrumented: string denoting which column will be instrumted in 'IV' and 'IV-short' strategies (or NULL)
+#'
+#' @seealso [VAR()]
+#' @seealso [var_irf()]
+#' @seealso [var_fevd()]
+#' @seealso [var_hd()]
+#'
+#' @examples
+#' \donttest{
+#'  # simple time series
+#'  AA = c(1:100) + rnorm(100)
+#'  BB = c(1:100) + rnorm(100)
+#'  CC = AA + BB + rnorm(100)
+#'  date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
+#'  Data = data.frame(date = date, AA, BB, CC)
+#'
+#'  # estimate VAR
+#'   var =
+#'     sovereign::VAR(
+#'       data = Data,
+#'       horizon = 10,
+#'       freq = 'month',
+#'       lag.ic = 'BIC',
+#'       lag.max = 4)
+#'
+#'   # impulse response functions
+#'   var.irf = sovereign::var_irf(var)
+#'
+#'   # forecast error variance decomposition
+#'   var.fevd = sovereign::var_fevd(var)
+#'
+#'   # historical shock decomposition
+#'   var.hd = sovereign::var_hd(var)
+#' }
+#'
+#' @details
+#' See Sims (1980) for details regarding the baseline vector-autoregression (VAR) model. The VAR may be augmented to become a structural VAR (SVAR) with one of three different structural identification strategies:
+#' 1) short-term impact restrictions via Cholesky decomposition, see Christiano et al (1999) for details **(structure = 'short')**
+#' 2) external instrument identification, i.e. a Proxy-SVAR strategy, see Mertens and Ravn (2013) for details **(structure = 'IV')**
+#' 3) or a combination of short-term and IV identification via Lunsford (2015) **(structure = 'IV-short')**
+#'
+#' Note that including structure does not change the estimation of model coefficients or forecasts, but does change impulse response functions, forecast error variance decomposition,
+#' and historical decompositions. Historical decompositions will not be available for models using the 'IV' structure. Additionally note that only one instrument may be used in this
+#' estimation routine.
+#'
+#' @references
+#' 1. Christiano, Lawrence, Martin Eichenbaum, and Charles Evans "[Monetary policy shocks: What have we learned and to what end?](https://www.sciencedirect.com/science/article/pii/S1574004899010058)" Handbook of Macroeconomics, Vol 1, Part A, 1999.
+#' 2. Lunsford, Kurt "[Identifying Structural VARs with a Proxy Variable and a Test for a Weak Proxy](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2699452#)" 2015.
+#' 3. Mertens, Karel and Morten Ravn "[The Dynamic Effects of Personal and Corporate Income Tax Changes in the United States](https://www.aeaweb.org/articles?id=10.1257/aer.103.4.1212)" 2013.
+#' 4. Sims, Christopher "[Macroeconomics and Reality](https://www.jstor.org/stable/1912017)" 1980.
+#'
+#' @export
+
+# var function
 VAR = function(
   data,                # data.frame, matrix, ts, xts, zoo: Endogenous regressors
   horizon = 10,        # int: forecast horizons
@@ -234,15 +478,19 @@ VAR = function(
 
 }
 
-#####################################################################
-# IRF FUNCTIONS
-
 solve_B = function(var, report_iv = TRUE){
+
+  # set residuals
+  if(class(var) == 'VAR'){
+    residuals = var$residuals[[1]]
+  }else{
+    residuals = var$residuals
+  }
 
   if(is.null(var$structure) == TRUE){
 
     # retrieve reduced-form residuals
-    data.residuals = var$residuals[[1]]
+    data.residuals = residuals
 
     # reduced form variance-covariance matrix
     cov.matrix = stats::var(stats::na.omit(dplyr::select(data.residuals, -date, -forecast.date)))
@@ -254,7 +502,7 @@ solve_B = function(var, report_iv = TRUE){
   }else if(var$structure == 'short'){
 
     # retrieve reduced-form residuals
-    data.residuals = var$residuals[[1]]
+    data.residuals = residuals
 
     # reduced form variance-covariance matrix
     cov.matrix = stats::var(stats::na.omit(dplyr::select(data.residuals, -date, -forecast.date)))
@@ -267,7 +515,7 @@ solve_B = function(var, report_iv = TRUE){
   }else if(var$structure == 'IV'){
 
     # retrieve reduced-form residuals
-    data.residuals = var$residuals[[1]]
+    data.residuals = residuals
     covariates = colnames(dplyr::select(data.residuals, -date, -forecast.date))
     col_to_instrument = var$instrumented
 
@@ -336,13 +584,13 @@ solve_B = function(var, report_iv = TRUE){
     # align instrument and residuals
     valid_dates =
       dplyr::inner_join(
-        dplyr::select(na.omit(var$residuals[[1]]), date),
+        dplyr::select(na.omit(residuals), date),
         dplyr::select(na.omit(var$instrument), date),
         by = 'date'
       )
 
     # set residuals matrix
-    residuals = var$residuals[[1]] %>%
+    residuals = residuals %>%
       dplyr::inner_join(valid_dates, by = 'date') %>%
       dplyr::select(-date, -forecast.date) %>%
       as.matrix()
@@ -359,7 +607,7 @@ solve_B = function(var, report_iv = TRUE){
       dplyr::mutate_all(mean, na.rm = T)
 
     # number of observations
-    n.obs = nrow(var$data)
+    n.obs = nrow(residuals)
 
     # solve for IV implied impact
     pi = solve(n.obs^(-1) * t(residuals) %*% residuals) %*%
@@ -424,7 +672,7 @@ solve_B = function(var, report_iv = TRUE){
     B.sign = diag(sign(diag(B[shock_ordering,])))
     B = B %*% B.sign
 
-   return(B)
+    return(B)
 
   }else{
 
@@ -434,90 +682,398 @@ solve_B = function(var, report_iv = TRUE){
 
 }
 
-IRF = function (Phi, B, lag, structure = NULL){
 
-  # cast data as matrices
-  if (!is.matrix(Phi))
-    Phi = as.matrix(Phi)
-  if (!is.matrix(B))
-    B = as.matrix(B)
+RVAR_estimate = function(
+  data,                # data.frame, matrix, ts, xts, zoo: Endogenous regressors
+  regime,              # string: name or regime assignment vector in the design matrix (data)
+  p = 1,               # int: lags
+  horizon = 10,        # int: forecast horizons
+  freq = 'month',      # string: frequency of data (day, week, month, quarter, year)
+  type = 'const'       # string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
+){
+
+  # function variables
+  term = estimate = std.error = model.regime = NULL
+
+  # declare regressors
+  regressors = colnames(dplyr::select(data, -date, -regime))
+
+  # create regressors
+  Y = data.frame(data) %>%
+    dplyr::select(regressors, date) %>%
+    n.lag(lags = p) %>%
+    dplyr::full_join(
+      dplyr::select(data, regime = regime, date),
+      by = 'date')
+
+  # add deterministic components
+  if('const' %in% type | 'both' %in% type){Y$const = 1}
+  if('trend' %in% type | 'both' %in% type){Y$trend = c(1:nrow(Y))}
+
+  # detect regime values
+  regimes = unique(Y$regime)
+
+  ### estimate coefficients ----------------------
+  models = Y %>%
+    # split by regime
+    dplyr::group_split(regime) %>%
+    purrr::map(.f = function(Y){
+
+      regime.val = unique(Y$regime)
+
+      # calculate equation by equation
+      models = as.list(regressors) %>%
+        purrr::map(.f = function(target){
+
+          X = Y %>%
+            dplyr::select(
+              dplyr::contains('.l'), target = target,
+              dplyr::contains('const'), dplyr::contains('trend'))
+
+          # estimate OLS
+          model = stats::lm(target ~ . - 1, data = X)
+
+          # coefficients
+          c = broom::tidy(model) %>% dplyr::select(term, coef = estimate)
+          c$y = target
+
+          # standard errors
+          se = broom::tidy(model) %>% dplyr::select(term, std.error)
+          se$y = target
+
+          # log likelihood
+          ll = stats::logLik(model)[1]
+
+          # return results
+          return(list(coef = c, se = se, ll = ll))
+
+        })
+
+      # extract coefficients
+      coef =
+        purrr::map(models, .f = function(X){return(X$coef)}) %>%
+        purrr::reduce(dplyr::bind_rows) %>%
+        tidyr::pivot_wider(values_from = coef, names_from = term)
 
 
-  # set dimensions
-  k = nrow(Phi)
-  m = ncol(Phi)
-  p = floor(m/k)
-  Si = diag(rep(1, k))
-  wk = c(Si)
-  awk = c(wk)
-  acuwk = c(awk)
+      # extract coefficients' standard errors
+      se =
+        purrr::map(models, .f = function(X){return(X$se)}) %>%
+        purrr::reduce(dplyr::bind_rows) %>%
+        tidyr::pivot_wider(values_from = std.error, names_from = term)
 
-  # set lag
-  if (p < 1)
-    p = 1
-  if (lag < 1)
-    lag = 1
+      # extract log likelihood
+      ll =
+        purrr::map(models, .f = function(X){return(X$ll)}) %>%
+        purrr::reduce(rbind) %>%
+        sum()
 
-  # estimate IRFs
-  for (i in 1:lag) {
-    if (i <= p) {
-      idx = (i - 1) * k
-      tmp = Phi[, (idx + 1):(idx + k)]
-    }
-    else {
-      tmp = matrix(0, k, k)
-    }
-    jj = i - 1
-    jp = min(jj, p)
-    if (jp > 0) {
-      for (j in 1:jp) {
-        jdx = (j - 1) * k
-        idx = (i - j) * k
-        w1 = Phi[, (jdx + 1):(jdx + k)]
-        w2 = Si[, (idx + 1):(idx + k)]
-        tmp = tmp + w1 %*% w2
+      # package for return
+      model = list(coef = coef, se = se, p = p, freq = freq, type = type, ll = ll, horizon = horizon, regime = regime.val)
+
+    })
+
+  names(models) = paste0('regime_', unique(Y$regime))
+
+
+  fr = as.list(regimes) %>%
+    purrr::map(.f = function(regime.val){
+
+      coef = models[[paste0('regime_', regime.val)]]$coef
+
+      ### estimate forecasts -----------------------
+      forecasts = list()
+      for(i in 1:horizon){
+
+        # update X
+        if(i == 1){
+
+          X = Y %>%
+            dplyr::select(
+              dplyr::contains('.l'),
+              dplyr::contains('const'),
+              dplyr::contains('trend'))
+
+          X.date = data$date
+
+        }else{
+
+          X =
+            dplyr::bind_rows(
+              dplyr::select(data[1:i,], date, regressors),
+              dplyr::select(forecast_prev[i+1:nrow(forecast_prev),], date = forecast.date, regressors)) %>%
+            n.lag(lags = p)
+
+          X.date = X$date
+
+          X = X %>%
+            dplyr::filter(!is.na(date)) %>%
+            dplyr::select(dplyr::contains('.l'))
+
+          if('const' %in% type |  'both' %in% type){X$const = 1}
+          if('trend' %in% type |  'both' %in% type){X$trend = c(1:nrow(X)) + (i-1)}
+
+        }
+
+        # estimate i-step ahead forecast
+        forecast = as.matrix(X) %*% as.matrix(t(coef[,-1]))
+        colnames(forecast) = regressors
+
+        # set forecast date
+        if(i == 1){
+          forecast.date = stats::na.omit(X.date)
+        }else{
+          forecast.date =
+            forecast_date(
+              forecast.date = stats::na.omit(X.date),
+              horizon = i-1,
+              freq = freq
+            )
+        }
+
+        # add in dates
+        forecast =
+          data.frame(
+            date = data$date,
+            forecast.date = forecast.date,
+            forecast
+          ) %>%
+          dplyr::left_join(dplyr::select(Y, date, model.regime = regime), by = 'date')
+
+        # store forecasts
+        forecasts[[paste0('H_',i)]] = forecast
+        forecast_prev = forecast
+
       }
-    }
-    Si = cbind(Si, tmp)
-    wk = cbind(wk, c(tmp))
-    awk = awk + c(tmp)
-    acuwk = cbind(acuwk, awk)
+
+      ### calculate residuals -----------------------
+      residuals = forecasts %>%
+        # error by forecast horizon
+        purrr::map(.f = function(forecast){
+
+          error = data.frame(forecast)
+          error[,c(regressors)] = forecast[,c(regressors)] - data.frame(data)[, c(regressors)]
+
+          return(error)
+
+        })
+
+      ### return output -----------------------
+      residuals = residuals %>%
+        purrr::map(.f = function(r){
+          return( dplyr::filter(r, regime.val == model.regime) )
+        })
+
+      forecasts = forecasts  %>%
+        purrr::map(.f = function(f){
+          return( dplyr::filter(f, regime.val == model.regime) )
+        })
+
+      return(
+        list(
+          forecasts = forecasts,
+          residuals = residuals
+        )
+      )
+
+    })
+
+  ### Organize and return output -------
+  forecasts = as.list(c(1:horizon)) %>%
+    purrr::map(.f = function(h){
+
+      f = fr %>%
+        purrr::map(.f = function(r){
+          return(r$forecast[[paste0('H_',h)]])
+        }) %>%
+        purrr::reduce(dplyr::bind_rows) %>%
+        dplyr::arrange(date)
+
+    })
+
+
+  residuals = as.list(c(1:horizon)) %>%
+    purrr::map(.f = function(h){
+
+      f = fr %>%
+        purrr::map(.f = function(r){
+          return(r$residuals[[paste0('H_',h)]])
+        }) %>%
+        purrr::reduce(dplyr::bind_rows) %>%
+        dplyr::arrange(date)
+
+    })
+
+  names(forecasts) = paste0('H_',c(1 : horizon))
+  names(residuals) = paste0('H_',c(1 : horizon))
+
+  ### return output --------------
+  return(
+    list(
+      model = models,
+      data = data,
+      forecasts = forecasts,
+      residuals = residuals,
+      regime = regime
+    )
+  )
+}
+
+RVAR = function(
+  data,                  # data.frame, matrix, ts, xts, zoo: Endogenous regressors
+  horizon = 10,          # int: forecast horizons
+  freq = 'month',        # string: frequency of data (day, week, month, quarter, year)
+  type = 'const',        # string: type of deterministic terms to add ('none', 'const', 'trend', 'both')
+  p = 1,                 # int: lags
+  lag.ic = NULL,         # string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')
+  lag.max = NULL,        # int: maximum number of lags to test in lag selection
+  regime = NULL,         # string: name or regime assignment vector in the design matrix (data)
+  regime.method = 'rf',  # string: regime assignment technique ('rf', 'kmeans', 'EM', 'BP')
+  regime.n = 2,          # int: number of regimes to estimate (applies to kmeans and EM)
+  structure = 'short',   # string: type of structural identification strategy to use in model analysis (NULL, 'short', or 'IV')
+  instrument = NULL,     # string: name of instrumental variable contained in the data matrix
+  instrumented = NULL    # string: name of variable to be instrumented in IV and IV-short procedure; default is the first non-date variable in data
+){
+
+  # function warnings
+  if(!is.numeric(p) | p %% 1 != 0){
+    stop('p must be an integer')
   }
-  orSi = NULL
-  wk1 = NULL
-  awk1 = NULL
-  acuwk1 = NULL
-
-  irf = Si
-
-  if (!is.null(structure)) {
-
-    P = B
-    wk1 = cbind(wk1, c(P))
-    awk1 = wk1
-    acuwk1 = wk1
-    orSi = cbind(orSi, P)
-    for (i in 1:lag) {
-      idx = i * k
-      w1 = Si[, (idx + 1):(idx + k)]
-      w2 = w1 %*% P
-      orSi = cbind(orSi, w2)
-      wk1 = cbind(wk1, c(w2))
-      awk1 = awk1 + c(w2)
-      acuwk1 = cbind(acuwk1, awk1)
+  if(!is.null(lag.ic)){
+    if(!lag.ic %in% c('BIC','AIC')){
+      stop("lag.ic must be either 'BIC', 'AIC', or NULL")
     }
+  }
+  if(!is.null(lag.max)){
+    if(lag.max %% 1 != 0){
+      stop('lag.max must be an integer if IC-based lag selection is used')
+    }
+  }
+  if(!structure %in% c('short', 'IV', 'IV-short') & !is.null(structure)){
+    stop("strucutre must be one of 'strucutre', 'IV', 'IV-short', or NULL.")
+  }
+  if(!is.null(instrument)){
+    if(!instrument %in% colnames(data)){
+      stop("instrument must be the name of a variable found in data.")
+    }
+  }
+  if(!is.null(instrumented)){
+    if(!instrumented %in% colnames(data)){
+      stop("instrumented must be the name of a variable found in data.")
+    }
+  }
+  if(!is.matrix(data) & !is.data.frame(data)){
+    stop('data must be a matrix or data.frame')
+  }
+  if(!is.numeric(p) | p %% 1 != 0){
+    stop('p must be an integer')
+  }
+  if(!is.numeric(horizon) | horizon %% 1 != 0 | horizon <= 0){
+    stop('horizon must be a positive integer')
+  }
+  if(!freq %in% c('day','week','month','quarter','year')){
+    stop("freq must be one of the following strings: 'day','week','month','quarter','year'")
+  }
 
-    irf = orSi
+  # cast as data frame if ts, xts, or zoo object
+  if(stats::is.ts(data) | xts::is.xts(data) | zoo::is.zoo(data)){
+    data = data.frame(date = zoo::index(date), data)
+  }
+
+  # set aside instruments
+  if(!is.null(instrument)){
+    data.instrument = dplyr::select(data, date, dplyr::all_of(instrument))
+    data = dplyr::select(data, -dplyr::all_of(instrument))
+  }else{
+    data.instrument = NULL
+  }
+
+  # detect variable to be instrumented
+  # (defaults to first non-date column if missing)
+  if(is.null(instrumented)){
+    var_to_instrument = colnames(dplyr::select(data, -date, -regime))[1]
+  }else{
+    var_to_instrument = instrumented
+  }
+
+  # create regimes
+  if(is.null(regime)){
+
+    data =
+      regimes(
+        data,
+        regime.n = regime.n,
+        method = regime.method)
+
+    regime = 'regime'
 
   }
 
-  # return results
-  return(irf)
+  # create VAR
+  if(!is.null(lag.ic) & !is.null(lag.max)){
+
+    ic.scores = vector(length = lag.max+1)
+
+    models = c(1:lag.max) %>%
+      purrr::map(.f  = function(p){
+
+        # estimate candidate model
+        model =
+          RVAR_estimate(
+            data = data,
+            p = p,
+            regime = regime,
+            horizon = horizon,
+            freq = freq,
+            type = type
+          )
+
+        # calculate IC
+        ic.score =
+          IC(
+            ic = lag.ic,
+            errors = model$residuals[[1]],
+            data = data,
+            p = p
+          )
+
+        ic.scores[p] = ic.score
+
+        # return candidate model
+        return(model)
+
+      })
+
+    # return IC minimizing VAR
+    min.ic = which.min(ic.scores)
+    model = models[[min.ic]]
+
+  }else{
+
+    model =
+      RVAR_estimate(
+        data = data,
+        p = p,
+        regime = regime,
+        horizon = horizon,
+        freq = freq,
+        type = type
+      )
+  }
+
+  # add structure
+  model$structure = structure
+  model$instrument = data.instrument
+  model$instrumented = var_to_instrument
+
+  class(model) = 'RVAR'
+  return(model)
+
 
 }
 
-var_irf = function(
-  var,                         # VAR output
+rvar_irf = function(
+  rvar,                        # threshold VAR output
   horizon = 10,                # int: number of periods
   CI = c(0.1, 0.9),            # numeric vector: c(lower ci bound, upper ci bound)
   bootstrap.type = 'auto',     # string: bootstrapping technique to use ('auto', 'standard', or 'wild'); if auto then wild is used for IV or IV-short, else standard is used
@@ -525,9 +1081,6 @@ var_irf = function(
   bootstrap.parallel = FALSE,  # boolean: create IRF draws in parallel
   bootstrap.cores = -1         # int: number of cores to use in parallel processing; -1 detects and uses half the available cores
 ){
-
-  # NOTES: scaled wild is used for IV, consistent with the proxy SVAR literature,
-  #  while standard resample is used for others
 
   # function warnings
   if(!is.numeric(bootstrap.num) | bootstrap.num %% 1 != 0){
@@ -541,241 +1094,295 @@ var_irf = function(
   }
 
   # function variables
-  y = forecast.date = shock = target = response = response.lower = response.upper =  response.med = response.adjust = NULL
+  y = forecast.date = shock = target = response = response.lower = response.upper = model.regime =  response.med = response.adjust =  NULL
 
   # set data
-  coef = var$model$coef
-  residuals = var$residuals[[1]]
-  data = var$data
+  data = rvar$data
+  p = rvar$model[[1]]$p
+  freq = rvar$model[[1]]$freq
+  regime = rvar$regime
+  regressors = colnames(dplyr::select(data, -date, -regime))
+  structre = rvar$structure
 
-  # set model variables
-  p = var$model$p
-  freq = var$model$freq
-  structure = var$structure
-
-  if('const' %in% colnames(coef) & 'trend' %in% colnames(coef)){
+  if('const' %in% colnames(rvar$model[[1]]$coef) &
+     'trend' %in% colnames(rvar$model[[1]]$coef)){
     type = 'both'
-  }else if('const' %in% colnames(coef)){
+  }else if('const' %in% colnames(rvar$model[[1]]$coef)){
     type = 'const'
-  }else if('trend' %in% colnames(coef)){
+  }else if('trend' %in% colnames(rvar$model[[1]]$coef)){
     type = 'trend'
   }
 
-  regressors = colnames(dplyr::select(data, -date))
-  if(!is.null(var$regime)){regressors = regressors[regressors != var$regime$regime]}
-  regressors.cols = paste0(regressors, '.l1')
-
-  # set IRF variables
   p.lower = CI[1]
   p.upper = CI[2]
 
-  ### calculate impulse responses --------------
+  regimes = dplyr::select(data, regime = regime)
+  regimes = unique(regimes$regime)
 
-  # estimate error-covariance matrix or structural impact matrix
-  B = solve_B(var)
-  B = as.matrix(B)
+  # estimate impulse responses by regime
+  results = as.list(regimes) %>%
+    purrr::map(.f = function(regime.val){
 
-  # estimate IRFs
-  phi = dplyr::select(coef, -y, -dplyr::contains('cosnt'), -dplyr::contains('trend'))
+      # set regime specific data
+      coef = rvar$model[[paste0('regime_',regime.val)]]$coef
 
-  irf = IRF(Phi = phi,
-            B = B,
-            lag = horizon,
-            structure = structure)
+      residuals = rvar$residuals[[1]] %>%
+        dplyr::filter(model.regime == regime.val) %>%
+        dplyr::select(-model.regime)
 
-  # reorganize results
-  irf = data.frame(t(irf))
+      is = data %>%
+        dplyr::inner_join(dplyr::select(residuals, date), by = 'date') %>%
+        dplyr::select(-regime)
 
-  if(!is.null(structure)){
-    if(structure == 'IV-short'){
-      shocks = c(var$instrumented, regressors[!regressors %in% var$instrumented])
-      irf$shock = rep(shocks, horizon + 1)
-    }
-  }else{
-    irf$shock = rep(regressors, horizon + 1)
-  }
-
-  irf$horizon = sort(rep(c(0:horizon), length(regressors)))
-  irf = dplyr::arrange(irf, shock, horizon)
-  rownames(irf) = NULL
-  colnames(irf) = c(regressors, 'shock', 'horizon')
-
-  ### bootstrap IRF confidence intervals ---------
-
-  # 0. set up parallel back-end
-  if(bootstrap.parallel == TRUE){
-    if(bootstrap.cores == -1){
-      n.cores = floor(future::availableCores() / 2)
-    }else{
-      n.cores = bootstrap.parallel
-    }
-    future::plan(future::multisession, workers = n.cores)
-  }else{
-    future::plan(future::sequential)
-  }
-
-  # 1. create bootstrap time series
-  bagged.irf = as.list(1:bootstrap.num) %>%
-    furrr::future_map(.f = function(count){
-
-      # bootstrap residuals
-      if(bootstrap.type == 'wild' |
-         bootstrap.type == 'auto' & structure == 'IV' |
-         bootstrap.type == 'auto' & structure == 'IV-short'){
-
-        # 'wild' bootstrap technique for simple distribution
-        #  using observed scaled residuals with random sign flip.
-        #  See the Rademacher distribution.
-        U = residuals[,-c(1,2)]
-        r = sample(c(-1,1), size = nrow(U), replace = T)
-        U = sweep(U, MARGIN = 1, r, `*`)
-
-      }else if(bootstrap.type == 'standard' | bootstrap.type == 'auto' & structure != 'IV'){
-
-        # standard bootstrap technique a al Lutkepohl (2005)
-        # draw residuals with replacement
-        U = na.omit(residuals)
-        U = U[sample(c(1:nrow(U)),
-                     size = nrow(residuals),
-                     replace = TRUE),]
-        U = U %>%
-          dplyr::select(-date, -forecast.date) %>%
-          dplyr::mutate_all(function(X){return(X-mean(X, na.rm = T))})
+      if(!is.null(rvar$instrument)){
+        instrument = dplyr::inner_join(rvar$instrument, dplyr::select(is, date), by = 'date')
       }
 
-      # recursively build synthetic data
-      Y = matrix(nrow = nrow(var$data), ncol = ncol(var$data)-1)
-      Y = data.frame(Y); colnames(Y) = regressors
-      Y[1:p, ] = var$data[1:p, -1]
-
-      for(i in (p+1):nrow(var$data)){
-
-        X = Y[(i-p):(i-1),]
-        X = embed(as.matrix(X), dimension = p)
-        X = data.frame(X)
-
-        if(type %in% c('const', 'both')){X$const = 1}
-        if(type %in% c('trend', 'both')){X$trend = c(1:nrow(X))}
-
-        X.hat = as.matrix(coef[,-1]) %*% t(as.matrix(X))
-        X.hat = t(X.hat)
-
-        Y[i, ] = X.hat - U[i,]
-
-      }
-
-      Y$date = data$date
-
-      # estimate VAR with synthetic data
-      var.bag =
-        VAR(
-          data = Y,
-          p = p,
-          horizon = 1,
-          freq = freq,
-          type = type,
-          structure = structure)
-
-      # bootstrap instrument
-      if(!is.null(structure)){
-        if(structure == 'IV' | structure == 'IV-short'){
-          var.bag$instrument = var$instrument
-          var.bag$instrument[,-1] = sweep(var.bag$instrument[,-1], MARGIN = 1, r, `*`)
-
-          var.bag$instrumented = var$instrumented
-        }
-      }
+      ### calculate impulse responses --------------
 
       # estimate error-covariance matrix or structural impact matrix
-      B.bag = solve_B(var.bag, report_iv = FALSE)
-
-      # set bagged coef matrix
-      coef.bag = dplyr::select(var.bag$model$coef, -y, -dplyr::contains('const'), -dplyr::contains('trend'))
+      B =
+        solve_B(
+          var = list(
+            residuals = residuals,
+            structure = rvar$structure,
+            instrument = instrument,
+            instrumented = rvar$instrumented
+          )
+        )
 
       # estimate IRFs
-      irf.bag = IRF(Phi = coef.bag,
-                B = B.bag,
+      phi = dplyr::select(coef, -y, -dplyr::contains('const'), -dplyr::contains('trend'))
+
+      irf = IRF(Phi = phi,
+                B = B,
                 lag = horizon,
-                structure = structure)
+                structure = rvar$structure)
 
       # reorganize results
-      irf.bag = data.frame(t(irf.bag))
+      irf = data.frame(t(irf))
 
-      if(!is.null(structure)){
-        if(structure == 'IV-short'){
-          shocks = c(var$instrumented, regressors[!regressors %in% var$instrumented])
-          irf.bag$shock = rep(shocks, horizon + 1)
+      if(!is.null(rvar$structure)){
+        if(rvar$structure == 'IV-short'){
+          shocks = c(rvar$instrumented, regressors[!regressors %in% rvar$instrumented])
+          irf$shock = rep(shocks, horizon + 1)
         }
       }else{
-          irf.bag$shock = rep(regressors, horizon + 1)
+        irf$shock = rep(regressors, horizon + 1)
       }
 
-      irf.bag$horizon = sort(rep(c(0:horizon), length(regressors)))
-      irf.bag = dplyr::arrange(irf.bag, shock, horizon)
-      rownames(irf.bag) = NULL
-      colnames(irf.bag) = c(regressors, 'shock', 'horizon')
+      irf$horizon = sort(rep(c(0:horizon), length(regressors)))
+      irf = dplyr::arrange(irf, shock, horizon)
+      rownames(irf) = NULL
+      colnames(irf) = c(regressors, 'shock', 'horizon')
 
-      return(irf.bag)
+      ### bootstrap irf standard errors --------------
+
+      # 0. set up parallel back-end
+      if(bootstrap.parallel == TRUE){
+        if(bootstrap.cores == -1){
+          n.cores = floor(future::availableCores() / 2)
+        }else{
+          n.cores = bootstrap.parallel
+        }
+        future::plan(future::multisession, workers = n.cores)
+      }else{
+        future::plan(future::sequential)
+      }
+
+      # 1. create bootstrap time series
+      bagged.irf = as.list(1:bootstrap.num) %>%
+        furrr::future_map(.f = function(count){
+
+          # bootstrap residuals
+          if(bootstrap.type == 'wild' |
+             bootstrap.type == 'auto' & structure == 'IV' |
+             bootstrap.type == 'auto' & structure == 'IV-short'){
+
+            # 'wild' bootstrap technique for simple distribution
+            #  using observed scaled residuals with random sign flip.
+            #  See the Rademacher distribution.
+            U = residuals[,!colnames(residuals) %in% c('date','forecast.date','model.regime')]
+            r = sample(c(-1,1), size = nrow(U), replace = T)
+            U = sweep(U, MARGIN = 1, r, `*`)
+
+            # bootstrap instrument
+            if(!is.null(instrument)){
+              instrument.bag = instrument
+              instrument.bag[,-1] = sweep(instrument.bag[,-1], MARGIN = 1, r, `*`)
+            }
+
+          }else if(bootstrap.type == 'standard' |
+                   bootstrap.type == 'auto' & structure != 'IV' & structure != 'IV-short'){
+
+            # standard bootstrap technique a al Lutkepohl (2005)
+            # draw residuals with replacement
+            U = na.omit(residuals)
+            U = U[sample(c(1:nrow(U)),
+                         size = nrow(residuals),
+                         replace = TRUE),]
+            U = U %>%
+              dplyr::select(-date, -forecast.date, -model.regime) %>%
+              dplyr::mutate_all(function(X){return(X-mean(X, na.rm = T))})
+          }
+
+          # recursively build synthetic data
+          Y = matrix(nrow = nrow(is), ncol = ncol(is)-1)
+          Y = data.frame(Y); colnames(Y) = regressors
+          Y[1:p, ] = is[1:p, -1]
+
+          for(i in (p+1):nrow(is)){
+
+            X = Y[(i-p):(i-1),]
+            X = embed(as.matrix(X), dimension = p)
+            X = data.frame(X)
+
+            if(type %in% c('const', 'both')){X$const = 1}
+            if(type %in% c('trend', 'both')){X$trend = c(1:nrow(X))}
+
+            X.hat = as.matrix(coef[,-1]) %*% t(as.matrix(X))
+            X.hat = t(X.hat)
+
+            Y[i, ] = X.hat - U[i,]
+
+          }
+
+          Y$date = is$date
+
+          # estimate VAR with synthetic data
+          var.bag =
+            VAR(
+              data = Y,
+              p = p,
+              horizon = 1,
+              freq = freq,
+              type = type
+              )
+
+          var.bag$structure = rvar$structure
+          var.bag$instrumented = rvar$instrumented
+          if(!is.null(instrument)){var.bag$instrument = instrument.bag}
+
+          # estimate error-covariance matrix or structural impact matrix
+          B.bag = solve_B(var.bag, report_iv = FALSE)
+
+          # set bagged coef matrix
+          coef.bag = dplyr::select(var.bag$model$coef, -y, -dplyr::contains('const'), -dplyr::contains('trend'))
+
+          # estimate IRFs
+          irf.bag = IRF(Phi = coef.bag,
+                        B = B.bag,
+                        lag = horizon,
+                        structure = rvar$structure)
+
+          # reorganize results
+          irf.bag = data.frame(t(irf.bag))
+
+          if(!is.null(rvar$structure)){
+            if(rvar$structure == 'IV-short'){
+              shocks = c(rvar$instrumented, regressors[!regressors %in% rvar$instrumented])
+              irf.bag$shock = rep(shocks, horizon + 1)
+            }
+          }else{
+            irf.bag$shock = rep(regressors, horizon + 1)
+          }
+
+          irf.bag$horizon = sort(rep(c(0:horizon), length(regressors)))
+          irf.bag = dplyr::arrange(irf.bag, shock, horizon)
+          rownames(irf.bag) = NULL
+          colnames(irf.bag) = c(regressors, 'shock', 'horizon')
+
+          return(irf.bag)
+
+        })
+
+      # 2. calculate confidence intervals
+      # collapse to data.frame
+      ci = bagged.irf %>%
+        purrr::reduce(dplyr::bind_rows)
+
+      # remove unused shocks in the case of IV
+      if(!is.null(rvar$structure)){
+        if(rvar$structure == 'IV'){
+          ci = dplyr::filter(ci, shock == rvar$instrumented)
+        }
+      }
+
+      # estimate bands
+      ci = ci %>%
+        tidyr::pivot_longer(cols = regressors, names_to = 'target', values_to = 'response') %>%
+        group_by(shock, horizon, target) %>%
+        summarize(response.lower = quantile(response, probs = p.lower, na.rm = T),
+                  response.upper = quantile(response, probs = p.upper, na.rm = T),
+                  response.mean  = mean(response, na.rm = T) )
+
+      # combine point estimates and CI
+      irf = irf %>%
+        tidyr::pivot_longer(cols = regressors, names_to = 'target', values_to = 'response') %>%
+        dplyr::arrange(shock, horizon)
+
+      irf =
+        full_join(
+          irf, ci,
+          by = c('shock', 'target', 'horizon')
+        )
+
+      # adjust for bias in CI
+      # (bias can be introduced in the bootstrapping if residuals are not actually mean zero)
+      irf = irf %>%
+        dplyr::mutate(
+          response.adjust = response - response.mean,
+          response.lower = response.lower + response.adjust,
+          response.upper = response.upper + response.adjust
+        ) %>%
+        dplyr::select(target, shock, horizon, response.lower, response, response.upper) %>%
+        dplyr::arrange(target, shock, horizon)
+
+      ### return output --------------
+      return(irf)
 
     })
 
-  # 3. calculate confidence intervals
-
-  # collapse to data.frame
-  ci = bagged.irf %>%
-    purrr::reduce(dplyr::bind_rows)
-
-  # remove unused shocks in the case of IV
-  if(!is.null(var$structure)){
-    if(var$structure == 'IV'){
-      ci = ci %>%
-        dplyr::filter(shock == regressors[1])
-    }
-  }
-
-  # correct shock names in the case of IV-short
-  if(!is.null(var$structure)){
-    if(var$structure == 'IV-short'){
-
-    }
-  }
-
-  # estimate bands
-  ci = ci %>%
-    tidyr::pivot_longer(cols = regressors, names_to = 'target', values_to = 'response') %>%
-    group_by(shock, horizon, target) %>%
-    summarize(response.lower = quantile(response, probs = p.lower, na.rm = T),
-              response.upper = quantile(response, probs = p.upper, na.rm = T),
-              response.mean  = mean(response, na.rm = T) )
-
-  # combine point estimates and CI
-  irf = irf %>%
-    tidyr::pivot_longer(cols = regressors, names_to = 'target', values_to = 'response') %>%
-    dplyr::arrange(shock, horizon)
-
-  irf =
-    full_join(
-      irf, ci,
-      by = c('shock', 'target', 'horizon')
-    )
-
-  # adjust for bias in CI
-  # (bias can be introduced in the bootstrapping if residuals are not actually mean zero)
-  irf = irf %>%
-    dplyr::mutate(
-       response.adjust = response - response.mean,
-       response.lower = response.lower + response.adjust,
-       response.upper = response.upper + response.adjust
-    ) %>%
-    dplyr::select(target, shock, horizon, response.lower, response, response.upper) %>%
-    dplyr::arrange(target, shock, horizon)
+  names(results) = paste0('regime_', regimes)
 
   ### return output --------------
-  return(irf)
+  return(results)
+
 }
 
+plot_individual_irf = function(
+  irf,                  # irf object
+  shock.var,            # string: name of variable to treat as the shock
+  response.var,         # string: name of variable to treat as the response
+  title,                # string: title of the chart
+  ylab                  # string: y-axis label
+){
 
-# #####################################################################
+  # function variables
+  response = error = horizon = shock = target = response.lower = response.upper = NULL
+
+  # filter for one shock and one target
+  plotdata = irf %>%
+    dplyr::filter(shock == shock.var & target == response.var) %>%
+    dplyr::select(horizon, response, response.lower, response.upper)
+
+  # plot
+  irf.plot <- plotdata  %>%
+    ggplot2::ggplot(ggplot2::aes(x=horizon, y=response, ymin=response.lower, ymax=response.upper)) +
+    ggplot2::geom_hline(yintercept = 0, color="black") +
+    ggplot2::geom_ribbon(fill="royalblue", alpha=0.2) +
+    ggplot2::geom_line(color = 'darkred', lwd = 1) +
+    ggplot2::theme_light() +
+    ggplot2::ggtitle(title)+
+    ggplot2::ylab(ylab)+
+    ggplot2::xlab("") +
+    ggplot2::theme(plot.title = ggplot2::element_text(size = 11, hjust=0.5),
+                   axis.title.y = ggplot2::element_text(size=11))
+
+  irf.plot
+}
+
+#####################################################################
 # TEST
 
 library(tidyverse)
@@ -787,8 +1394,22 @@ data.macro = data.macro %>% filter(year(date) >= 1991)
 data.macro = data.macro %>% select(date, PCE, UNEMP, PR, EBP, mp_shock)
 
 # MODEL
-var =
-  VAR(
+# var =
+#   VAR(
+#     data = data.macro,
+#     horizon = 1,
+#     freq = 'month',
+#     p = 1,
+#     structure = 'IV-short',
+#     instrument = 'mp_shock',
+#     instrumented = 'PR'
+#   )
+#
+# irf = var_irf(var, horizon = 20, bootstrap.type = 'wild', bootstrap.num = 10, bootstrap.parallel = TRUE)
+# plot_irf(irf, shocks = 'PR')
+
+rvar =
+  RVAR(
     data = data.macro,
     horizon = 1,
     freq = 'month',
@@ -798,6 +1419,6 @@ var =
     instrumented = 'PR'
   )
 
-irf = var_irf(var, horizon = 20, bootstrap.type = 'wild', bootstrap.num = 10, bootstrap.parallel = TRUE)
-plot_irf(irf, shocks = 'PR')
+irf = rvar_irf(rvar, horizon = 20, bootstrap.type = 'wild', bootstrap.num = 10, bootstrap.parallel = TRUE)
+plot_irf(irf[[1]], shocks = 'PR')
 
