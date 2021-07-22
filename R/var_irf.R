@@ -1,213 +1,8 @@
-
-#------------------------------------------
-# Function to estimate the structural
-#  error impact matrix
-#
-# See Cesa-Bianchi's VAR-Toolbox for
-#    MATLAB implementation
-#------------------------------------------
-solve_B = function(var, report_iv = TRUE){
-
-  if(is.null(var$structure) == TRUE){
-
-    # retrieve reduced-form residuals
-    data.residuals = var$residuals[[1]]
-
-    # reduced form variance-covariance matrix
-    cov.matrix = stats::var(stats::na.omit(dplyr::select(data.residuals, -date, -forecast.date)))
-
-    B = cov.matrix
-
-    return(B)
-
-  }else if(var$structure == 'short'){
-
-    # retrieve reduced-form residuals
-    data.residuals = var$residuals[[1]]
-
-    # reduced form variance-covariance matrix
-    cov.matrix = stats::var(stats::na.omit(dplyr::select(data.residuals, -date, -forecast.date)))
-
-    # take cholesky decomposition
-    B = t(chol(cov.matrix))
-
-    return(B)
-
-  }else if(var$structure == 'IV'){
-
-    # retrieve reduced-form residuals
-    data.residuals = var$residuals[[1]]
-    covariates = colnames(dplyr::select(data.residuals, -date, -forecast.date))
-    col_to_instrument = var$instrumented
-
-    # retrieve instrument
-    data.instrument = var$instrument
-    instrument = colnames(dplyr::select(data.instrument, -date))
-
-    # combine data
-    data =
-      dplyr::inner_join(data.residuals, data.instrument, by = 'date') %>%
-      na.omit()
-
-    # first stage least squares
-    model.first_stage =
-      lm(col_to_instrument ~.,
-         data = data %>%
-           select(col_to_instrument = dplyr::all_of(col_to_instrument), all_of(instrument)) %>%
-           na.omit())
-    p_hat = model.first_stage$fitted.values
-
-    if(report_iv == TRUE){
-      print(summary(model.first_stage))
-    }
-
-    # second stage least squares
-    # to estimate first column of B
-    # (automatically scales first entry to 1)
-    instrumented_shocks = covariates %>%
-      purrr::map_df(.f = function(X){
-
-        model.second_stage = lm(data[,X] ~ p_hat)
-        second_stage_beta = model.second_stage$coefficients[2]
-        return(second_stage_beta)
-
-      }) %>%
-      as.vector()
-
-    # scale size of the shock
-    #  see Gertler and Karadi (2015) for background
-    #  see Cesa-Bianchi's VAR-Toolbox for MATLAB implementation
-    X.demean =
-      select(data, -date, -forecast.date, -dplyr::all_of(instrument)) %>%
-      mutate_all(function(X){return(X - mean(X, na.rm = T))}) %>%
-      as.matrix()
-
-    sigma_b = 1/(nrow(data) - ncol(var$model$coef) + 1) * t(X.demean) %*% X.demean
-
-    s21s11 = instrumented_shocks[2:length(covariates),] %>% as.matrix()
-    S11 = sigma_b[1,1] %>% as.numeric()
-    S21 = sigma_b[2:nrow(sigma_b),1] %>%as.vector()
-    S22 = sigma_b[2:nrow(sigma_b),2:ncol(sigma_b)]
-
-    Q = (s21s11 * S11)  %*% t(s21s11) - (S21 %*% t(s21s11) + as.matrix(s21s11) %*% t(S21)) + S22
-    sp = sqrt( S11 - t(S21 - as.matrix(s21s11) %*% S11) %*% as.matrix(solve(Q) %*%  (S21 - s21s11 * S11)) )
-
-    scaled_instrumented_shocks = instrumented_shocks * as.numeric(sp)
-
-    # prepare B matrix
-    B = matrix(0, ncol = (length(covariates) - 1), nrow = length(covariates))
-    B = cbind(scaled_instrumented_shocks, B)
-
-    return(B)
-
-  }else if(var$structure == 'IV-short'){
-
-    # align instrument and residuals
-    valid_dates =
-      dplyr::inner_join(
-        dplyr::select(na.omit(var$residuals[[1]]), date),
-        dplyr::select(na.omit(var$instrument), date),
-        by = 'date'
-      )
-
-    # set residuals matrix
-    residuals = var$residuals[[1]] %>%
-      dplyr::inner_join(valid_dates, by = 'date') %>%
-      dplyr::select(-date, -forecast.date) %>%
-      as.matrix()
-
-    residuals = -1*residuals
-
-    # set instrument
-    instrument = var$instrument %>%
-      data.frame() %>%
-      dplyr::inner_join(valid_dates, by = 'date') %>%
-      dplyr::select(-date)
-
-    instrument.mean = instrument %>%
-      dplyr::mutate_all(mean, na.rm = T)
-
-    # number of observations
-    n.obs = nrow(var$data)
-
-    # solve for IV implied impact
-    pi = solve(n.obs^(-1) * t(residuals) %*% residuals) %*%
-      (n.obs^(-1) * t(residuals) %*% as.matrix(instrument - instrument.mean))
-
-    phi_sq =
-      (n.obs^(-1) * t(instrument - instrument.mean) %*% residuals) %*%
-      solve( n.obs^(-1) * t(residuals) %*% residuals ) %*%
-      ( n.obs^(-1) * t(residuals) %*% as.matrix(instrument - instrument.mean) )
-
-    B1 =
-      n.obs^(-1) *
-      ( t(residuals) %*% as.matrix(instrument - instrument.mean) ) %*%
-      (phi_sq)^(-0.5)
-
-    B = matrix(ncol = ncol(residuals), nrow = ncol(residuals))
-    B[,1:ncol(instrument)] = B1
-    rownames(B) = colnames(B) = colnames(residuals)
-
-    # solve for orthogonalized structural shock
-    model.first_stage = lm(instrument[,1] ~ residuals)
-    orthogonal_instrument = instrument - model.first_stage$residuals
-    orthogonal_instrument = orthogonal_instrument[,] / sd(orthogonal_instrument[,], na.rm = T)
-
-    shock_matrix = matrix(nrow = nrow(residuals), ncol = ncol(residuals))
-    shock_matrix[,1] = orthogonal_instrument
-
-    # reduced form variance-covariance matrix
-    sigma = stats::var(residuals)
-
-    # solve additional entries
-    # with a lower triangular restriction
-    order_sequence = c(1:ncol(residuals))
-
-    for(i in order_sequence){
-
-      Y = residuals[,i]
-      X = shock_matrix[,c(1:i)]
-      model.second_stage = lm(Y~X)
-
-      if(i != tail(order_sequence,1)){
-
-        B[i,] =
-          c( model.second_stage$coef[-1],
-             sd(model.second_stage$residuals),
-             rep(0, length(order_sequence) - ncol(instrument) - i) )
-
-        shock_matrix[,i+1] = model.second_stage$residuals / sd(model.second_stage$residuals)
-
-      }else{
-
-        B[i,] =  model.second_stage$coef[-1]
-
-      }
-
-    }
-
-    # make diagonal entries positive
-    shock_ordering = data.frame(residuals) %>%
-      select(var$instrumented, dplyr::everything()) %>%
-      colnames()
-    B.sign = diag(sign(diag(B[shock_ordering,])))
-    B = B %*% B.sign
-
-   return(B)
-
-  }else{
-
-    stop('structure must be set to either NULL, "short", or "IV".')
-
-  }
-
-}
-
 #------------------------------------------
 # Function to estimate impulse responses
 #  source code adapted from the MTS package
 #------------------------------------------
-IRF = function (Phi, B, lag, structure = NULL){
+IRF_solve = function(Phi, B, lag, structure = NA){
 
   # cast data as matrices
   if (!is.matrix(Phi))
@@ -263,7 +58,7 @@ IRF = function (Phi, B, lag, structure = NULL){
 
   irf = Si
 
-  if (!is.null(structure)) {
+  if (!is.na(structure)) {
 
     P = B
     wk1 = cbind(wk1, c(P))
@@ -292,15 +87,15 @@ IRF = function (Phi, B, lag, structure = NULL){
 
 #' Estimate impulse response functions
 #'
-#' Estimate impulse responses with contemporaneous impact restrictions via Cholesky decomposition -
-#' taking the variable ordering present in the VAR object.
+#' @param var                VAR output
+#' @param horizon            int: number of periods
+#' @param CI                 numeric vector: c(lower ci bound, upper ci bound)
+#' @param bootstrap.type     string: bootstrapping technique to use ('auto', 'standard', or 'wild'); if auto then wild is used for IV or IV-short, else standard is used
+#' @param bootstrap.num      int: number of bootstraps
+#' @param bootstrap.parallel boolean: create IRF draws in parallel
+#' @param bootstrap.cores    int: number of cores to use in parallel processing; -1 detects and uses half the available cores
 #'
-#' @param var              VAR output
-#' @param horizon          int: number of periods
-#' @param bootstraps.num   int: number of bootstraps
-#' @param CI               numeric vector: c(lower ci bound, upper ci bound)
-#'
-#' @return list object with elements `irfs`, `ci.lower`, and `ci.upper`; all elements are long-form data.frames
+#' @return data.frame with columns `target`, `shock`, `horizon`, `response.lower`, `response`, `response.upper`
 #'
 #' @seealso [VAR()]
 #' @seealso [var_irf()]
@@ -330,19 +125,18 @@ IRF = function (Phi, B, lag, structure = NULL){
 #'       lag.ic = 'BIC',
 #'       lag.max = 4)
 #'
-#' # impulse response functions
-#' var.irf = sovereign::var_irf(var)
+#'  # impulse response functions
+#'  var.irf = sovereign::var_irf(var)
 #'
-#' # forecast error variance decomposition
-#' var.fevd = sovereign::var_fevd(var)
+#'  # forecast error variance decomposition
+#'  var.fevd = sovereign::var_fevd(var)
 #'
-#' # historical shock decomposition
-#' var.hd = sovereign::var_hd(var)
+#'  # historical shock decomposition
+#'  var.hd = sovereign::var_hd(var)
 #'
 #' }
 #'
 #' @export
-
 
 var_irf = function(
   var,                         # VAR output
@@ -353,9 +147,6 @@ var_irf = function(
   bootstrap.parallel = FALSE,  # boolean: create IRF draws in parallel
   bootstrap.cores = -1         # int: number of cores to use in parallel processing; -1 detects and uses half the available cores
 ){
-
-  # NOTES: scaled wild is used for IV, consistent with the proxy SVAR literature,
-  #  while standard resample is used for others
 
   # function warnings
   if(!is.numeric(bootstrap.num) | bootstrap.num %% 1 != 0){
@@ -369,7 +160,7 @@ var_irf = function(
   }
 
   # function variables
-  y = forecast.date = shock = target = response = response.lower = response.upper =  response.med = response.adjust = NULL
+  y = forecast.date = response.mean = shock = target = response = response.lower = response.upper =  response.med = response.adjust = NULL
 
   # set data
   coef = var$model$coef
@@ -379,15 +170,11 @@ var_irf = function(
   # set model variables
   p = var$model$p
   freq = var$model$freq
-  structure = var$structure
+  type = var$model$type
 
-  if('const' %in% colnames(coef) & 'trend' %in% colnames(coef)){
-    type = 'both'
-  }else if('const' %in% colnames(coef)){
-    type = 'const'
-  }else if('trend' %in% colnames(coef)){
-    type = 'trend'
-  }
+  structure = var$structure
+  instrument = var$instrument
+  instrumented = var$instrumented
 
   regressors = colnames(dplyr::select(data, -date))
   if(!is.null(var$regime)){regressors = regressors[regressors != var$regime$regime]}
@@ -404,27 +191,45 @@ var_irf = function(
   B = as.matrix(B)
 
   # estimate IRFs
-  phi = dplyr::select(coef, -y, -dplyr::contains('cosnt'), -dplyr::contains('trend'))
+  phi = dplyr::select(coef, -y, -dplyr::contains('const'), -dplyr::contains('trend'))
 
-  irf = IRF(Phi = phi,
-            B = B,
-            lag = horizon,
-            structure = structure)
+  irf =
+    IRF_solve(
+      Phi = phi,
+      B = B,
+      lag = horizon,
+      structure = structure
+    )
 
   # reorganize results
   irf = data.frame(t(irf))
 
-  if(!is.null(structure)){
-    if(structure == 'IV-short'){
-      shocks = c(var$instrumented, regressors[!regressors %in% var$instrumented])
-      irf$shock = rep(shocks, horizon + 1)
-    }
-  }else{
+  # assign shocks
+  if(is.na(structure)){
+
     irf$shock = rep(regressors, horizon + 1)
+    irf$horizon = sort(rep(c(0:horizon), length(regressors)))
+
+  }else if(structure == 'IV-short'){
+
+    shocks = c(instrumented, regressors[!regressors %in% instrumented])
+    irf$shock = rep(shocks, horizon + 1)
+    irf$horizon = sort(rep(c(0:horizon), length(regressors)))
+
+  }else if(structure == 'IV'){
+
+    irf = irf[(c(1:(horizon))*length(regressors)-length(regressors)+1),]
+    irf$shock = instrumented
+    irf$horizon = c(0:(horizon-1))
+
+  }else if(structure == 'short'){
+
+    irf$shock = rep(regressors, horizon + 1)
+    irf$horizon = sort(rep(c(0:horizon), length(regressors)))
+
   }
 
-  irf$horizon = sort(rep(c(0:horizon), length(regressors)))
-  irf = dplyr::arrange(irf, shock, horizon)
+  # observation identifiers
   rownames(irf) = NULL
   colnames(irf) = c(regressors, 'shock', 'horizon')
 
@@ -448,8 +253,7 @@ var_irf = function(
 
       # bootstrap residuals
       if(bootstrap.type == 'wild' |
-         bootstrap.type == 'auto' & structure == 'IV' |
-         bootstrap.type == 'auto' & structure == 'IV-short'){
+         bootstrap.type == 'auto' & structure %in% c('IV', 'IV-short')){
 
         # 'wild' bootstrap technique for simple distribution
         #  using observed scaled residuals with random sign flip.
@@ -458,11 +262,18 @@ var_irf = function(
         r = sample(c(-1,1), size = nrow(U), replace = T)
         U = sweep(U, MARGIN = 1, r, `*`)
 
-      }else if(bootstrap.type == 'standard' | bootstrap.type == 'auto' & structure != 'IV'){
+        # bootstrap instrument
+        if(!is.null(instrument)){
+          instrument.bag = instrument
+          instrument.bag[,-1] = instrument.bag[,-1] * r
+        }
 
-        # standard bootstrap technique a al Lutkepohl (2005)
+      }else if(bootstrap.type == 'standard' |
+               bootstrap.type == 'auto' & !structure %in% c('IV', 'IV-short')){
+
+        # standard resample bootstrap technique a al Lutkepohl (2005)
         # draw residuals with replacement
-        U = na.omit(residuals)
+        U = stats::na.omit(residuals)
         U = U[sample(c(1:nrow(U)),
                      size = nrow(residuals),
                      replace = TRUE),]
@@ -479,7 +290,7 @@ var_irf = function(
       for(i in (p+1):nrow(var$data)){
 
         X = Y[(i-p):(i-1),]
-        X = embed(as.matrix(X), dimension = p)
+        X = stats::embed(as.matrix(X), dimension = p)
         X = data.frame(X)
 
         if(type %in% c('const', 'both')){X$const = 1}
@@ -501,18 +312,12 @@ var_irf = function(
           p = p,
           horizon = 1,
           freq = freq,
-          type = type,
-          structure = structure)
+          type = type
+        )
 
-      # bootstrap instrument
-      if(!is.null(structure)){
-        if(structure == 'IV' | structure == 'IV-short'){
-          var.bag$instrument = var$instrument
-          var.bag$instrument[,-1] = sweep(var.bag$instrument[,-1], MARGIN = 1, r, `*`)
-
-          var.bag$instrumented = var$instrumented
-        }
-      }
+      var.bag$structure = structure
+      var.bag$instrumented = instrumented
+      if(!is.null(instrument)){var.bag$instrument = instrument.bag}
 
       # estimate error-covariance matrix or structural impact matrix
       B.bag = solve_B(var.bag, report_iv = FALSE)
@@ -521,60 +326,64 @@ var_irf = function(
       coef.bag = dplyr::select(var.bag$model$coef, -y, -dplyr::contains('const'), -dplyr::contains('trend'))
 
       # estimate IRFs
-      irf.bag = IRF(Phi = coef.bag,
-                B = B.bag,
-                lag = horizon,
-                structure = structure)
+      irf.bag =
+        IRF_solve(
+          Phi = coef.bag,
+          B = B.bag,
+          lag = horizon,
+          structure = structure
+        )
 
       # reorganize results
       irf.bag = data.frame(t(irf.bag))
 
-      if(!is.null(structure)){
-        if(structure == 'IV-short'){
-          shocks = c(var$instrumented, regressors[!regressors %in% var$instrumented])
-          irf.bag$shock = rep(shocks, horizon + 1)
-        }
-      }else{
-          irf.bag$shock = rep(regressors, horizon + 1)
+      # assign shocks
+      if(is.na(structure)){
+
+        irf.bag$shock = rep(regressors, horizon + 1)
+        irf.bag$horizon = sort(rep(c(0:horizon), length(regressors)))
+
+      }else if(structure == 'IV-short'){
+
+        shocks = c(var$instrumented, regressors[!regressors %in% var$instrumented])
+        irf.bag$shock = rep(shocks, horizon + 1)
+        irf.bag$horizon = sort(rep(c(0:horizon), length(regressors)))
+
+      }else if(structure == 'IV'){
+
+        irf.bag = irf.bag[(c(1:(horizon))*length(regressors)-length(regressors)+1),]
+        irf.bag$shock = var$instrumented
+        irf.bag$horizon = c(0:(horizon-1))
+
+      }else if(structure == 'short'){
+
+        irf.bag$shock = rep(regressors, horizon + 1)
+        irf.bag$horizon = sort(rep(c(0:horizon), length(regressors)))
+
       }
 
-      irf.bag$horizon = sort(rep(c(0:horizon), length(regressors)))
-      irf.bag = dplyr::arrange(irf.bag, shock, horizon)
+      # observation identifiers
       rownames(irf.bag) = NULL
       colnames(irf.bag) = c(regressors, 'shock', 'horizon')
 
       return(irf.bag)
 
-    })
+    },
+    .options = furrr::furrr_options(seed = TRUE))
 
-  # 3. calculate confidence intervals
-
+  # 2. calculate confidence intervals
   # collapse to data.frame
   ci = bagged.irf %>%
     purrr::reduce(dplyr::bind_rows)
 
-  # remove unused shocks in the case of IV
-  if(!is.null(var$structure)){
-    if(var$structure == 'IV'){
-      ci = ci %>%
-        dplyr::filter(shock == regressors[1])
-    }
-  }
-
-  # correct shock names in the case of IV-short
-  if(!is.null(var$structure)){
-    if(var$structure == 'IV-short'){
-
-    }
-  }
-
   # estimate bands
   ci = ci %>%
     tidyr::pivot_longer(cols = regressors, names_to = 'target', values_to = 'response') %>%
-    group_by(shock, horizon, target) %>%
-    summarize(response.lower = quantile(response, probs = p.lower, na.rm = T),
-              response.upper = quantile(response, probs = p.upper, na.rm = T),
-              response.mean  = mean(response, na.rm = T) )
+    dplyr::group_by(shock, horizon, target) %>%
+    dplyr::summarize(
+      response.lower = stats::quantile(response, probs = p.lower, na.rm = T),
+      response.upper = stats::quantile(response, probs = p.upper, na.rm = T),
+      response.mean  = mean(response, na.rm = T) )
 
   # combine point estimates and CI
   irf = irf %>%
@@ -582,7 +391,7 @@ var_irf = function(
     dplyr::arrange(shock, horizon)
 
   irf =
-    full_join(
+    dplyr::full_join(
       irf, ci,
       by = c('shock', 'target', 'horizon')
     )
@@ -591,29 +400,29 @@ var_irf = function(
   # (bias can be introduced in the bootstrapping if residuals are not actually mean zero)
   irf = irf %>%
     dplyr::mutate(
-       response.adjust = response - response.mean,
-       response.lower = response.lower + response.adjust,
-       response.upper = response.upper + response.adjust
+      response.adjust = response - response.mean,
+      response.lower = response.lower + response.adjust,
+      response.upper = response.upper + response.adjust
     ) %>%
     dplyr::select(target, shock, horizon, response.lower, response, response.upper) %>%
     dplyr::arrange(target, shock, horizon)
 
   ### return output --------------
   return(irf)
+
 }
 
 #' Estimate regime-dependent impulse response functions
 #'
-#' Estimate impulse responses with contemporaneous impact restrictions via Cholesky decomposition -
-#' taking the variable ordering present in the VAR object. Estimate one response function per unique
-#' state defined by the regime-dependent VAR.
+#' @param rvar               RVAR output
+#' @param horizon            int: number of periods
+#' @param CI                 numeric vector: c(lower ci bound, upper ci bound)
+#' @param bootstrap.type     string: bootstrapping technique to use ('auto', 'standard', or 'wild'); if auto then wild is used for IV or IV-short, else standard is used
+#' @param bootstrap.num      int: number of bootstraps
+#' @param bootstrap.parallel boolean: create IRF draws in parallel
+#' @param bootstrap.cores    int: number of cores to use in parallel processing; -1 detects and uses half the available cores
 #'
-#' @param rvar             RVAR output
-#' @param horizon          int: number of periods
-#' @param bootstraps.num   int: number of bootstraps
-#' @param CI               numeric vector: c(lower ci bound, upper ci bound)
-#'
-#' @return list of lists, each regime returns its own list with elements `irfs`, `ci.lower`, and `ci.upper`; all elements are long-form data.frames
+#' @return list of regimes, each with data.frame of columns `target`, `shock`, `horizon`, `response.lower`, `response`, `response.upper`
 #'
 #' @seealso [VAR()]
 #' @seealso [var_irf()]
@@ -644,29 +453,32 @@ var_irf = function(
 #'       lag.ic = 'BIC',
 #'       lag.max = 4)
 #'
-#' # impulse response functions
-#' rvar.irf = sovereign::rvar_irf(rvar)
+#'  # impulse response functions
+#'  rvar.irf = sovereign::rvar_irf(rvar)
 #'
-#' # forecast error variance decomposition
-#' rvar.fevd = sovereign::rvar_fevd(rvar)
+#'  # forecast error variance decomposition
+#'  rvar.fevd = sovereign::rvar_fevd(rvar)
 #'
-#' # historical shock decomposition
-#' rvar.hd = sovereign::rvar_hd(rvar)
+#'  # historical shock decomposition
+#'  rvar.hd = sovereign::rvar_hd(rvar)
 #'
 #' }
 #'
 #' @export
 
 rvar_irf = function(
-  rvar,         # threshold VAR output
-  horizon = 10,          # int: number of periods
-  bootstraps.num = 100,  # int: number of bootstraps
-  CI = c(0.1, 0.9)       # numeric vector: c(lower ci bound, upper ci bound)
+  rvar,                        # threshold VAR output
+  horizon = 10,                # int: number of periods
+  CI = c(0.1, 0.9),            # numeric vector: c(lower ci bound, upper ci bound)
+  bootstrap.type = 'auto',     # string: bootstrapping technique to use ('auto', 'standard', or 'wild'); if auto then wild is used for IV or IV-short, else standard is used
+  bootstrap.num = 100,         # int: number of bootstraps
+  bootstrap.parallel = FALSE,  # boolean: create IRF draws in parallel
+  bootstrap.cores = -1         # int: number of cores to use in parallel processing; -1 detects and uses half the available cores
 ){
 
   # function warnings
-  if(!is.numeric(bootstraps.num) | bootstraps.num %% 1 != 0){
-    stop('bootstraps.num must be an integer')
+  if(!is.numeric(bootstrap.num) | bootstrap.num %% 1 != 0){
+    stop('bootstrap.num must be an integer')
   }
   if(!is.numeric(CI) | length(CI) != 2 | min(CI) < 0 | max(CI) > 1 | is.na(sum(CI))){
     stop('CI must be a two element numeric vector bound [0,1]')
@@ -676,25 +488,18 @@ rvar_irf = function(
   }
 
   # function variables
-  y = forecast.date = shock = target = response = response.lower = response.upper = model.regime =  response.med = response.adjust =  NULL
+  y = forecast.date = response.mean = shock = target = response = response.lower = response.upper = model.regime =  response.med = response.adjust =  NULL
 
   # set data
   data = rvar$data
   p = rvar$model[[1]]$p
   freq = rvar$model[[1]]$freq
+  type = rvar$model[[1]]$type
+
   regime = rvar$regime
   regressors = colnames(dplyr::select(data, -date, -regime))
 
-  residuals = rvar$residuals[[1]]
-
-  if('const' %in% colnames(rvar$model[[1]]$coef) &
-     'trend' %in% colnames(rvar$model[[1]]$coef)){
-    type = 'both'
-  }else if('const' %in% colnames(rvar$model[[1]]$coef)){
-    type = 'const'
-  }else if('trend' %in% colnames(rvar$model[[1]]$coef)){
-    type = 'trend'
-  }
+  structure = rvar$structure
 
   p.lower = CI[1]
   p.upper = CI[2]
@@ -708,135 +513,247 @@ rvar_irf = function(
 
       # set regime specific data
       coef = rvar$model[[paste0('regime_',regime.val)]]$coef
-      residuals = residuals %>%
-        dplyr::filter(model.regime == regime.val)
+
+      residuals = rvar$residuals[[1]] %>%
+        dplyr::filter(model.regime == regime.val) %>%
+        dplyr::select(-model.regime)
+
       is = data %>%
         dplyr::inner_join(dplyr::select(residuals, date), by = 'date') %>%
-        dplyr::rename(regime = regime)
-      residuals = residuals %>%
-        dplyr::select(-date, -model.regime, -forecast.date)
+        dplyr::select(-regime)
+
+      if(!is.null(rvar$instrument)){
+        instrument = dplyr::inner_join(rvar$instrument, dplyr::select(is, date), by = 'date')
+      }else{
+        instrument = NULL
+      }
+
+      model =  rvar$model[[paste0('regime_',regime.val)]]
 
       ### calculate impulse responses --------------
-      # estimate error-covariance matrix
-      cov.matrix = stats::var(stats::na.omit(residuals))
+
+      # estimate error-covariance matrix or structural impact matrix
+      B =
+        solve_B(
+          var = list(
+            model = model,
+            residuals = residuals,
+            structure = rvar$structure,
+            instrument = instrument,
+            instrumented = rvar$instrumented
+          )
+        )
 
       # estimate IRFs
-      irf = IRF(Phi = dplyr::select(coef, -y, -dplyr::contains('cosnt'), -dplyr::contains('trend')),
-                Sig = cov.matrix,
-                lag = horizon)
+      phi = dplyr::select(coef, -y, -dplyr::contains('const'), -dplyr::contains('trend'))
+
+      irf = IRF_solve(
+        Phi = phi,
+        B = B,
+        lag = horizon,
+        structure = rvar$structure
+      )
 
       # reorganize results
-      irf = data.frame(t(irf$orthirf))
-      irf$shock = rep(regressors, horizon + 1)
-      irf$horizon = sort(rep(c(0:horizon), length(regressors)))
-      irf = irf %>% dplyr::arrange(shock, horizon)
+      irf = data.frame(t(irf))
+
+      # assign shocks
+      if(is.na(rvar$structure)){
+
+        irf$shock = rep(regressors, horizon + 1)
+        irf$horizon = sort(rep(c(0:horizon), length(regressors)))
+
+      }else if(rvar$structure == 'IV-short'){
+
+        shocks = c(rvar$instrumented, regressors[!regressors %in% rvar$instrumented])
+        irf$shock = rep(shocks, horizon + 1)
+        irf$horizon = sort(rep(c(0:horizon), length(regressors)))
+
+      }else if(rvar$structure == 'IV'){
+
+        irf = irf[(c(1:(horizon))*length(regressors)-length(regressors)+1),]
+        irf$shock = rvar$instrumented
+        irf$horizon =c(0:(horizon-1))
+
+      }else if(rvar$structure == 'short'){
+
+        irf$shock = rep(regressors, horizon + 1)
+        irf$horizon = sort(rep(c(0:horizon), length(regressors)))
+
+      }
+
+      # observation identifiers
       rownames(irf) = NULL
+      colnames(irf) = c(regressors, 'shock', 'horizon')
 
       ### bootstrap irf standard errors --------------
-      # see Lutkepohl (2005)
+
+      # 0. set up parallel back-end
+      if(bootstrap.parallel == TRUE){
+        if(bootstrap.cores == -1){
+          n.cores = floor(future::availableCores() / 2)
+        }else{
+          n.cores = bootstrap.cores
+        }
+        future::plan(future::multisession, workers = n.cores)
+      }else{
+        future::plan(future::sequential)
+      }
 
       # 1. create bootstrap time series
-      bagged.series = as.list(1:bootstraps.num) %>%
-        purrr::map(.f = function(count){
+      bagged.irf = as.list(1:bootstrap.num) %>%
+        furrr::future_map(.f = function(count){
 
-          # draw bootstrapped residuals
-          U = residuals[sample(c(1:nrow(residuals)),
-                               size = nrow(residuals),
-                               replace = TRUE),]
-          U = U %>%
-            dplyr::mutate_all(function(X){return(X-mean(X, na.rm = T))})
+          # bootstrap residuals
+          if(bootstrap.type == 'wild' |
+             bootstrap.type == 'auto' & structure %in% c('IV', 'IV-short')){
 
-          # create lags
-          X = is %>%
-            dplyr::select(-regime) %>%
-            n.lag(lags = p) %>%
-            dplyr::select(dplyr::contains('.l')) %>%
-            dplyr::slice(p:nrow(U))
+            # 'wild' bootstrap technique for simple distribution
+            #  using observed scaled residuals with random sign flip.
+            #  See the Rademacher distribution.
+            U = residuals[,!colnames(residuals) %in% c('date','forecast.date','model.regime')]
+            r = sample(c(-1,1), size = nrow(U), replace = T)
+            U = sweep(U, MARGIN = 1, r, `*`)
 
-          if('const' %in% type | 'both' %in% type){X$const = 1}
-          if('trend' %in% type | 'both' %in% type){X$trend = c(1:nrow(X))}
+            # bootstrap instrument
+            if(!is.null(instrument)){
+              instrument.bag = instrument
+              instrument.bag[,-1] = instrument.bag[,-1] * r
+            }
 
-          # estimate time series
-          Y = as.matrix(X) %*% as.matrix(t(coef[,-1]))
-          Y = Y + U
-          colnames(Y) = regressors
-          Y = data.frame(Y, date = is$date[1:nrow(Y)])
+          }else if(bootstrap.type == 'standard' |
+                   bootstrap.type == 'auto' & !structure %in% c('IV', 'IV-short')){
 
-          # return synthetic observations
-          return(Y)
+            # standard bootstrap technique a al Lutkepohl (2005)
+            # draw residuals with replacement
+            U = stats::na.omit(residuals)
+            U = U[sample(c(1:nrow(U)),
+                         size = nrow(residuals),
+                         replace = TRUE),]
+            U = U %>%
+              dplyr::select(-date, -forecast.date, -model.regime) %>%
+              dplyr::mutate_all(function(X){return(X-mean(X, na.rm = T))})
+          }
 
-        })
+          # recursively build synthetic data
+          Y = matrix(nrow = nrow(is), ncol = ncol(is)-1)
+          Y = data.frame(Y); colnames(Y) = regressors
+          Y[1:p, ] = is[1:p, -1]
 
-      # 2. create bootstrapped residuals
-      bagged.irf = bagged.series %>%
-        purrr::map(.f = function(synth){
+          for(i in (p+1):nrow(is)){
 
-          # estimate VAR with bootstrapped series
+            X = Y[(i-p):(i-1),]
+            X = stats::embed(as.matrix(X), dimension = p)
+            X = data.frame(X)
+
+            if(type %in% c('const', 'both')){X$const = 1}
+            if(type %in% c('trend', 'both')){X$trend = c(1:nrow(X))}
+
+            X.hat = as.matrix(coef[,-1]) %*% t(as.matrix(X))
+            X.hat = t(X.hat)
+
+            Y[i, ] = X.hat - U[i,]
+
+          }
+
+          Y$date = is$date
+
+          # estimate VAR with synthetic data
           var.bag =
             VAR(
-              data = synth,
+              data = Y,
               p = p,
               horizon = 1,
               freq = freq,
-              type = type)
+              type = type
+            )
 
-          # estimate error-covariance matrix
-          cov.matrix = stats::var(stats::na.omit(dplyr::select(var.bag$residuals[[1]], -date, -forecast.date)))
+          var.bag$structure = rvar$structure
+          var.bag$instrumented = rvar$instrumented
+          if(!is.null(instrument)){var.bag$instrument = instrument.bag}
+
+          # estimate error-covariance matrix or structural impact matrix
+          B.bag = solve_B(var.bag, report_iv = FALSE)
+
+          # set bagged coef matrix
+          coef.bag = dplyr::select(var.bag$model$coef, -y, -dplyr::contains('const'), -dplyr::contains('trend'))
 
           # estimate IRFs
-          irf = IRF(Phi = dplyr::select(coef, -y, -dplyr::contains('cosnt'), -dplyr::contains('trend')),
-                    Sig = cov.matrix,
-                    lag = horizon)
+          irf.bag =
+            IRF_solve(
+              Phi = coef.bag,
+              B = B.bag,
+              lag = horizon,
+              structure = rvar$structure
+            )
 
           # reorganize results
-          irf = data.frame(t(irf$orthirf))
-          irf$shock = rep(regressors, horizon + 1)
-          irf$horizon = sort(rep(c(0:horizon), length(regressors)))
-          irf = irf %>% dplyr::arrange(shock, horizon)
-          rownames(irf) = NULL
+          irf.bag = data.frame(t(irf.bag))
 
-          return(irf)
+          # assign shocks
+          if(is.na(rvar$structure)){
 
-        })
+            irf.bag$shock = rep(regressors, horizon + 1)
+            irf.bag$horizon = sort(rep(c(0:horizon), length(regressors)))
 
-      # 3. calculate confidence intervals
-      ci.lower = bagged.irf %>%
-        purrr::reduce(dplyr::bind_rows) %>%
-        dplyr::group_by(shock, horizon) %>%
-        dplyr::summarise_all(stats::quantile, p.lower, na.rm = T) %>%
-        dplyr::arrange(shock, horizon) %>%
-        tidyr::pivot_longer(cols = regressors, names_to = 'target', values_to = 'response.lower') %>%
-        dplyr::arrange(shock, horizon)
+          }else if(rvar$structure == 'IV-short'){
 
-      ci.upper = bagged.irf %>%
-        purrr::reduce(dplyr::bind_rows) %>%
-        dplyr::group_by(shock, horizon) %>%
-        dplyr::summarise_all(stats::quantile, p.upper, na.rm = T) %>%
-        dplyr::arrange(shock, horizon) %>%
-        tidyr::pivot_longer(cols = regressors, names_to = 'target', values_to = 'response.upper') %>%
-        dplyr::arrange(shock, horizon)
+            shocks = c(rvar$instrumented, regressors[!regressors %in% rvar$instrumented])
+            irf.bag$shock = rep(shocks, horizon + 1)
+            irf.bag$horizon = sort(rep(c(0:horizon), length(regressors)))
 
-      ci.med = bagged.irf %>%
-        purrr::reduce(dplyr::bind_rows) %>%
-        dplyr::group_by(shock, horizon) %>%
-        dplyr::summarise_all(stats::quantile, 0.5, na.rm = T) %>%
-        dplyr::arrange(shock, horizon) %>%
-        tidyr::pivot_longer(cols = regressors, names_to = 'target', values_to = 'response.med') %>%
-        dplyr::arrange(shock, horizon)
+          }else if(rvar$structure == 'IV'){
 
+            irf.bag = irf.bag[(c(1:(horizon))*length(regressors)-length(regressors)+1),]
+            irf.bag$shock = rvar$instrumented
+            irf.bag$horizon = c(0:(horizon-1))
+
+          }else if(rvar$structure == 'short'){
+
+            irf.bag$shock = rep(regressors, horizon + 1)
+            irf.bag$horizon = sort(rep(c(0:horizon), length(regressors)))
+
+          }
+
+          # observation identifiers
+          rownames(irf.bag) = NULL
+          colnames(irf.bag) = c(regressors, 'shock', 'horizon')
+
+          return(irf.bag)
+
+        },
+        .options = furrr::furrr_options(seed = TRUE))
+
+      # 2. calculate confidence intervals
+      # collapse to data.frame
+      ci = bagged.irf %>%
+        purrr::reduce(dplyr::bind_rows)
+
+      # estimate bands
+      ci = ci %>%
+        tidyr::pivot_longer(cols = regressors, names_to = 'target', values_to = 'response') %>%
+        dplyr::group_by(shock, horizon, target) %>%
+        dplyr::summarize(
+            response.lower = stats::quantile(response, probs = p.lower, na.rm = T),
+            response.upper = stats::quantile(response, probs = p.upper, na.rm = T),
+            response.mean  = mean(response, na.rm = T) )
+
+      # combine point estimates and CI
       irf = irf %>%
         tidyr::pivot_longer(cols = regressors, names_to = 'target', values_to = 'response') %>%
         dplyr::arrange(shock, horizon)
 
       irf =
-        purrr::reduce(
-          list(irf, ci.lower, ci.upper, ci.med),
-          dplyr::full_join,
-          by = c('shock', 'target', 'horizon'))
+        dplyr::full_join(
+          irf, ci,
+          by = c('shock', 'target', 'horizon')
+        )
 
+      # adjust for bias in CI
+      # (bias can be introduced in the bootstrapping if residuals are not actually mean zero)
       irf = irf %>%
         dplyr::mutate(
-          response.adjust = response - response.med,
+          response.adjust = response - response.mean,
           response.lower = response.lower + response.adjust,
           response.upper = response.upper + response.adjust
         ) %>%
@@ -854,5 +771,4 @@ rvar_irf = function(
   return(results)
 
 }
-
 

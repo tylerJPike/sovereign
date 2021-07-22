@@ -4,10 +4,9 @@
 
 #' Estimate historical decomposition
 #'
-#' Estimate historical decomposition with contemporaneous impact
-#' restrictions via Cholesky decomposition - taking the variable ordering
-#' present in the VAR object.
-#'
+#' Estimate historical decomposition for VARs with
+#' either short or 'IV-short' structural errors. 
+#' 
 #' @param var              VAR output
 #'
 #' @return long-from data.frame
@@ -57,6 +56,15 @@ var_hd = function(
   var                  # VAR object
 ){
 
+
+  # function warnings
+  if(class(var) != 'VAR'){
+    stop('var must be a VAR object')
+  }
+  if(!var$structure %in% c('short', 'IV-short')){
+    stop('HD method is only available for VARs with short or IV-short structural errors')
+  }
+
   # set function variables
   model.regime = target = forecast.date = NULL
 
@@ -73,8 +81,10 @@ var_hd = function(
   # reduced form error variance-covariance matrix
   sigma = stats::var(stats::na.omit(residuals))
 
-  # structural error variance-covariance matrix
-  B = chol(sigma)
+  # estimate error-covariance matrix or structural impact matrix
+  B = solve_B(var)
+  B = as.matrix(B)
+
 
   # coefficient matrix
   # (already written in psuedo-companion form)
@@ -169,10 +179,8 @@ var_hd = function(
 
 #' Estimate regime-dependent historical decomposition
 #'
-#' Estimate historical decomposition with contemporaneous impact
-#' restrictions via Cholesky decomposition - taking the variable ordering
-#' present in the RVAR object. Estimate one response function per unique
-#' state defined by the regime-dependent VAR.
+#' Estimate historical decomposition for RVARs with
+#' either short or 'IV-short' structural errors.  
 #'
 #' @param rvar             RVAR output
 #'
@@ -226,6 +234,13 @@ rvar_hd = function(
   rvar                 # threshold VAR output
 ){
 
+  # function warnings
+  if(class(rvar) != 'RVAR'){
+    stop('rvar must be a RVAR object')
+  }
+  if(!rvar$structure %in% c('short', 'IV-short')){
+    stop('HD method is only available for VARs with short or IV-short structural errors')
+  }
 
   # function variables
   model.regime = target = forecast.date = NULL
@@ -243,18 +258,37 @@ rvar_hd = function(
     purrr::map(.f = function(regime.val){
 
       # recover model dynamics -----------------------------
-      # (for now, only use cholesky decomposition)
 
       # regime-dependent reduced form residuals
       residuals = rvar$residuals$H_1 %>%
-       # dplyr::filter(model.regime == regime.val) %>%
         dplyr::select(-date, -forecast.date, -model.regime)
 
-      # reduced form error variance-covariance matrix
-      sigma = stats::var(stats::na.omit(residuals))
+      is = rvar$data %>%
+        dplyr::inner_join(dplyr::select(rvar$residuals$H_1, date), by = 'date') %>%
+        dplyr::select(-regime)
+
+      # instrument
+      if(!is.null(rvar$instrument)){
+        instrument = dplyr::inner_join(rvar$instrument, dplyr::select(is, date), by = 'date')
+      }else{
+        instrument = NULL
+      }
+
+      # regime-specific model
+      model =  rvar$model[[paste0('regime_',regime.val)]]
 
       # structural error variance-covariance matrix
-      B = chol(sigma)
+      B =
+        solve_B(
+          var = list(
+            model = model,
+            residuals = dplyr::inner_join(rvar$residuals$H_1, dplyr::select(is, date), by = 'date') %>%
+              dplyr::select(-model.regime),
+            structure = rvar$structure,
+            instrument = instrument,
+            instrumented = rvar$instrumented
+          )
+        )
 
       # coefficient matrix
       # (already written in psuedo-companion form)

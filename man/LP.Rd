@@ -70,6 +70,11 @@ Estimate local projections
 }
 
 }
+\references{
+\enumerate{
+\item Jorda, Oscar "\href{https://www.aeaweb.org/articles?id=10.1257/0002828053828518}{Estimation and Inference of Impulse Responses by Local Projections}" 2005.
+}
+}
 \seealso{
 \code{\link[=LP]{LP()}}
 

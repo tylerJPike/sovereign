@@ -170,6 +170,9 @@ LP_estimate = function(
 #' @seealso [RLP()]
 #' @seealso [rlp_irf()]
 #'
+#' @references
+#' 1. Jorda, Oscar "[Estimation and Inference of Impulse Responses by Local Projections](https://www.aeaweb.org/articles?id=10.1257/0002828053828518)" 2005.
+#'
 #' @examples
 #' \donttest{
 #'
@@ -530,6 +533,11 @@ RLP_estimate = function(
 
 #' Estimate regime-dependent local projections
 #'
+#' Estimate a regime-dependent local projection (i.e. a state-dependent LP), with an exogenous state indicator, of the specification:
+#' \deqn{Y_{t+h} = X_t \beta_{s_t} + \epsilon_t}
+#' where *t* is the time index, and *s* is a mutually exclusive state of the world observed at time *t*. When the regime vector is
+#' not supplied by the user, then a two-state regime series is estimated via random forest.
+#'
 #' @param data         data.frame, matrix, ts, xts, zoo: Endogenous regressors
 #' @param horizons     int: forecast horizons
 #' @param freq         string: frequency of data ('day', 'week', 'month', 'quarter', or 'year')
@@ -544,12 +552,17 @@ RLP_estimate = function(
 #' @param regime.method string: regime assignment technique ('rf', 'kmeans', 'EM', 'BP')
 #' @param regime.n      int: number of regimes to estimate (applies to kmeans and EM)
 #'
-#' @return list object with elements `data`, `model`, `forecasts`, `residuals`; if there is more than one forecast horizon estimated, then `model`, `forecasts`, `residuals` will each be a list where each element corresponds to a single horizon
+#' @return list of lists, one list per regime, each regime with objects with elements `data`, `model`, `forecasts`, `residuals`;
+#' if there is more than one forecast horizon estimated, then `model`, `forecasts`, `residuals`
+#' will each be a list where each element corresponds to a single horizon
 #'
 #' @seealso [LP()]
 #' @seealso [lp_irf()]
 #' @seealso [RLP()]
 #' @seealso [rlp_irf()]
+#'
+#' @references
+#' 1. Jorda, Oscar "[Estimation and Inference of Impulse Responses by Local Projections](https://www.aeaweb.org/articles?id=10.1257/0002828053828518)" 2005.
 #'
 #' @examples
 #' \donttest{

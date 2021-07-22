@@ -27,14 +27,9 @@ reference:
   - title: Model and Forecast Analysis
     desc: Functions to anlayze model and forecasting dynamics
     contents:
-      - '`var_irf`'
-      - '`rvar_irf`'
-      - '`var_fevd`'
-      - '`rvar_fevd`'
-      - '`var_hd`'
-      - '`rvar_hd`'
-      - '`lp_irf`'
-      - '`rlp_irf`'
+      - '`IRF`'
+      - '`FEVD`'
+      - '`HD`'
   - title: Plots
     desc: Functions to plot model and forecast analysis
     contents:

@@ -13,9 +13,8 @@ var_hd(var)
 long-from data.frame
 }
 \description{
-Estimate historical decomposition with contemporaneous impact
-restrictions via Cholesky decomposition - taking the variable ordering
-present in the VAR object.
+Estimate historical decomposition for VARs with
+either short or 'IV-short' structural errors.
 }
 \examples{
 \donttest{

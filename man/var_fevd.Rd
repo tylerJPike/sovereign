@@ -17,7 +17,8 @@ var_fevd(var, horizon = 10, scale = TRUE)
 long-form data.frame
 }
 \description{
-Estimate forecast error variance decomposition
+Estimate forecast error variance decomposition for VARs
+with either short or 'IV-short' structural errors.
 }
 \examples{
 \donttest{

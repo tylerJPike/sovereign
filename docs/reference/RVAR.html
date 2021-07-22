@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Estimate regime-dependent VAR — RVAR • sovereign</title>
+<title>Estimate regime-dependent VAR, SVAR, or Proxy-SVAR — RVAR • sovereign</title>
 
 
 <!-- jquery -->
@@ -45,11 +45,11 @@
 
 
 
-<meta property="og:title" content="Estimate regime-dependent VAR — RVAR" />
+<meta property="og:title" content="Estimate regime-dependent VAR, SVAR, or Proxy-SVAR — RVAR" />
 <meta property="og:description" content="Estimate a regime-dependent VAR (i.e. a state-dependent VAR), with an exogenous state indicator, of the specification:
-$$Y_t = X \beta_s + \epsilon_t$$
+$$Y_{t+1} = X_t \beta_{s_t} + \epsilon_t$$
 where t is the time index, Y is the set of outcome vectors, X the design matrix (of p lagged values of Y), and
-s is a mutually exclusive state of the world observed at time t-1. When the regime vector is not supplied by the user, then a two-state
+s is a mutually exclusive state of the world observed at time t. When the regime vector is not supplied by the user, then a two-state
 regime series is estimated via random forest." />
 
 
@@ -92,7 +92,7 @@ regime series is estimated via random forest." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">sovereign</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.2.0</span>
       </span>
     </div>
 
@@ -145,16 +145,16 @@ regime series is estimated via random forest." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Estimate regime-dependent VAR</h1>
+    <h1>Estimate regime-dependent VAR, SVAR, or Proxy-SVAR</h1>
     <small class="dont-index">Source: <a href='https://github.com/tylerJPike/sovereign/blob/master/R/var.R'><code>R/var.R</code></a></small>
     <div class="hidden name"><code>RVAR.Rd</code></div>
     </div>
 
     <div class="ref-description">
     <p>Estimate a regime-dependent VAR (i.e. a state-dependent VAR), with an exogenous state indicator, of the specification:
-$$Y_t = X \beta_s + \epsilon_t$$
-where t is the time index, Y is the set of outcome vectors, X the design matrix (of p lagged values of Y), and
-s is a mutually exclusive state of the world observed at time t-1. When the regime vector is not supplied by the user, then a two-state
+$$Y_{t+1} = X_t \beta_{s_t} + \epsilon_t$$
+where <em>t</em> is the time index, <em>Y</em> is the set of outcome vectors, <em>X</em> the design matrix (of <em>p</em> lagged values of Y), and
+<em>s</em> is a mutually exclusive state of the world observed at time <em>t</em>. When the regime vector is not supplied by the user, then a two-state
 regime series is estimated via random forest.</p>
     </div>
 
@@ -168,7 +168,10 @@ regime series is estimated via random forest.</p>
   lag.max <span class='op'>=</span> <span class='cn'>NULL</span>,
   regime <span class='op'>=</span> <span class='cn'>NULL</span>,
   regime.method <span class='op'>=</span> <span class='st'>"rf"</span>,
-  regime.n <span class='op'>=</span> <span class='fl'>2</span>
+  regime.n <span class='op'>=</span> <span class='fl'>2</span>,
+  structure <span class='op'>=</span> <span class='st'>"short"</span>,
+  instrument <span class='op'>=</span> <span class='cn'>NULL</span>,
+  instrumented <span class='op'>=</span> <span class='cn'>NULL</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -214,26 +217,69 @@ regime series is estimated via random forest.</p>
       <th>regime.n</th>
       <td><p>int: number of regimes to estimate (applies to kmeans and EM)</p></td>
     </tr>
+    <tr>
+      <th>structure</th>
+      <td><p>string: type of structural identification strategy to use in model analysis (NA, 'short', 'IV', or 'IV-short')</p></td>
+    </tr>
+    <tr>
+      <th>instrument</th>
+      <td><p>string: name of instrumental variable contained in the data matrix</p></td>
+    </tr>
+    <tr>
+      <th>instrumented</th>
+      <td><p>string: name of variable to be instrumented in IV and IV-short procedure; default is the first non-date variable in data</p></td>
+    </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>list of lists, each regime returns its own list with elements <code>data</code>, <code>model</code>, <code>forecasts</code>, <code>residuals</code></p>
+    <p>List of lists, where each regime is a list with items:</p><ol>
+<li><p>data: data.frame with endogenous variables and 'date' column.</p></li>
+<li><p>model: list with data.frame of model coefficients (in psuedo-companion form), data.frame of coefficient standard errors, integer of lags p, integer of horizons, string of frequency, string of deterministic term type, numeric of log-likelihood, regime indicator</p></li>
+<li><p>forecasts: list of data.frames per horizon; data.frame with column for date (day the forecast was made), forecast.date (the date being forecasted), target (variable forecasted), and forecast</p></li>
+<li><p>residuals: list of data.frames per horizon; data.frame of residuals</p></li>
+<li><p>structure: string denoting which structural identification strategy will be used in analysis  (or NA)</p></li>
+<li><p>instrument: data.frame with 'date' column and 'instrument' column (or NULL)</p></li>
+<li><p>instrumented: string denoting which column will be instrumted in 'IV' and 'IV-short' strategies (or NULL)</p></li>
+</ol>
+
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>The regime-dependent VAR is a generalization of the popular threshold VAR - which trades off estimating a threshold value for an
 endogenous variable for accepting an exogenous regime that can be based on information from inside or outside of the system, with or without parametric
-assumptions, and with or without timing restrictions.</p>
+assumptions, and with or without timing restrictions. Moreover, the RVAR may be extended to include structural shocks, including the use of instrumental
+variables.</p>
+<p><strong>State dependence.</strong> The RVAR augments the traditional VAR by allowing state-dependence in the coefficient matrix. The RVAR differs from the more common threshold VAR (TVAR), due
+to the fact that states are exegonesouly determined. As a result, the states (i.e. regimes) do not need to be based on information inside the model, moreover, regimes can be
+determined by any process the user determines best fits their needs. For example, regimes based on NBER dated recessions and expansions are based on a judgmental process
+considering hundreds of series, potentially none of which are in the VAR being modeled. Alternatively, a user may use unsupervised machine learning to assign regimes - this is
+the process the <code><a href='regimes.html'>sovereign::regimes</a></code> function facilitates.</p>
+<p><strong>Structural shocks.</strong> See Sims (1980) for details regarding the baseline vector-autoregression (VAR) model. The VAR may be augmented to become a structural VAR (SVAR) with one of three different structural identification strategies:</p><ol>
+<li><p>short-term impact restrictions via Cholesky decomposition, see Christiano et al (1999) for details <strong>(structure = 'short')</strong></p></li>
+<li><p>external instrument identification, i.e. a Proxy-SVAR strategy, see Mertens and Ravn (2013) for details <strong>(structure = 'IV')</strong></p></li>
+<li><p>or a combination of short-term and IV identification via Lunsford (2015) <strong>(structure = 'IV-short')</strong></p></li>
+</ol>
+
+<p>Note that including structure does not change the estimation of model coefficients or forecasts, but does change impulse response functions, forecast error variance decomposition,
+and historical decompositions. Historical decompositions will not be available for models using the 'IV' structure. Additionally note that only one instrument may be used in this
+estimation routine.</p>
+    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+
+    
+<ol>
+<li><p>Christiano, Lawrence, Martin Eichenbaum, and Charles Evans "<a href='https://www.sciencedirect.com/science/article/pii/S1574004899010058'>Monetary policy shocks: What have we learned and to what end?</a>" Handbook of Macroeconomics, Vol 1, Part A, 1999.</p></li>
+<li><p>Lunsford, Kurt "<a href='https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2699452#'>Identifying Structural VARs with a Proxy Variable and a Test for a Weak Proxy</a>" 2015.</p></li>
+<li><p>Mertens, Karel and Morten Ravn "<a href='https://www.aeaweb.org/articles?id=10.1257/aer.103.4.1212'>The Dynamic Effects of Personal and Corporate Income Tax Changes in the United States</a>" 2013.</p></li>
+<li><p>Sims, Christopher "<a href='https://www.jstor.org/stable/1912017'>Macroeconomics and Reality</a>" 1980.</p></li>
+</ol>
+
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='VAR.html'>VAR()</a></code></p>
-<p><code><a href='var_irf.html'>var_irf()</a></code></p>
-<p><code><a href='var_fevd.html'>var_fevd()</a></code></p>
-<p><code><a href='var_hd.html'>var_hd()</a></code></p>
 <p><code>RVAR()</code></p>
-<p><code><a href='rvar_irf.html'>rvar_irf()</a></code></p>
-<p><code><a href='rvar_fevd.html'>rvar_fevd()</a></code></p>
-<p><code><a href='rvar_hd.html'>rvar_hd()</a></code></p></div>
+<p><code><a href='IRF.html'>IRF()</a></code></p>
+<p><code><a href='FEVD.html'>FEVD()</a></code></p>
+<p><code><a href='HD.html'>HD()</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
@@ -256,16 +302,16 @@ assumptions, and with or without timing restrictions.</p>
       regime.n <span class='op'>=</span> <span class='fl'>2</span>,
       lag.ic <span class='op'>=</span> <span class='st'>'BIC'</span>,
       lag.max <span class='op'>=</span> <span class='fl'>4</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in n.lag(., lags = p): could not find function "n.lag"</span></div><div class='input'>
-<span class='co'># impulse response functions</span>
-<span class='va'>rvar.irf</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='rvar_irf.html'>rvar_irf</a></span><span class='op'>(</span><span class='va'>rvar</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in sovereign::rvar_irf(rvar): object 'rvar' not found</span></div><div class='input'>
-<span class='co'># forecast error variance decomposition</span>
-<span class='va'>rvar.fevd</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='rvar_fevd.html'>rvar_fevd</a></span><span class='op'>(</span><span class='va'>rvar</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in sovereign::rvar_fevd(rvar): object 'rvar' not found</span></div><div class='input'>
-<span class='co'># historical shock decomposition</span>
-<span class='va'>rvar.hd</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='rvar_hd.html'>rvar_hd</a></span><span class='op'>(</span><span class='va'>rvar</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in sovereign::rvar_hd(rvar): object 'rvar' not found</span></div><div class='input'>
+</div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='input'>
+ <span class='co'># impulse response functions</span>
+ <span class='va'>rvar.irf</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='rvar_irf.html'>rvar_irf</a></span><span class='op'>(</span><span class='va'>rvar</span><span class='op'>)</span>
+
+ <span class='co'># forecast error variance decomposition</span>
+ <span class='va'>rvar.fevd</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='rvar_fevd.html'>rvar_fevd</a></span><span class='op'>(</span><span class='va'>rvar</span><span class='op'>)</span>
+
+ <span class='co'># historical shock decomposition</span>
+ <span class='va'>rvar.hd</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='rvar_hd.html'>rvar_hd</a></span><span class='op'>(</span><span class='va'>rvar</span><span class='op'>)</span>
+
 <span class='co'># }</span>
 
 </div></pre>

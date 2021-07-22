@@ -12,12 +12,18 @@
         - no structural restrictions, 
         - short-term restrictions (via Cholesky decomposition), 
         - instrumental variable estimation  
-        - combination of instrument variable and short-term restricions  
-      - The choice run bootstrapping routines in parallel for greater computational efficiency  
+        - combination of instrument variable and short-term restrictions  
+      - Parallel processing for greater computational efficiency in computing bootstrapped confidence intervals   
+      
+- Minor updates
+  - IRF plots use darker blue for CI
+  - Analysis function wrappers implemented for IRFs, FEVDs, and HDs
+  - Updated model documentation with academic references and corrected minor errors 
    
 - Bug fixes
     - plot_irf() plots all targets by default 
-    - test-threvhold_var.R changed to test-threshold_var.R
+    - test-threvhold_var.R changed to test-regime_var.R
+    - Fixed IRF results format listed in documentation
 
 ## Version 1.1.0   
 (2021-06-01)
@@ -33,7 +39,7 @@
     - Clarify model specification of RVAR  
 
 - Bug fixes
-    - Convert errorConditiont() to stop()   
+    - Convert errorCondition() to stop()   
 
 ## Version 1.0.0 
 (2021-04-02)

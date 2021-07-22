@@ -32,7 +32,7 @@ VAR(
 
 \item{lag.max}{int: maximum number of lags to test in lag selection}
 
-\item{structure}{string: type of structural identification strategy to use in model analysis (NULL, 'short', 'IV', or 'IV-short')}
+\item{structure}{string: type of structural identification strategy to use in model analysis (NA, 'short', 'IV', or 'IV-short')}
 
 \item{instrument}{string: name of instrumental variable contained in the data matrix}
 
@@ -41,12 +41,12 @@ VAR(
 \value{
 \enumerate{
 \item data: data.frame with endogenous variables and 'date' column.
-\item model: list with data.frame of model coefficients (in psuedo-companion form), data.frame of coefficient standard errors, integer of lags p, integer of horizons, string of frequency, string of type
+\item model: list with data.frame of model coefficients (in psuedo-companion form), data.frame of coefficient standard errors, integer of lags p, integer of horizons, string of frequency, string of deterministic term type, numeric of log-likelihood
 \item forecasts: list of data.frames per horizon; data.frame with column for date (day the forecast was made), forecast.date (the date being forecasted), target (variable forecasted), and forecast
 \item residuals: list of data.frames per horizon; data.frame of residuals
-\item structure: string denoting which structural identification strategy will be used in analysis  (or NULL)
+\item structure: string denoting which structural identification strategy will be used in analysis  (or NA)
 \item instrument: data.frame with 'date' column and 'instrument' column (or NULL)
-\item instrumented: string denoting which column will be instrumted in 'IV' and 'IV-short' strategies (or NULL)
+\item instrumented: string denoting which column will be instrumted in 'IV' and 'IV-short' strategies (or NA)
 }
 }
 \description{

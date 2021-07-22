@@ -21,14 +21,19 @@ var_irf(
 
 \item{CI}{numeric vector: c(lower ci bound, upper ci bound)}
 
-\item{bootstraps.num}{int: number of bootstraps}
+\item{bootstrap.type}{string: bootstrapping technique to use ('auto', 'standard', or 'wild'); if auto then wild is used for IV or IV-short, else standard is used}
+
+\item{bootstrap.num}{int: number of bootstraps}
+
+\item{bootstrap.parallel}{boolean: create IRF draws in parallel}
+
+\item{bootstrap.cores}{int: number of cores to use in parallel processing; -1 detects and uses half the available cores}
 }
 \value{
-list object with elements \code{irfs}, \code{ci.lower}, and \code{ci.upper}; all elements are long-form data.frames
+data.frame with columns \code{target}, \code{shock}, \code{horizon}, \code{response.lower}, \code{response}, \code{response.upper}
 }
 \description{
-Estimate impulse responses with contemporaneous impact restrictions via Cholesky decomposition -
-taking the variable ordering present in the VAR object.
+Estimate impulse response functions
 }
 \examples{
 \donttest{
@@ -49,14 +54,14 @@ taking the variable ordering present in the VAR object.
       lag.ic = 'BIC',
       lag.max = 4)
 
-# impulse response functions
-var.irf = sovereign::var_irf(var)
+ # impulse response functions
+ var.irf = sovereign::var_irf(var)
 
-# forecast error variance decomposition
-var.fevd = sovereign::var_fevd(var)
+ # forecast error variance decomposition
+ var.fevd = sovereign::var_fevd(var)
 
-# historical shock decomposition
-var.hd = sovereign::var_hd(var)
+ # historical shock decomposition
+ var.hd = sovereign::var_hd(var)
 
 }
 

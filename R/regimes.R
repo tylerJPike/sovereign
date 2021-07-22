@@ -35,7 +35,6 @@
 #' }
 #'
 #' @export
-
 regimes = function(
   data,                        # data.frame, matrix, ts, xts, zoo: Endogenous regressors
   method = 'rf',               # string: regime assignment technique ('rf', 'kmeans', 'EM', 'BP')

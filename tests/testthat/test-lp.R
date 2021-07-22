@@ -63,6 +63,7 @@ test_that("Local projection workflow", {
   rlp =
     RLP(
       data = Data,
+      regime = 'reg',
       p = 1,
       horizon = c(1:10),
       NW = FALSE,
