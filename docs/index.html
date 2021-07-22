@@ -17,7 +17,7 @@
 <meta property="og:description" content="A set of tools for state-dependent 
   empirical analysis through both VAR- and local projection-based 
   state-dependent forecasts, impulse response functions, 
-  historical shock decompositions, and forecast error variance decompositions.   ">
+  historical decompositions, and forecast error variance decompositions.   ">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -42,7 +42,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">sovereign</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.2.0</span>
       </span>
     </div>
 
@@ -108,7 +108,7 @@
 <em>Y<sub>t+h</sub> = E[Y<sub>t-1</sub> | X<sub>t-1</sub>, s<sub>t-1</sub>]</em>
 </p>
 <p>where <em>s</em> is a discrete, that is, mutually exclusive, state of the world. For example, in an economic context, one may consider expansions and recessions as two different states of the world, and in the US, these labels are formally declared by the NBER.</p>
-<p>The <code>sovereign</code> package provides the tools and methods to solves this state-dependent forecasting problem. First, using either parametric or non-parametric machine learning techniques, users may sort, identify, and classify discrete states of the world. Second, using vector auto-regressions or direct projections, a user can create both single- and multi-state time series forecasting models. Third, users may analyze their models and forecasts through impulse response functions, forecast error variance decompositions, and historical error decompositions.</p>
+<p>The <code>sovereign</code> package provides the tools and methods to solves this state-dependent forecasting problem. First, using either parametric or non-parametric machine learning techniques, users may sort, identify, and classify discrete states of the world. Second, using vector auto-regressions or direct projections, a user can create both single- and multi-state time series forecasting models. Third, users may analyze their models and forecasts through impulse response functions, forecast error variance decompositions, and historical decompositions.</p>
 <p>Available tools and techniques may be reviewed under the <strong>Tools</strong> tab. While vignettes and other extended documentation of the sovereign package’s capabilities may be found under the <strong>Workflow</strong> tab.</p>
 <hr>
 <div id="installation" class="section level2">

@@ -1,6 +1,6 @@
 Package: sovereign
 Title: State-Dependent Empirical Analysis 
-Version: 1.1.0
+Version: 1.2.0
 Authors@R: 
     person(given = "Tyler J.",
            family = "Pike",
@@ -19,7 +19,9 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Imports: 
     broom,    
-    dplyr,  
+    dplyr, 
+    future,
+    furrr,
     ggplot2, 
     gridExtra,    
     lmtest,

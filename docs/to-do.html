@@ -87,7 +87,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">sovereign</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.2.0</span>
       </span>
     </div>
 
@@ -145,78 +145,15 @@
 
 <div id="to-do" class="section level1">
 
-<div id="high-priority-version-101" class="section level2">
+<div id="high-priority-version-120" class="section level2">
 <h2 class="hasAnchor">
-<a href="#high-priority-version-101" class="anchor"></a>High Priority (Version 1.0.1)</h2>
-<ol>
-<li>code
-<ol>
-<li>
-<del>historical decomposition</del>
-<ol>
-<li><del>code</del></li>
-<li><del>clean code</del></li>
-<li><del>test</del></li>
-<li>
-<del>documentation</del><br>
-</li>
-</ol>
-</li>
-<li>
-<del>LP volatility correction</del>
-<ol>
-<li><del>code</del></li>
-<li><del>clean and add warnings</del></li>
-<li><del>test</del></li>
-<li>
-<del>documentation</del><br>
-</li>
-</ol>
-</li>
-<li><del>Add classes (e.g. class(var))</del></li>
-<li>
-<del>Make n.lag not require a date</del><br>
-</li>
-</ol>
-</li>
-<li>documentation
-<ol>
-<li><del>refine discussion of shocks</del></li>
-<li>
-<del>define equations</del><br>
-</li>
-</ol>
-</li>
-<li>website
-<ol>
-<li>
-<del>update home page</del><br>
-</li>
-<li>
-<del>update references</del><br>
-</li>
-<li>
-<del>update vignette</del><br>
-</li>
-<li><del>update news</del></li>
-</ol>
-</li>
-</ol>
-</div>
-<div id="medium-priority-version-102" class="section level2">
-<h2 class="hasAnchor">
-<a href="#medium-priority-version-102" class="anchor"></a>Medium Priority (Version 1.0.2)</h2>
+<a href="#high-priority-version-120" class="anchor"></a>High Priority (Version 1.2.0)</h2>
 <ol>
 <li>Code
 <ol>
-<li>endeogenously estimated threshold VAR</li>
-<li>more structural options
-<ol>
-<li>no structure</li>
-<li>short term (cholesky)</li>
-<li>long term</li>
-<li>instrumental variable (proxy var)</li>
-</ol>
+<li>threshold VAR</li>
+<li>
+<del>more structural options</del><br>
 </li>
 <li>Forecast performance
 <ol>
@@ -229,16 +166,29 @@
 </li>
 <li>Documentation
 <ol>
-<li>regimes function methods</li>
+<li>check that new VAR values section is correct</li>
+<li>document proxy VAR code and methodology</li>
 <li>link to helpful external resources (e.g. Bianchi’s slides)</li>
-<li>add academic references to methods</li>
+<li>add academic references to methods<br>
+</li>
+</ol>
+</li>
+<li>Website
+<ol>
+<li>update home page<br>
+</li>
+<li>update references<br>
+</li>
+<li>update vignette<br>
+</li>
+<li>update news</li>
 </ol>
 </li>
 </ol>
 </div>
-<div id="low-priority--version-102" class="section level2">
+<div id="low-priority--version-120" class="section level2">
 <h2 class="hasAnchor">
-<a href="#low-priority--version-102" class="anchor"></a>Low Priority (&gt; Version 1.0.2)</h2>
+<a href="#low-priority--version-120" class="anchor"></a>Low Priority (&gt; Version 1.2.0)</h2>
 <ol>
 <li>Code
 <ol>
@@ -246,6 +196,7 @@
 <li>State-dependent ML</li>
 <li>Bayesian Treshold VAR<br>
 </li>
+<li>Data cleaning (e.g. hamilton filter)</li>
 </ol>
 </li>
 <li>Documentation
@@ -254,6 +205,17 @@
 </ol>
 </li>
 </ol>
+</div>
+<div id="fomc-data" class="section level2">
+<h2 class="hasAnchor">
+<a href="#fomc-data" class="anchor"></a>FOMC data</h2>
+<p>write a set of functions, perhaps its own package, with nicely cleaned FOMC data (set the functions to pull from a google drive, github, or some public location)</p>
+<ul>
+<li>FOMC meeting and announcement dates</li>
+<li>policy rates</li>
+<li>QE actions</li>
+<li>and derived MP shocks</li>
+</ul>
 </div>
 </div>
 

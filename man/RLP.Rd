@@ -48,10 +48,15 @@ RLP(
 \item{regime.n}{int: number of regimes to estimate (applies to kmeans and EM)}
 }
 \value{
-list object with elements \code{data}, \code{model}, \code{forecasts}, \code{residuals}; if there is more than one forecast horizon estimated, then \code{model}, \code{forecasts}, \code{residuals} will each be a list where each element corresponds to a single horizon
+list of lists, one list per regime, each regime with objects with elements \code{data}, \code{model}, \code{forecasts}, \code{residuals};
+if there is more than one forecast horizon estimated, then \code{model}, \code{forecasts}, \code{residuals}
+will each be a list where each element corresponds to a single horizon
 }
 \description{
-Estimate regime-dependent local projections
+Estimate a regime-dependent local projection (i.e. a state-dependent LP), with an exogenous state indicator, of the specification:
+\deqn{Y_{t+h} = X_t \beta_{s_t} + \epsilon_t}
+where \emph{t} is the time index, and \emph{s} is a mutually exclusive state of the world observed at time \emph{t}. When the regime vector is
+not supplied by the user, then a two-state regime series is estimated via random forest.
 }
 \examples{
 \donttest{
@@ -83,6 +88,11 @@ Estimate regime-dependent local projections
 
 }
 
+}
+\references{
+\enumerate{
+\item Jorda, Oscar "\href{https://www.aeaweb.org/articles?id=10.1257/0002828053828518}{Estimation and Inference of Impulse Responses by Local Projections}" 2005.
+}
 }
 \seealso{
 \code{\link[=LP]{LP()}}

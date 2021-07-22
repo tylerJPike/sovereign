@@ -46,7 +46,10 @@
 
 
 <meta property="og:title" content="Estimate regime-dependent local projections — RLP" />
-<meta property="og:description" content="Estimate regime-dependent local projections" />
+<meta property="og:description" content="Estimate a regime-dependent local projection (i.e. a state-dependent LP), with an exogenous state indicator, of the specification:
+$$Y_{t+h} = X_t \beta_{s_t} + \epsilon_t$$
+where t is the time index, and s is a mutually exclusive state of the world observed at time t. When the regime vector is
+not supplied by the user, then a two-state regime series is estimated via random forest." />
 
 
 
@@ -88,7 +91,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">sovereign</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.2.0</span>
       </span>
     </div>
 
@@ -147,7 +150,10 @@
     </div>
 
     <div class="ref-description">
-    <p>Estimate regime-dependent local projections</p>
+    <p>Estimate a regime-dependent local projection (i.e. a state-dependent LP), with an exogenous state indicator, of the specification:
+$$Y_{t+h} = X_t \beta_{s_t} + \epsilon_t$$
+where <em>t</em> is the time index, and <em>s</em> is a mutually exclusive state of the world observed at time <em>t</em>. When the regime vector is
+not supplied by the user, then a two-state regime series is estimated via random forest.</p>
     </div>
 
     <pre class="usage"><span class='fu'>RLP</span><span class='op'>(</span>
@@ -225,7 +231,16 @@
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>list object with elements <code>data</code>, <code>model</code>, <code>forecasts</code>, <code>residuals</code>; if there is more than one forecast horizon estimated, then <code>model</code>, <code>forecasts</code>, <code>residuals</code> will each be a list where each element corresponds to a single horizon</p>
+    <p>list of lists, one list per regime, each regime with objects with elements <code>data</code>, <code>model</code>, <code>forecasts</code>, <code>residuals</code>;
+if there is more than one forecast horizon estimated, then <code>model</code>, <code>forecasts</code>, <code>residuals</code>
+will each be a list where each element corresponds to a single horizon</p>
+    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+
+    
+<ol>
+<li><p>Jorda, Oscar "<a href='https://www.aeaweb.org/articles?id=10.1257/0002828053828518'>Estimation and Inference of Impulse Responses by Local Projections</a>" 2005.</p></li>
+</ol>
+
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='LP.html'>LP()</a></code></p>

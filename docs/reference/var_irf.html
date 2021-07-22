@@ -46,8 +46,7 @@
 
 
 <meta property="og:title" content="Estimate impulse response functions — var_irf" />
-<meta property="og:description" content="Estimate impulse responses with contemporaneous impact restrictions via Cholesky decomposition -
-taking the variable ordering present in the VAR object." />
+<meta property="og:description" content="Estimate impulse response functions" />
 
 
 
@@ -89,7 +88,7 @@ taking the variable ordering present in the VAR object." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">sovereign</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.2.0</span>
       </span>
     </div>
 
@@ -148,11 +147,18 @@ taking the variable ordering present in the VAR object." />
     </div>
 
     <div class="ref-description">
-    <p>Estimate impulse responses with contemporaneous impact restrictions via Cholesky decomposition -
-taking the variable ordering present in the VAR object.</p>
+    <p>Estimate impulse response functions</p>
     </div>
 
-    <pre class="usage"><span class='fu'>var_irf</span><span class='op'>(</span><span class='va'>var</span>, horizon <span class='op'>=</span> <span class='fl'>10</span>, bootstraps.num <span class='op'>=</span> <span class='fl'>100</span>, CI <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.1</span>, <span class='fl'>0.9</span><span class='op'>)</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>var_irf</span><span class='op'>(</span>
+  <span class='va'>var</span>,
+  horizon <span class='op'>=</span> <span class='fl'>10</span>,
+  CI <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.1</span>, <span class='fl'>0.9</span><span class='op'>)</span>,
+  bootstrap.type <span class='op'>=</span> <span class='st'>"auto"</span>,
+  bootstrap.num <span class='op'>=</span> <span class='fl'>100</span>,
+  bootstrap.parallel <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  bootstrap.cores <span class='op'>=</span> <span class='op'>-</span><span class='fl'>1</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -166,18 +172,30 @@ taking the variable ordering present in the VAR object.</p>
       <td><p>int: number of periods</p></td>
     </tr>
     <tr>
-      <th>bootstraps.num</th>
+      <th>CI</th>
+      <td><p>numeric vector: c(lower ci bound, upper ci bound)</p></td>
+    </tr>
+    <tr>
+      <th>bootstrap.type</th>
+      <td><p>string: bootstrapping technique to use ('auto', 'standard', or 'wild'); if auto then wild is used for IV or IV-short, else standard is used</p></td>
+    </tr>
+    <tr>
+      <th>bootstrap.num</th>
       <td><p>int: number of bootstraps</p></td>
     </tr>
     <tr>
-      <th>CI</th>
-      <td><p>numeric vector: c(lower ci bound, upper ci bound)</p></td>
+      <th>bootstrap.parallel</th>
+      <td><p>boolean: create IRF draws in parallel</p></td>
+    </tr>
+    <tr>
+      <th>bootstrap.cores</th>
+      <td><p>int: number of cores to use in parallel processing; -1 detects and uses half the available cores</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>list object with elements <code>irfs</code>, <code>ci.lower</code>, and <code>ci.upper</code>; all elements are long-form data.frames</p>
+    <p>data.frame with columns <code>target</code>, <code>shock</code>, <code>horizon</code>, <code>response.lower</code>, <code>response</code>, <code>response.upper</code></p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='VAR.html'>VAR()</a></code></p>
@@ -208,14 +226,14 @@ taking the variable ordering present in the VAR object.</p>
       lag.ic <span class='op'>=</span> <span class='st'>'BIC'</span>,
       lag.max <span class='op'>=</span> <span class='fl'>4</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='input'>
-<span class='co'># impulse response functions</span>
-<span class='va'>var.irf</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'>var_irf</span><span class='op'>(</span><span class='va'>var</span><span class='op'>)</span>
+ <span class='co'># impulse response functions</span>
+ <span class='va'>var.irf</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'>var_irf</span><span class='op'>(</span><span class='va'>var</span><span class='op'>)</span>
 
-<span class='co'># forecast error variance decomposition</span>
-<span class='va'>var.fevd</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='var_fevd.html'>var_fevd</a></span><span class='op'>(</span><span class='va'>var</span><span class='op'>)</span>
+ <span class='co'># forecast error variance decomposition</span>
+ <span class='va'>var.fevd</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='var_fevd.html'>var_fevd</a></span><span class='op'>(</span><span class='va'>var</span><span class='op'>)</span>
 
-<span class='co'># historical shock decomposition</span>
-<span class='va'>var.hd</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='var_hd.html'>var_hd</a></span><span class='op'>(</span><span class='va'>var</span><span class='op'>)</span>
+ <span class='co'># historical shock decomposition</span>
+ <span class='va'>var.hd</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='var_hd.html'>var_hd</a></span><span class='op'>(</span><span class='va'>var</span><span class='op'>)</span>
 
 <span class='co'># }</span>
 

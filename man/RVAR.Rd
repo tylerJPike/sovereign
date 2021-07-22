@@ -2,7 +2,7 @@
 % Please edit documentation in R/var.R
 \name{RVAR}
 \alias{RVAR}
-\title{Estimate regime-dependent VAR}
+\title{Estimate regime-dependent VAR, SVAR, or Proxy-SVAR}
 \usage{
 RVAR(
   data,
@@ -14,7 +14,10 @@ RVAR(
   lag.max = NULL,
   regime = NULL,
   regime.method = "rf",
-  regime.n = 2
+  regime.n = 2,
+  structure = "short",
+  instrument = NULL,
+  instrumented = NULL
 )
 }
 \arguments{
@@ -37,21 +40,54 @@ RVAR(
 \item{regime.method}{string: regime assignment technique ('rf', 'kmeans', 'EM', or 'BP')}
 
 \item{regime.n}{int: number of regimes to estimate (applies to kmeans and EM)}
+
+\item{structure}{string: type of structural identification strategy to use in model analysis (NA, 'short', 'IV', or 'IV-short')}
+
+\item{instrument}{string: name of instrumental variable contained in the data matrix}
+
+\item{instrumented}{string: name of variable to be instrumented in IV and IV-short procedure; default is the first non-date variable in data}
 }
 \value{
-list of lists, each regime returns its own list with elements \code{data}, \code{model}, \code{forecasts}, \code{residuals}
+List of lists, where each regime is a list with items:
+\enumerate{
+\item data: data.frame with endogenous variables and 'date' column.
+\item model: list with data.frame of model coefficients (in psuedo-companion form), data.frame of coefficient standard errors, integer of lags p, integer of horizons, string of frequency, string of deterministic term type, numeric of log-likelihood, regime indicator
+\item forecasts: list of data.frames per horizon; data.frame with column for date (day the forecast was made), forecast.date (the date being forecasted), target (variable forecasted), and forecast
+\item residuals: list of data.frames per horizon; data.frame of residuals
+\item structure: string denoting which structural identification strategy will be used in analysis  (or NA)
+\item instrument: data.frame with 'date' column and 'instrument' column (or NULL)
+\item instrumented: string denoting which column will be instrumted in 'IV' and 'IV-short' strategies (or NULL)
+}
 }
 \description{
 Estimate a regime-dependent VAR (i.e. a state-dependent VAR), with an exogenous state indicator, of the specification:
-\deqn{Y_t = X \beta_s + \epsilon_t}
-where t is the time index, Y is the set of outcome vectors, X the design matrix (of p lagged values of Y), and
-s is a mutually exclusive state of the world observed at time t-1. When the regime vector is not supplied by the user, then a two-state
+\deqn{Y_{t+1} = X_t \beta_{s_t} + \epsilon_t}
+where \emph{t} is the time index, \emph{Y} is the set of outcome vectors, \emph{X} the design matrix (of \emph{p} lagged values of Y), and
+\emph{s} is a mutually exclusive state of the world observed at time \emph{t}. When the regime vector is not supplied by the user, then a two-state
 regime series is estimated via random forest.
 }
 \details{
 The regime-dependent VAR is a generalization of the popular threshold VAR - which trades off estimating a threshold value for an
 endogenous variable for accepting an exogenous regime that can be based on information from inside or outside of the system, with or without parametric
-assumptions, and with or without timing restrictions.
+assumptions, and with or without timing restrictions. Moreover, the RVAR may be extended to include structural shocks, including the use of instrumental
+variables.
+
+\strong{State dependence.} The RVAR augments the traditional VAR by allowing state-dependence in the coefficient matrix. The RVAR differs from the more common threshold VAR (TVAR), due
+to the fact that states are exegonesouly determined. As a result, the states (i.e. regimes) do not need to be based on information inside the model, moreover, regimes can be
+determined by any process the user determines best fits their needs. For example, regimes based on NBER dated recessions and expansions are based on a judgmental process
+considering hundreds of series, potentially none of which are in the VAR being modeled. Alternatively, a user may use unsupervised machine learning to assign regimes - this is
+the process the \code{sovereign::regimes} function facilitates.
+
+\strong{Structural shocks.} See Sims (1980) for details regarding the baseline vector-autoregression (VAR) model. The VAR may be augmented to become a structural VAR (SVAR) with one of three different structural identification strategies:
+\enumerate{
+\item short-term impact restrictions via Cholesky decomposition, see Christiano et al (1999) for details \strong{(structure = 'short')}
+\item external instrument identification, i.e. a Proxy-SVAR strategy, see Mertens and Ravn (2013) for details \strong{(structure = 'IV')}
+\item or a combination of short-term and IV identification via Lunsford (2015) \strong{(structure = 'IV-short')}
+}
+
+Note that including structure does not change the estimation of model coefficients or forecasts, but does change impulse response functions, forecast error variance decomposition,
+and historical decompositions. Historical decompositions will not be available for models using the 'IV' structure. Additionally note that only one instrument may be used in this
+estimation routine.
 }
 \examples{
 \donttest{
@@ -75,32 +111,34 @@ assumptions, and with or without timing restrictions.
       lag.ic = 'BIC',
       lag.max = 4)
 
-# impulse response functions
-rvar.irf = sovereign::rvar_irf(rvar)
+ # impulse response functions
+ rvar.irf = sovereign::rvar_irf(rvar)
 
-# forecast error variance decomposition
-rvar.fevd = sovereign::rvar_fevd(rvar)
+ # forecast error variance decomposition
+ rvar.fevd = sovereign::rvar_fevd(rvar)
 
-# historical shock decomposition
-rvar.hd = sovereign::rvar_hd(rvar)
+ # historical shock decomposition
+ rvar.hd = sovereign::rvar_hd(rvar)
 
 }
 
+}
+\references{
+\enumerate{
+\item Christiano, Lawrence, Martin Eichenbaum, and Charles Evans "\href{https://www.sciencedirect.com/science/article/pii/S1574004899010058}{Monetary policy shocks: What have we learned and to what end?}" Handbook of Macroeconomics, Vol 1, Part A, 1999.
+\item Lunsford, Kurt "\href{https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2699452#}{Identifying Structural VARs with a Proxy Variable and a Test for a Weak Proxy}" 2015.
+\item Mertens, Karel and Morten Ravn "\href{https://www.aeaweb.org/articles?id=10.1257/aer.103.4.1212}{The Dynamic Effects of Personal and Corporate Income Tax Changes in the United States}" 2013.
+\item Sims, Christopher "\href{https://www.jstor.org/stable/1912017}{Macroeconomics and Reality}" 1980.
+}
 }
 \seealso{
 \code{\link[=VAR]{VAR()}}
 
-\code{\link[=var_irf]{var_irf()}}
-
-\code{\link[=var_fevd]{var_fevd()}}
-
-\code{\link[=var_hd]{var_hd()}}
-
 \code{\link[=RVAR]{RVAR()}}
 
-\code{\link[=rvar_irf]{rvar_irf()}}
+\code{\link[=IRF]{IRF()}}
 
-\code{\link[=rvar_fevd]{rvar_fevd()}}
+\code{\link[=FEVD]{FEVD()}}
 
-\code{\link[=rvar_hd]{rvar_hd()}}
+\code{\link[=HD]{HD()}}
 }

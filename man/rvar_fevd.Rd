@@ -17,7 +17,8 @@ rvar_fevd(rvar, horizon = 10, scale = TRUE)
 list, each regime returns its own long-form data.frame
 }
 \description{
-Estimate regime-dependent forecast error variance decomposition
+Estimate forecast error variance decomposition for RVARs
+with either short or 'IV-short' structural errors.
 }
 \examples{
 \donttest{

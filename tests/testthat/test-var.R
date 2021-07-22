@@ -8,7 +8,7 @@ test_that("VAR workflow", {
   Data = data.frame(date = date, AA, BB, CC)
 
 
-  # estimate VAR (with lag selection)
+  # estimate VAR (without lag selection)
   var =
     VAR(
       data = Data,
@@ -51,7 +51,7 @@ test_that("VAR workflow", {
   irf =
     var_irf(
       var,
-      bootstraps.num = 10,
+      bootstrap.num = 10,
       CI = c(0.05,0.95))
 
   expect_true(is.data.frame(irf))

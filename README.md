@@ -5,7 +5,7 @@
 [![CRAN status](https://www.r-pkg.org/badges/version/sovereign)](https://CRAN.R-project.org/package=sovereign)
 [![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html)
 [![codecov](https://codecov.io/gh/tylerJPike/sovereign/branch/main/graph/badge.svg?token=WXLWR6H93B)](https://codecov.io/gh/tylerJPike/sovereign)
-[![Build Status](https://travis-ci.org/tylerJPike/sovereign.svg?branch=main)](https://travis-ci.org/tylerJPike/sovereign)  
+[![R-CMD-check](https://github.com/tylerJPike/sovereign/workflows/R-CMD-check/badge.svg)](https://github.com/tylerJPike/sovereign/actions)
 <!-- badges: end -->
 
 The sovereign package introduces a set of tools for state-dependent empirical analysis through both VAR- and local projection-based state-dependent forecasts, impulse response functions, forecast error variance decompositions, and historical decompositions.    
@@ -38,7 +38,8 @@ Local Projections (LP)
 1. direct projection forecasting  
 1. impulse responses
 
-Vector Auto-Regression (VAR)
+Vector Auto-Regression (VAR), Structural VAR (SVAR),   
+and external instrument SVAR (Proxy-SVAR)  
 1. recursive forecasting
 2. impulse responses
 3. forecast error variance decomposition
@@ -87,7 +88,9 @@ Vector Auto-Regression (VAR)
     # single-regime var
     #------------------------------------------
     # estimate VAR
-    # (using IC lag selection)
+    # (using IC lag selection and short-term 
+    #  impact restrictions, i.e. calculate structurals
+       errors via Cholesky decomposition)
     var =
         VAR(
             data = Data,
@@ -110,7 +113,7 @@ Vector Auto-Regression (VAR)
 
     # estimate IRF
     irf =
-        var_irf(
+        IRF(
             var,
             bootstraps.num = 10,
             CI = c(0.05,0.95))
@@ -120,12 +123,18 @@ Vector Auto-Regression (VAR)
 
     # estimate forecast error variance decomposition
     fevd =
-        var_fevd(
+        FEVD(
             var,
             horizon = 10)
 
     # plot FEVD
     plot_fevd(fevd)
+
+    # estimate historical decomposition
+    hd = HD(var)
+    
+    # plot HD
+    plot_hd(hd)
 
     #-------------------------------------------
     # multi-regime var
@@ -141,7 +150,7 @@ Vector Auto-Regression (VAR)
     
     # estimate IRF
     rvar.irf =
-        rvar_irf(
+        IRF(
             rvar,
             horizon = 10,
             bootstraps.num = 10,
@@ -155,7 +164,7 @@ Vector Auto-Regression (VAR)
 
     # estimate forecast error variance decomposition
     rvar.fevd =
-        rvar_fevd(
+        FEVD(
             rvar,
             horizon = 10)
 
@@ -164,6 +173,9 @@ Vector Auto-Regression (VAR)
     plot_fevd(rvar.fevd[[1]])
     # regime 2: high interest rates
     plot_fevd(rvar.fevd[[2]])
+
+    # estimate HD
+    rvar.hd = HD(rvar)
 
     #-------------------------------------------
     # single-regime local projections
@@ -178,7 +190,7 @@ Vector Auto-Regression (VAR)
             freq = 'month')
 
     # estimate single-regime IRF
-    lp.irf = lp_irf(lp)
+    lp.irf = IRF(lp)
 
     # plot IRF
     plot_irf(lp.irf)
@@ -196,7 +208,7 @@ Vector Auto-Regression (VAR)
             freq = 'month')
 
     # estimate multi-regime IRF
-    rlp.irf = rlp_irf(rlp)
+    rlp.irf = IRF(rlp)
 
     # plot IRF
     # regime 1: low interest rates

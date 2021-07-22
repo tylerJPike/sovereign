@@ -2,7 +2,7 @@
 % Please edit documentation in R/var.R
 \name{VAR}
 \alias{VAR}
-\title{Estimate VAR}
+\title{Estimate VAR, SVAR, or Proxy-SVAR}
 \usage{
 VAR(
   data,
@@ -11,7 +11,10 @@ VAR(
   type = "const",
   p = 1,
   lag.ic = NULL,
-  lag.max = NULL
+  lag.max = NULL,
+  structure = "short",
+  instrument = NULL,
+  instrumented = NULL
 )
 }
 \arguments{
@@ -28,16 +31,41 @@ VAR(
 \item{lag.ic}{string: information criterion to choose the optimal number of lags ('AIC' or 'BIC')}
 
 \item{lag.max}{int: maximum number of lags to test in lag selection}
+
+\item{structure}{string: type of structural identification strategy to use in model analysis (NA, 'short', 'IV', or 'IV-short')}
+
+\item{instrument}{string: name of instrumental variable contained in the data matrix}
+
+\item{instrumented}{string: name of variable to be instrumented in IV and IV-short procedure; default is the first non-date variable in data}
 }
 \value{
-list object with elements \code{data}, \code{model}, \code{forecasts}, \code{residuals}
+\enumerate{
+\item data: data.frame with endogenous variables and 'date' column.
+\item model: list with data.frame of model coefficients (in psuedo-companion form), data.frame of coefficient standard errors, integer of lags p, integer of horizons, string of frequency, string of deterministic term type, numeric of log-likelihood
+\item forecasts: list of data.frames per horizon; data.frame with column for date (day the forecast was made), forecast.date (the date being forecasted), target (variable forecasted), and forecast
+\item residuals: list of data.frames per horizon; data.frame of residuals
+\item structure: string denoting which structural identification strategy will be used in analysis  (or NA)
+\item instrument: data.frame with 'date' column and 'instrument' column (or NULL)
+\item instrumented: string denoting which column will be instrumted in 'IV' and 'IV-short' strategies (or NA)
+}
 }
 \description{
-Estimate VAR
+Estimate VAR, SVAR, or Proxy-SVAR
+}
+\details{
+See Sims (1980) for details regarding the baseline vector-autoregression (VAR) model. The VAR may be augmented to become a structural VAR (SVAR) with one of three different structural identification strategies:
+\enumerate{
+\item short-term impact restrictions via Cholesky decomposition, see Christiano et al (1999) for details \strong{(structure = 'short')}
+\item external instrument identification, i.e. a Proxy-SVAR strategy, see Mertens and Ravn (2013) for details \strong{(structure = 'IV')}
+\item or a combination of short-term and IV identification via Lunsford (2015) \strong{(structure = 'IV-short')}
+}
+
+Note that including structure does not change the estimation of model coefficients or forecasts, but does change impulse response functions, forecast error variance decomposition,
+and historical decompositions. Historical decompositions will not be available for models using the 'IV' structure. Additionally note that only one instrument may be used in this
+estimation routine.
 }
 \examples{
 \donttest{
-
  # simple time series
  AA = c(1:100) + rnorm(100)
  BB = c(1:100) + rnorm(100)
@@ -54,17 +82,24 @@ Estimate VAR
       lag.ic = 'BIC',
       lag.max = 4)
 
-# impulse response functions
-var.irf = sovereign::var_irf(var)
+  # impulse response functions
+  var.irf = sovereign::var_irf(var)
 
-# forecast error variance decomposition
-var.fevd = sovereign::var_fevd(var)
+  # forecast error variance decomposition
+  var.fevd = sovereign::var_fevd(var)
 
-# historical shock decomposition
-var.hd = sovereign::var_hd(var)
-
+  # historical shock decomposition
+  var.hd = sovereign::var_hd(var)
 }
 
+}
+\references{
+\enumerate{
+\item Christiano, Lawrence, Martin Eichenbaum, and Charles Evans "\href{https://www.sciencedirect.com/science/article/pii/S1574004899010058}{Monetary policy shocks: What have we learned and to what end?}" Handbook of Macroeconomics, Vol 1, Part A, 1999.
+\item Lunsford, Kurt "\href{https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2699452#}{Identifying Structural VARs with a Proxy Variable and a Test for a Weak Proxy}" 2015.
+\item Mertens, Karel and Morten Ravn "\href{https://www.aeaweb.org/articles?id=10.1257/aer.103.4.1212}{The Dynamic Effects of Personal and Corporate Income Tax Changes in the United States}" 2013.
+\item Sims, Christopher "\href{https://www.jstor.org/stable/1912017}{Macroeconomics and Reality}" 1980.
+}
 }
 \seealso{
 \code{\link[=VAR]{VAR()}}
@@ -74,12 +109,4 @@ var.hd = sovereign::var_hd(var)
 \code{\link[=var_fevd]{var_fevd()}}
 
 \code{\link[=var_hd]{var_hd()}}
-
-\code{\link[=RVAR]{RVAR()}}
-
-\code{\link[=rvar_irf]{rvar_irf()}}
-
-\code{\link[=rvar_fevd]{rvar_fevd()}}
-
-\code{\link[=rvar_hd]{rvar_hd()}}
 }

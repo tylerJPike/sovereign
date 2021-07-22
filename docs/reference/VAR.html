@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Estimate VAR — VAR • sovereign</title>
+<title>Estimate VAR, SVAR, or Proxy-SVAR — VAR • sovereign</title>
 
 
 <!-- jquery -->
@@ -45,8 +45,8 @@
 
 
 
-<meta property="og:title" content="Estimate VAR — VAR" />
-<meta property="og:description" content="Estimate VAR" />
+<meta property="og:title" content="Estimate VAR, SVAR, or Proxy-SVAR — VAR" />
+<meta property="og:description" content="Estimate VAR, SVAR, or Proxy-SVAR" />
 
 
 
@@ -88,7 +88,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">sovereign</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.2.0</span>
       </span>
     </div>
 
@@ -141,13 +141,13 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Estimate VAR</h1>
+    <h1>Estimate VAR, SVAR, or Proxy-SVAR</h1>
     <small class="dont-index">Source: <a href='https://github.com/tylerJPike/sovereign/blob/master/R/var.R'><code>R/var.R</code></a></small>
     <div class="hidden name"><code>VAR.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Estimate VAR</p>
+    <p>Estimate VAR, SVAR, or Proxy-SVAR</p>
     </div>
 
     <pre class="usage"><span class='fu'>VAR</span><span class='op'>(</span>
@@ -157,7 +157,10 @@
   type <span class='op'>=</span> <span class='st'>"const"</span>,
   p <span class='op'>=</span> <span class='fl'>1</span>,
   lag.ic <span class='op'>=</span> <span class='cn'>NULL</span>,
-  lag.max <span class='op'>=</span> <span class='cn'>NULL</span>
+  lag.max <span class='op'>=</span> <span class='cn'>NULL</span>,
+  structure <span class='op'>=</span> <span class='st'>"short"</span>,
+  instrument <span class='op'>=</span> <span class='cn'>NULL</span>,
+  instrumented <span class='op'>=</span> <span class='cn'>NULL</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -191,25 +194,63 @@
       <th>lag.max</th>
       <td><p>int: maximum number of lags to test in lag selection</p></td>
     </tr>
+    <tr>
+      <th>structure</th>
+      <td><p>string: type of structural identification strategy to use in model analysis (NA, 'short', 'IV', or 'IV-short')</p></td>
+    </tr>
+    <tr>
+      <th>instrument</th>
+      <td><p>string: name of instrumental variable contained in the data matrix</p></td>
+    </tr>
+    <tr>
+      <th>instrumented</th>
+      <td><p>string: name of variable to be instrumented in IV and IV-short procedure; default is the first non-date variable in data</p></td>
+    </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>list object with elements <code>data</code>, <code>model</code>, <code>forecasts</code>, <code>residuals</code></p>
+    
+<ol>
+<li><p>data: data.frame with endogenous variables and 'date' column.</p></li>
+<li><p>model: list with data.frame of model coefficients (in psuedo-companion form), data.frame of coefficient standard errors, integer of lags p, integer of horizons, string of frequency, string of deterministic term type, numeric of log-likelihood</p></li>
+<li><p>forecasts: list of data.frames per horizon; data.frame with column for date (day the forecast was made), forecast.date (the date being forecasted), target (variable forecasted), and forecast</p></li>
+<li><p>residuals: list of data.frames per horizon; data.frame of residuals</p></li>
+<li><p>structure: string denoting which structural identification strategy will be used in analysis  (or NA)</p></li>
+<li><p>instrument: data.frame with 'date' column and 'instrument' column (or NULL)</p></li>
+<li><p>instrumented: string denoting which column will be instrumted in 'IV' and 'IV-short' strategies (or NA)</p></li>
+</ol>
+
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>See Sims (1980) for details regarding the baseline vector-autoregression (VAR) model. The VAR may be augmented to become a structural VAR (SVAR) with one of three different structural identification strategies:</p><ol>
+<li><p>short-term impact restrictions via Cholesky decomposition, see Christiano et al (1999) for details <strong>(structure = 'short')</strong></p></li>
+<li><p>external instrument identification, i.e. a Proxy-SVAR strategy, see Mertens and Ravn (2013) for details <strong>(structure = 'IV')</strong></p></li>
+<li><p>or a combination of short-term and IV identification via Lunsford (2015) <strong>(structure = 'IV-short')</strong></p></li>
+</ol>
+
+<p>Note that including structure does not change the estimation of model coefficients or forecasts, but does change impulse response functions, forecast error variance decomposition,
+and historical decompositions. Historical decompositions will not be available for models using the 'IV' structure. Additionally note that only one instrument may be used in this
+estimation routine.</p>
+    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+
+    
+<ol>
+<li><p>Christiano, Lawrence, Martin Eichenbaum, and Charles Evans "<a href='https://www.sciencedirect.com/science/article/pii/S1574004899010058'>Monetary policy shocks: What have we learned and to what end?</a>" Handbook of Macroeconomics, Vol 1, Part A, 1999.</p></li>
+<li><p>Lunsford, Kurt "<a href='https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2699452#'>Identifying Structural VARs with a Proxy Variable and a Test for a Weak Proxy</a>" 2015.</p></li>
+<li><p>Mertens, Karel and Morten Ravn "<a href='https://www.aeaweb.org/articles?id=10.1257/aer.103.4.1212'>The Dynamic Effects of Personal and Corporate Income Tax Changes in the United States</a>" 2013.</p></li>
+<li><p>Sims, Christopher "<a href='https://www.jstor.org/stable/1912017'>Macroeconomics and Reality</a>" 1980.</p></li>
+</ol>
+
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code>VAR()</code></p>
 <p><code><a href='var_irf.html'>var_irf()</a></code></p>
 <p><code><a href='var_fevd.html'>var_fevd()</a></code></p>
-<p><code><a href='var_hd.html'>var_hd()</a></code></p>
-<p><code><a href='RVAR.html'>RVAR()</a></code></p>
-<p><code><a href='rvar_irf.html'>rvar_irf()</a></code></p>
-<p><code><a href='rvar_fevd.html'>rvar_fevd()</a></code></p>
-<p><code><a href='rvar_hd.html'>rvar_hd()</a></code></p></div>
+<p><code><a href='var_hd.html'>var_hd()</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
-
  <span class='co'># simple time series</span>
  <span class='va'>AA</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>100</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span><span class='op'>(</span><span class='fl'>100</span><span class='op'>)</span>
  <span class='va'>BB</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>100</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span><span class='op'>(</span><span class='fl'>100</span><span class='op'>)</span>
@@ -226,15 +267,14 @@
       lag.ic <span class='op'>=</span> <span class='st'>'BIC'</span>,
       lag.max <span class='op'>=</span> <span class='fl'>4</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='output co'>#&gt; <span class='warning'>Warning: NAs introduced by coercion</span></div><div class='input'>
-<span class='co'># impulse response functions</span>
-<span class='va'>var.irf</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='var_irf.html'>var_irf</a></span><span class='op'>(</span><span class='va'>var</span><span class='op'>)</span>
+  <span class='co'># impulse response functions</span>
+  <span class='va'>var.irf</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='var_irf.html'>var_irf</a></span><span class='op'>(</span><span class='va'>var</span><span class='op'>)</span>
 
-<span class='co'># forecast error variance decomposition</span>
-<span class='va'>var.fevd</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='var_fevd.html'>var_fevd</a></span><span class='op'>(</span><span class='va'>var</span><span class='op'>)</span>
+  <span class='co'># forecast error variance decomposition</span>
+  <span class='va'>var.fevd</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='var_fevd.html'>var_fevd</a></span><span class='op'>(</span><span class='va'>var</span><span class='op'>)</span>
 
-<span class='co'># historical shock decomposition</span>
-<span class='va'>var.hd</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='var_hd.html'>var_hd</a></span><span class='op'>(</span><span class='va'>var</span><span class='op'>)</span>
-
+  <span class='co'># historical shock decomposition</span>
+  <span class='va'>var.hd</span> <span class='op'>=</span> <span class='fu'>sovereign</span><span class='fu'>::</span><span class='fu'><a href='var_hd.html'>var_hd</a></span><span class='op'>(</span><span class='va'>var</span><span class='op'>)</span>
 <span class='co'># }</span>
 
 </div></pre>

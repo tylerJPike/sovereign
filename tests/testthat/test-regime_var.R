@@ -3,7 +3,7 @@ test_that("threshold VAR workflow", {
   # simple time series
   AA = c(1:100) + rnorm(100)
   BB = c(1:100) + rnorm(100)
-  CC = AA + BB + rnorm(100)
+  CC = AA + BB^2 + rnorm(100)
   date = seq.Date(from = as.Date('2000-01-01'), by = 'month', length.out = 100)
   Data = data.frame(date = date, AA, BB, CC)
 
@@ -43,7 +43,7 @@ test_that("threshold VAR workflow", {
   irf =
     rvar_irf(
       rvar,
-      bootstraps.num = 10,
+      bootstrap.num = 10,
       CI = c(0.05,0.95))
 
   expect_true(is.data.frame(irf[[1]]))
