@@ -1,6 +1,7 @@
 # Sovereign: State-Dependent Empirical Analysis  
 
-## Version 1.2.0
+## Version 1.2.0 
+(2021-07-23)
 
 - Major updates
     - VARs may now be estimated as Proxy-SVARs
