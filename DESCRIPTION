@@ -1,6 +1,6 @@
 Package: sovereign
 Title: State-Dependent Empirical Analysis 
-Version: 1.2.0
+Version: 1.2.1
 Authors@R: 
     person(given = "Tyler J.",
            family = "Pike",

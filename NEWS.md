@@ -1,5 +1,11 @@
 # Sovereign: State-Dependent Empirical Analysis  
 
+## Version 1.2.1
+(2021-12-30)
+- Bug fixes
+  - removed as.vector() call in solve_b.R
+  - change is.na to anyNA in regimes()
+
 ## Version 1.2.0 
 (2021-07-23)
 

@@ -90,7 +90,7 @@ regimes = function(
     breakpoints = strucchange::breakpoints(x ~ lag(x), data = X)
     breakpoints$breakpoints
 
-    if(is.na(breakpoints$breakpoints)){
+    if(anyNA(breakpoints$breakpoints)){
       regimes = data.frame(date = X.date, X, regime = 0)
     }else{
       regimes.val = c(0:length(breakpoints$breakpoints))

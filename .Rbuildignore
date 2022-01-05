@@ -11,3 +11,4 @@
 ^CRAN-RELEASE$
 ^development_test.R$
 ^\.github$
+^CRAN-SUBMISSION$

@@ -147,7 +147,8 @@ covid_volatility_correction = function(
       N = N
     )
 
-  theta = as.vector(theta$par)
+  # theta = as.vector(theta$par)
+  theta = theta$par
 
   # correct data -------------------------------
 

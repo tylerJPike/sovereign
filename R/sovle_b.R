@@ -85,8 +85,7 @@ solve_B = function(var, report_iv = TRUE){
         second_stage_beta = model.second_stage$coefficients[2]
         return(second_stage_beta)
 
-      }) %>%
-      as.vector()
+      })
 
     # scale size of the shock
     #  see Gertler and Karadi (2015) for background
