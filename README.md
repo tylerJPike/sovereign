@@ -82,7 +82,7 @@ and external instrument SVAR (Proxy-SVAR)
         regimes(
             data = Data, 
             regime.n = 3, 
-            engine = 'kmeans')
+            method = 'kmeans')
 
     #------------------------------------------
     # single-regime var
