@@ -115,7 +115,6 @@ and external instrument SVAR (Proxy-SVAR)
     irf =
         IRF(
             var,
-            bootstraps.num = 10,
             CI = c(0.05,0.95))
 
     # plot IRF
@@ -153,7 +152,6 @@ and external instrument SVAR (Proxy-SVAR)
         IRF(
             rvar,
             horizon = 10,
-            bootstraps.num = 10,
             CI = c(0.05,0.95))
 
     # plot IRF
