@@ -54,6 +54,8 @@ solve_B = function(var, report_iv = TRUE){
     covariates = colnames(dplyr::select(data.residuals, -date, -forecast.date))
     col_to_instrument = var$instrumented
 
+    data.residuals[,covariates] = -1*data.residuals[,covariates]
+
     # retrieve instrument
     data.instrument = var$instrument
     instrument = colnames(dplyr::select(data.instrument, -date))

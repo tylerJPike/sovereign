@@ -177,7 +177,10 @@ covid_volatility_correction = function(
       horizon = var$model$horizon,
       freq = var$model$freq,
       type = var$model$type,
-      p = var$model$p
+      p = var$model$p, 
+      structure = var$model$structure,
+      instrument = var$model$instrument,
+      instrumented = var$model$instrumented 
     )
 
   var.corrected$correction.factors = theta
